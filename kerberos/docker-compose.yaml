@@ -1,0 +1,39 @@
+services:
+  kerberos-agent1:
+    image: "kerberos/agent:v3.3.8"
+    ports:
+      - "4000:80"
+    environment:
+      - AGENT_NAME=agent1
+      # You can still override the configuration with environment variables, but might not makes sense if you are attaching a host config.
+      # find full list of environment variables here: https://github.com/kerberos-io/agent#override-with-environment-variables
+    volumes:
+      - ./agent1/config:/home/agent/data/config
+      - ./agent1/recordings:/home/agent/data/recordings
+    env_file: ".env"
+  # kerberos-agent2:
+  #   image: "kerberos/agent:v3.3.8"
+  #   ports:
+  #     - "8082:80"
+  #   volumes:
+  #     - ./agent2/config:/home/agent/data/config
+  #     - ./agent2/recordings:/home/agent/data/recordings
+  # kerberos-agent3:
+  #   image: "kerberos/agent:v3.3.8"
+  #   ports:
+  #     - "8083:80"
+  #   volumes:
+  #     - ./agent3/config:/home/agent/data/config
+  #     - ./agent3/recordings:/home/agent/data/recordings
+
+  # mediamtx:
+  #   image: bluenviron/mediamtx:latest-rpi
+  #   restart: always
+  #   network_mode: host
+  #   privileged: true
+  #   tmpfs:
+  #     - /dev/shm:exec
+  #   volumes:
+  #     - /run/udev:/run/udev:ro
+  #   environment:
+  #     - MTX_PATHS_CAM_SOURCE=rpiCamera

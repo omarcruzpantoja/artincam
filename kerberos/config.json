@@ -1,0 +1,101 @@
+{
+	"type": "",
+	"key": "8N635CPY1XAEHO1V8NDAIU28UICIXR",
+	"name": "picam",
+	"friendly_name": "agent1",
+	"time": "false",
+	"offline": "true",
+	"auto_clean": "false",
+	"remove_after_upload": "false",
+	"max_directory_size": 100,
+	"timezone": "America/New_York",
+	"capture": {
+		"name": "picamera",
+		"ipcamera": {
+			"rtsp": "rtsp://192.168.0.195:8554/camstream",
+			"width": 1920,
+			"height": 1080,
+			"fps": "30",
+			"sub_rtsp": "",
+			"sub_width": 0,
+			"sub_height": 0,
+			"sub_fps": "",
+			"onvif_xaddr": "",
+			"onvif_username": "",
+			"onvif_password": ""
+		},
+		"usbcamera": {
+			"device": ""
+		},
+		"raspicamera": {
+			"device": ""
+		},
+		"recording": "false",
+		"snapshots": "true",
+		"motion": "true",
+		"liveview": "true",
+		"continuous": "false",
+		"postrecording": 10,
+		"prerecording": 10,
+		"maxlengthrecording": 10,
+		"transcodingwebrtc": "",
+		"transcodingresolution": 0,
+		"forwardwebrtc": "",
+		"fragmented": "false",
+		"fragmentedduration": 8,
+		"pixelChangeThreshold": 150
+	},
+	"timetable": null,
+	"region": {
+		"name": "testing",
+		"rectangle": {
+			"x1": 0,
+			"y1": 0,
+			"x2": 800,
+			"y2": 640
+		},
+		"polygon": [
+		      {
+        "id": "1740705436208",
+        "coordinates": [
+          { "x": 384.6336206896552, "y": 257.66379310344826 },
+          { "x": 1192.771551724138, "y": 369.38793103448273 },
+          { "x": 1304.4956896551723, "y": 920.5603448275862 },
+          { "x": 384.6336206896552, "y": 920.5603448275862 }
+        ]
+      }
+		]
+	},
+	"cloud": "s3",
+	"s3": {
+		"proxyuri": "http://proxy.kerberos.io",
+		"bucket": "kerberosaccept",
+		"region": "eu-west-1"
+	},
+	"kstorage": {},
+	"dropbox": {},
+	"mqtturi": "tcp://mqtt.kerberos.io:1883",
+	"mqtt_username": "",
+	"mqtt_password": "",
+	"stunuri": "stun:turn.kerberos.io:8443",
+	"turn_force": "false",
+	"turnuri": "turn:turn.kerberos.io:8443",
+	"turn_username": "username1",
+	"turn_password": "password1",
+	"heartbeaturi": "",
+	"hub_encryption": "true",
+	"hub_uri": "https://api.cloud.kerberos.io",
+	"hub_key": "",
+	"hub_private_key": "",
+	"hub_site": "",
+	"condition_uri": "",
+	"encryption": {
+		"enabled": "",
+		"recordings": "",
+		"fingerprint": "",
+		"private_key": "",
+		"symmetric_key": ""
+	},
+	"realtimeprocessing": "false",
+	"realtimeprocessing_topic": "motiontest"
+}
