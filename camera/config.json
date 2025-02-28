@@ -12,6 +12,10 @@
 
     "output_dir": "recordings",
     "location": "gnv_fl_usa",
-    "pi_id": 1
+    "pi_id": 1,
+
+    "rtsp_user": "omarcam",
+    "rtsp_password": "123cam",
+    "stream_path": "/camstream"
   }
 }

@@ -1,0 +1,11 @@
+
+# This will make the camera script run on boot
+@reboot python /home/omarc/Documents/insects/camera/main.py
+
+# This will run the camera healer every minute verifying that the camera script is running
+* * * * * python /home/omarc/Documents/insects/camera/healer.py
+
+# -------------- THE FOLLOWING ARE TO BE SET UP ON SUDO CRONTAB --------------
+
+# This will allow ssh to be turned on at reboot
+@reboot systemctl start ssh
