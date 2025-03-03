@@ -1,39 +1,35 @@
 services:
-  kerberos-agent1:
+  kerberos-agent:
+    container_name: arctincam # must be unique per agent
     image: "kerberos/agent:v3.3.8"
     ports:
+      # The first number (before ":") is the port on your host machine.
+      # The second number (after ":") is the port inside the container.
+      # Example: "5000:80" means you can access the UI at http://localhost:5000.
+      # 
+      # ❗ Important:
+      # - Only modify the **left side** (host port). Keep "80" unchanged.
+      # - Use port numbers **3000–65535** to avoid conflicts.
+      # - Each agent must have a unique host port (e.g., "4000:80" and "4001:80").
       - "4000:80"
-    environment:
-      - AGENT_NAME=agent1
-      # You can still override the configuration with environment variables, but might not makes sense if you are attaching a host config.
-      # find full list of environment variables here: https://github.com/kerberos-io/agent#override-with-environment-variables
-    volumes:
-      - ./agent1/config:/home/agent/data/config
-      - ./agent1/recordings:/home/agent/data/recordings
-    env_file: ".env"
-  # kerberos-agent2:
-  #   image: "kerberos/agent:v3.3.8"
-  #   ports:
-  #     - "8082:80"
-  #   volumes:
-  #     - ./agent2/config:/home/agent/data/config
-  #     - ./agent2/recordings:/home/agent/data/recordings
-  # kerberos-agent3:
-  #   image: "kerberos/agent:v3.3.8"
-  #   ports:
-  #     - "8083:80"
-  #   volumes:
-  #     - ./agent3/config:/home/agent/data/config
-  #     - ./agent3/recordings:/home/agent/data/recordings
 
-  # mediamtx:
-  #   image: bluenviron/mediamtx:latest-rpi
-  #   restart: always
-  #   network_mode: host
-  #   privileged: true
-  #   tmpfs:
-  #     - /dev/shm:exec
+    volumes:
+      # Maps local directories to container directories.
+      # Changes made in these folders persist outside the container.
+      #
+      # ❗ Important:
+      # - Only modify the **left side** (host path). The right side must stay the same.
+      # - Example: "./agent/config:/home/agent/data/config" keeps configuration files persistent.
+      - ./agent/config:/home/agent/data/config
+      - ./agent/recordings:/home/agent/data/recordings
+
+
+  # You can have multiple agents. they must be named different and have different directory.
+  # kerberos-agent:
+  #   image: "kerberos/agent:v3.3.8"
+  #   ports:
+  #     - "4000:80" 
+
   #   volumes:
-  #     - /run/udev:/run/udev:ro
-  #   environment:
-  #     - MTX_PATHS_CAM_SOURCE=rpiCamera
+  #     - ./agent/config:/home/agent/data/config
+  #     - ./agent/recordings:/home/agent/data/recordings

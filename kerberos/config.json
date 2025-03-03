@@ -1,18 +1,18 @@
 {
 	"type": "",
 	"key": "8N635CPY1XAEHO1V8NDAIU28UICIXR",
-	"name": "picam",
-	"friendly_name": "agent1",
+	"name": "PI Module Camera",
+	"friendly_name": "PI Camera 1",
 	"time": "false",
 	"offline": "true",
 	"auto_clean": "false",
 	"remove_after_upload": "false",
-	"max_directory_size": 100,
+	"max_directory_size": 100000,
 	"timezone": "America/New_York",
 	"capture": {
 		"name": "picamera",
 		"ipcamera": {
-			"rtsp": "rtsp://192.168.0.195:8554/camstream",
+			"rtsp": "rtsp://192.168.0.99:8554/camstream",
 			"width": 1920,
 			"height": 1080,
 			"fps": "30",
@@ -37,7 +37,7 @@
 		"continuous": "false",
 		"postrecording": 10,
 		"prerecording": 10,
-		"maxlengthrecording": 10,
+		"maxlengthrecording": 30,
 		"transcodingwebrtc": "",
 		"transcodingresolution": 0,
 		"forwardwebrtc": "",
@@ -47,7 +47,7 @@
 	},
 	"timetable": null,
 	"region": {
-		"name": "testing",
+		"name": "region-name",
 		"rectangle": {
 			"x1": 0,
 			"y1": 0,
@@ -66,25 +66,21 @@
       }
 		]
 	},
-	"cloud": "s3",
-	"s3": {
-		"proxyuri": "http://proxy.kerberos.io",
-		"bucket": "kerberosaccept",
-		"region": "eu-west-1"
-	},
+	"cloud": "",
+	"s3": {},
 	"kstorage": {},
 	"dropbox": {},
-	"mqtturi": "tcp://mqtt.kerberos.io:1883",
+	"mqtturi": "",
 	"mqtt_username": "",
 	"mqtt_password": "",
-	"stunuri": "stun:turn.kerberos.io:8443",
-	"turn_force": "false",
-	"turnuri": "turn:turn.kerberos.io:8443",
-	"turn_username": "username1",
-	"turn_password": "password1",
+	"stunuri": "",
+	"turn_force": "",
+	"turnuri": "",
+	"turn_username": "",
+	"turn_password": "",
 	"heartbeaturi": "",
-	"hub_encryption": "true",
-	"hub_uri": "https://api.cloud.kerberos.io",
+	"hub_encryption": "",
+	"hub_uri": "",
 	"hub_key": "",
 	"hub_private_key": "",
 	"hub_site": "",
@@ -97,5 +93,5 @@
 		"symmetric_key": ""
 	},
 	"realtimeprocessing": "false",
-	"realtimeprocessing_topic": "motiontest"
+	"realtimeprocessing_topic": ""
 }
