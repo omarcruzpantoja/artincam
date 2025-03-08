@@ -710,7 +710,7 @@ paths:
 
   camstream:
     # TODO: need to change this, probably will automate the process of identifying this process
-    runOnInit: python3 /home/omarc/Documents/insects/camera/main.py
+    runOnInit: python3 /home/omarc/Documents/artincam/camera/main.py
     runOnInitRestart: yes
 
   # Settings under path "all_others" are applied to all paths that

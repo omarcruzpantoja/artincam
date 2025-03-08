@@ -68,19 +68,19 @@ class Camera:
         try:
             while(True):
                 output_file = self._get_file_name()
-                self.file_output.fileoutput = output_file
+                #self.file_output.fileoutput = output_file
                 # start video
-                self.file_output.start()
-                print(f"Recording started ({self._recording_time}s)")
+                #self.file_output.start()
+                #print(f"Recording started ({self._recording_time}s)")
                 # sleep is needed for it to continue recording
                 time.sleep(self._recording_time)
 
                 # once time is finished, stop recording
-                print(f"Recording Finished and stored ({output_file}")
-                self.file_output.stop()
+                #print(f"Recording Finished and stored ({output_file}")
+                #self.file_output.stop()
 
-                print(f"Resting...({self._rest_time})")
-                time.sleep(self._rest_time)
+                #print(f"Resting...({self._rest_time})")
+                #time.sleep(self._rest_time)
 
         except:
             self.picam.stop()

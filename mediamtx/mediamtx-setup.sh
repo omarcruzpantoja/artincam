@@ -1,5 +1,7 @@
 # create temporary directory
 tmp=tmp-mediamtx
+user=$(whoami)
+
 
 # create directory
 mkdir ${tmp}
@@ -11,7 +13,7 @@ cd ${tmp}
 wget https://github.com/bluenviron/mediamtx/releases/download/v1.11.3/mediamtx_v1.11.3_linux_arm64v8.tar.gz
 
 # decompress it and delete file
-tar -xvzf mediamtx_v1.11.3_linux_arm64v8.tar.gz &
+tar -xvzf mediamtx_v1.11.3_linux_arm64v8.tar.gz
 rm mediamtx_v1.11.3_linux_arm64v8.tar.gz
 
 # Create a copy of the configuration
@@ -29,6 +31,7 @@ sudo mkdir -p /etc/mediamtx
 sudo mv mediamtx.yml /etc/mediamtx/
 
 # set mediamtx as a systemd service (this will help with turning it on/off)
+echo "Setting up mediamtx as a service"
 sudo tee /etc/systemd/system/mediamtx.service >/dev/null <<EOF
 [Unit]
 Description=MediaMTX Streaming Server
@@ -37,9 +40,9 @@ After=network.target
 [Service]
 ExecStart=/usr/local/bin/mediamtx /etc/mediamtx/mediamtx.yml
 Restart=always
-User=pi
-Group=pi
-WorkingDirectory=/home/pi
+User=${user}
+Group=${user}
+WorkingDirectory=/home/${user}
 StandardOutput=journal
 StandardError=journal
 
@@ -51,3 +54,14 @@ EOF
 cd ../
 
 rm -r tmp-mediamtx
+
+echo "Reload systemctl daemon"
+sudo systemctl daemon-reload
+echo "Enabling mediamtx"
+sudo systemctl enable mediamtx
+echo "Starting mediamtx service"
+sudo systemctl start mediamtx
+
+echo "DONE"
+
+echo "Run ( sudo systemctl status mediamtx ) to check the status of the service"
