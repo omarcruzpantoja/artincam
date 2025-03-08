@@ -1,19 +1,3 @@
-## MediaMTX
-
-Why? MediaMTX is utilized to create the RTSP stream which kerberos can use to get live view.
-
-### Setup
-
-You can do it the "easy" way and use the script for setup
-
-```bash
-chmod +x mediamtx-setup.sh
-sudo mediamtx-setup.sh
-```
-
-Alternatively you can do it step by step
-
-```bash
 # create temporary directory
 tmp=tmp-mediamtx
 
@@ -43,13 +27,7 @@ sudo chmod +x /usr/local/bin/mediamtx
 sudo mkdir -p /etc/mediamtx
 # move the config file
 sudo mv mediamtx.yml /etc/mediamtx/
-```
 
-Up until here you should be able to now run mediamtx as an executable with `mediamtx /etc/mediamtx.yml`. Note: this command requieres the configuration file path to be provided
-
-If you wish to run MediaMTX as a servioce, use the following command
-
-```bash
 # set mediamtx as a systemd service (this will help with turning it on/off)
 sudo tee /etc/systemd/system/mediamtx.service >/dev/null <<EOF
 [Unit]
@@ -69,12 +47,7 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
-sudo systemctl daemon-reload
-sudo systemctl enable mediamtx
-sudo systemctl start mediamtx
+# go to previous working directory and delete tmp folder
+cd ../
 
-```
-
-After this mediamtx should be running and you can verify its status with `sudo systemctl status mediamtx`.
-
-Additionally you can stop the service with `sudo systemctl stop mediamtx` or restart it with `sudo systemctl restart mediamtx` .
+rm -r tmp-mediamtx
