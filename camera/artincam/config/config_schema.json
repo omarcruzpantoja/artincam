@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "camera": {
+      "$ref": "#/definitions/Camera"
+    }
+  },
+  "definitions": {
+    "Camera": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "$ref": "#/definitions/Resolution"
+        },
+        "framerate": {
+          "type": "integer",
+          "default": 24,
+          "minimum": 1
+        },
+        "bitrate": {
+          "type": "integer",
+          "bitrate": 8,
+          "minimum": 1
+        },
+        "recording_time": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1
+        },
+        "rest_time": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0
+        },
+        "unit_time": {
+          "type": "string",
+          "enum": ["s", "m", "h", "d"],
+          "default": "m"
+        },
+        "output_dir": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "pi_id": {
+          "type": "string"
+        }
+      },
+      "required": ["output_dir", "location", "pi_id"]
+    },
+    "Resolution": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "integer",
+          "default": 1920,
+          "minimum": 1
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1080
+        }
+      },
+      "required": ["height", "width"]
+    }
+  },
+  "required": ["camera"]
+}
