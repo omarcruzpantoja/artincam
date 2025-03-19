@@ -10,6 +10,10 @@
     "Camera": {
       "type": "object",
       "properties": {
+        "mode": {
+          "type": "string",
+          "enums": ["stream", "video", "picture"]
+        },
         "resolution": {
           "$ref": "#/definitions/Resolution"
         },

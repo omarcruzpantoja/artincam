@@ -1,5 +1,6 @@
 {
   "camera": {
+    "mode": "video",
     "resolution": {
       "height": 1920,
       "width": 1080
@@ -13,6 +14,6 @@
     "logs_dir": "var",
     "output_dir": "recordings",
     "location": "gnv_fl_usa",
-    "pi_id": 1
+    "pi_id": "1"
   }
 }

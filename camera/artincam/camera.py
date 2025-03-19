@@ -1,6 +1,7 @@
 import json
 import time
 import pathlib
+# from jsonschema import validate
 
 # import setproctitle
 from enum import StrEnum
@@ -33,7 +34,7 @@ class Camera:
     _time_unit: TimeUnit
     _output_dir: str
 
-    def __init__(self, config_path: str = "config.json"):
+    def __init__(self, config_path: str = "config/config.json"):
         # bit rate data
         # 33554432 (33MB)- 30MB per 10s video
         # 16777216 (16MB)- 20MB per 10s video
@@ -56,9 +57,19 @@ class Camera:
 
     def run(self):
         # loop forever
-        # self.picam.start_encoder(self.encoder)
-        # self.picam.start()
-        try:
+        if self._config["mode"] == "picture":
+            self.picam.start()
+            while True:
+                # Capture the image and save to a file
+                output_file = self._get_file_name()
+                self.picam.capture_file(output_file)
+                print(f"Picture taken, storing in ({output_file}")
+                print(f"Resting...({self._rest_time})")
+                time.sleep(self._rest_time)
+
+        elif self._config["mode"] == "video":
+            self.picam.start_encoder(self.encoder)
+            self.picam.start()
             while True:
                 output_file = self._get_file_name()
                 self.file_output.fileoutput = output_file
@@ -75,12 +86,13 @@ class Camera:
                 print(f"Resting...({self._rest_time})")
                 time.sleep(self._rest_time)
 
-        except:
-            self.picam.stop()
-
     def _validate_and_set_config(self, path: str):
         # TODO: add error handling if file doesnt exist
         self._config = json.loads(open(path, "r").read())
+        # config_schema = json.loads(
+        # open(ROOT_DIRECTORY / "config/config_schema.json", "r").read()
+        # )
+        # validate(self._config, config_schema)
         camera_config: dict = self._config["camera"]
 
         # unit used to define video recording time, default is minutes (m)
