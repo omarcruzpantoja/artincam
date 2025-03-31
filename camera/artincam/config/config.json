@@ -2,18 +2,20 @@
   "camera": {
     "mode": "video",
     "resolution": {
-      "height": 1920,
-      "width": 1080
+      "height": 1640,
+      "width": 1232
     },
-    "framerate": 30,
-    "bitrate": 16777216,
+    "images_per_cycle": 5,
+    "image_rest_time": 10,
+    "image_time_unit": "s",
+    "framerate": 15,
+    "bitrate": 8388608,
     "recording_time": 10,
-    "rest_time": 3,
+    "cycle_rest_time": 3,
     "unit_time": "s",
-
     "logs_dir": "var",
-    "output_dir": "recordings",
-    "location": "gnv_fl_usa",
-    "pi_id": "1"
+    "output_dir": "assets",
+    "location": "oqoiweoqiwjeoiqweoiqwueoiquwoiequwoiequwoeuqwoieuqowieuqoiweuoiqwueoiqw",
+    "pi_id": 1
   }
 }

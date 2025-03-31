@@ -12,7 +12,7 @@
       "properties": {
         "mode": {
           "type": "string",
-          "enums": ["stream", "video", "picture"]
+          "enum": ["stream", "video", "image", "image/video"]
         },
         "resolution": {
           "$ref": "#/definitions/Resolution"
@@ -24,7 +24,6 @@
         },
         "bitrate": {
           "type": "integer",
-          "bitrate": 8,
           "minimum": 1
         },
         "recording_time": {
@@ -32,7 +31,7 @@
           "default": 10,
           "minimum": 1
         },
-        "rest_time": {
+        "cycle_rest_time": {
           "type": "integer",
           "default": 0,
           "minimum": 0
@@ -46,13 +45,31 @@
           "type": "string"
         },
         "location": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[a-z-0-9]+$",
+          "description": "Location must contain only lowercase letters and hyphens(-) and max of 30 characters.",
+          "maxLength": 30
         },
         "pi_id": {
-          "type": "string"
+          "type": ["string", "integer"]
+        },
+        "images_per_cycle": {
+          "type": "integer",
+          "default": 5,
+          "minimum": 1
+        },
+        "image_rest_time": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0
+        },
+        "image_time_unit": {
+          "type": "string",
+          "enum": ["s", "m", "h", "d"],
+          "default": "s"
         }
       },
-      "required": ["output_dir", "location", "pi_id"]
+      "required": ["mode", "resolution", "output_dir", "location", "pi_id"]
     },
     "Resolution": {
       "type": "object",
