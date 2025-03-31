@@ -1,3 +1,5 @@
+# DEPRECATED, no longer maintained
+
 ## MediaMTX
 
 Why? MediaMTX is utilized to create the RTSP stream which kerberos can use to get live view.

@@ -1,4 +1,4 @@
-# Kerberos Setup
+# Kerberos Setup (DEPRECATED, no longer maintained)
 
 ## Install docker
 
