@@ -2,7 +2,6 @@ import json
 import logging
 import pathlib
 import time
-
 from enum import StrEnum
 from datetime import datetime
 
@@ -39,6 +38,10 @@ class Camera:
     _time_unit: TimeUnit
     _output_dir: str
 
+    picam: Picamera2
+    encoder: H264Encoder
+    ffmpeg_output: FfmpegOutput
+
     def __init__(self, config_path: str = "config/config.json"):
         # bit rate data
         # 33554432 (33MB)- 30MB per 10s video
@@ -50,19 +53,18 @@ class Camera:
         # Resolution
         # 1640 x 1232
         # Note: 1920x1080 cannot be used, it limits the FoV of the camera. Not good.
-
         self.picam = Picamera2()
         self._validate_and_set_config(ROOT_DIRECTORY / config_path)
 
     def setup(self):
+        frame = 1000000 / self._framerate
         video_config = self.picam.create_video_configuration(
             main={"size": (self._height, self._width)},
-            controls={"FrameRate": self._framerate},
+            controls={"FrameDurationLimits": (frame, frame)},
         )
         self.picam.configure(video_config)
         self.encoder = H264Encoder(bitrate=self._bitrate, framerate=self._framerate)
-
-        self.ffmpeg_output = FfmpegOutput()
+        self.ffmpeg_output = FfmpegOutput("")
         self.encoder.output = [self.ffmpeg_output]
 
     def run(self):
@@ -74,14 +76,10 @@ class Camera:
                     self._capture_image()
 
             case "video":
-                self.picam.start_encoder(self.encoder)
-
                 while True:
                     self._capture_video()
 
             case "image/video":
-                self.picam.start_encoder(self.encoder)
-
                 while True:
                     for _ in range(self._images_per_cycle):
                         self._capture_image()
@@ -98,20 +96,14 @@ class Camera:
     def _capture_video(self):
         output_file = self._get_file_name()
         self.ffmpeg_output.output_filename = output_file
+        self.picam.start_encoder(self.encoder)
 
-        # start video
         logger.debug(f"Recording started ({self._recording_time}s)")
         # sleep is needed for it to continue recording
         time.sleep(self._recording_time)
-
         # once time is finished, stop recording
-        logger.debug(f"Recording Finished and stored ({output_file})")
-        logger.debug(f"Cycle Resting...({self._cycle_rest_time})")
+        logger.debug(f"Recording Finished and stored ({output_file})\Cycle Resting...({self._cycle_rest_time})")
         time.sleep(self._cycle_rest_time)
-        # TODO: convert video from h264 to mkv. try to use ffmpeg command as part of the
-        # file generated so that we dont need to delete a file? or maybe this does it automatically
-        # command used that worked
-        # ffmpeg -i (FILENAME) -c:v copy -c:a copy -map_metadata 0 (FILEOUT.mkv)
 
     def _validate_and_set_config(self, path: str):
         self._config = json.loads(open(path, "r").read())

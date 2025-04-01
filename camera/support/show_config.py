@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+import argparse
 import json
 import pathlib
-import argparse
 
 
 def get_nested_value(data, key_path):

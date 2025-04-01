@@ -2,7 +2,8 @@
 
 import json
 import pathlib
-from jsonschema import validate, ValidationError
+
+from jsonschema import ValidationError, validate
 
 
 def load_json(file_path):
