@@ -1,17 +1,18 @@
 import json
-import time
+import logging
 import pathlib
-# from jsonschema import validate
+import time
 
 from enum import StrEnum
 from datetime import datetime
 
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
-from picamera2.outputs import FileOutput
+from picamera2.outputs import FfmpegOutput
 from .logger import logger
 
 ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent
+logger.setLevel(logging.DEBUG)
 
 
 class TimeUnit(StrEnum):
@@ -23,6 +24,7 @@ class TimeUnit(StrEnum):
 
 class Camera:
     _config: dict
+    _mode: str
 
     _width: int
     _height: int
@@ -51,27 +53,22 @@ class Camera:
 
         self.picam = Picamera2()
         self._validate_and_set_config(ROOT_DIRECTORY / config_path)
-        pass
 
     def setup(self):
         video_config = self.picam.create_video_configuration(
             main={"size": (self._height, self._width)},
             controls={"FrameRate": self._framerate},
         )
-        camera_config = self.picam.create_still_configuration(
-            main={"size": (self._height, self._width)},
-        )
         self.picam.configure(video_config)
-        self.picam.configure(camera_config)
         self.encoder = H264Encoder(bitrate=self._bitrate, framerate=self._framerate)
 
-        self.file_output = FileOutput()
-        self.encoder.output = [self.file_output]
+        self.ffmpeg_output = FfmpegOutput()
+        self.encoder.output = [self.ffmpeg_output]
 
     def run(self):
         # loop forever
         self.picam.start()
-        match self._config["mode"]:
+        match self._mode:
             case "image":
                 while True:
                     self._capture_image()
@@ -100,23 +97,30 @@ class Camera:
 
     def _capture_video(self):
         output_file = self._get_file_name()
-        self.file_output.fileoutput = output_file
+        self.ffmpeg_output.output_filename = output_file
+
         # start video
-        # logger.debug(f"Recording started ({self._recording_time}s)")
+        logger.debug(f"Recording started ({self._recording_time}s)")
         # sleep is needed for it to continue recording
         time.sleep(self._recording_time)
 
         # once time is finished, stop recording
         logger.debug(f"Recording Finished and stored ({output_file})")
         logger.debug(f"Cycle Resting...({self._cycle_rest_time})")
+        time.sleep(self._cycle_rest_time)
+        # TODO: convert video from h264 to mkv. try to use ffmpeg command as part of the
+        # file generated so that we dont need to delete a file? or maybe this does it automatically
+        # command used that worked
+        # ffmpeg -i (FILENAME) -c:v copy -c:a copy -map_metadata 0 (FILEOUT.mkv)
 
     def _validate_and_set_config(self, path: str):
         self._config = json.loads(open(path, "r").read())
         camera_config: dict = self._config["camera"]
 
+        self._mode = camera_config["mode"]
         # unit used to define video recording time, default is minutes (m)
         unit_time_multiplier = self._set_time_unit_conversion(camera_config.get("unit_time", TimeUnit.MINUTE))
-        image_unit_mult = self._set_time_unit_conversion(camera_config.get("image_time_unit", 0, TimeUnit.MINUTE))
+        image_unit_mult = self._set_time_unit_conversion(camera_config.get("image_time_unit", TimeUnit.MINUTE))
 
         # ----- IMAGE SETUP -----
         # how many images to be taken per cycle (only used in image/video mode)
@@ -176,7 +180,7 @@ class Camera:
                 # 24 hours a day, 60 minutes in an hour, each minute has 60 seconds = 24 * 60 * 60
                 return 86400
 
-    def _get_file_name(self, image=True) -> str:
+    def _get_file_name(self, image=False) -> str:
         """Defines the name of the file generated for the video."""
 
         # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
@@ -186,6 +190,7 @@ class Camera:
         # The complete filename however would look like:
         # 1_sj_pr_usa_20_02_2025_06_03_10.h264
         # Assuming _pi_id = 1, _location = sj_pr_usa
-        file_stride = "jpg" if image else "h264"
+        file_stride = "jpg" if image else "mkv"
         file_name = f"{self._pi_id}_{self._location}_{timestamp}.{file_stride}"
-        return f"{ROOT_DIRECTORY}{self._output_dir}{file_name}"
+        # TODO use pathlib and ensure output dir exists
+        return f"{ROOT_DIRECTORY}/{self._output_dir}/{file_name}"
