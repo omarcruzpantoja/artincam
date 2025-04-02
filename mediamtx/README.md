@@ -4,6 +4,8 @@
 
 Why? MediaMTX is utilized to create the RTSP stream which kerberos can use to get live view.
 
+Note: we first need to update the config ( mediamtx.yaml ) to have the correct pathing for the camera.py file. This might change, we may make it more smooth when setting up the entire project.
+
 ### Setup
 
 You can do it the "easy" way and use the script for setup
@@ -18,6 +20,7 @@ Alternatively you can do it step by step
 ```bash
 # create temporary directory
 tmp=tmp-mediamtx
+user=$(whoami)
 
 # create directory
 mkdir ${tmp}
@@ -61,9 +64,9 @@ After=network.target
 [Service]
 ExecStart=/usr/local/bin/mediamtx /etc/mediamtx/mediamtx.yml
 Restart=always
-User=pi
-Group=pi
-WorkingDirectory=/home/pi
+User=${user}
+Group=${user}
+WorkingDirectory=/home/${user}
 StandardOutput=journal
 StandardError=journal
 
