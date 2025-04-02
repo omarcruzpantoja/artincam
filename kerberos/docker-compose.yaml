@@ -1,6 +1,6 @@
 services:
   kerberos-agent:
-    container_name: arctincam # must be unique per agent
+    container_name: artincam # must be unique per agent
     image: "kerberos/agent:v3.3.8"
     ports:
       # The first number (before ":") is the port on your host machine.
