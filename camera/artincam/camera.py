@@ -2,7 +2,6 @@ import json
 import logging
 import pathlib
 import time
-import uuid6
 from enum import StrEnum
 from datetime import datetime
 
