@@ -1,0 +1,13 @@
+[Unit]
+Description=Artincam Camera Service
+After=network.target
+
+[Service]
+User=artincam-pi
+WorkingDirectory=/opt/artincam/
+ExecStart=uv run /opt/artincam/camera/main.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
