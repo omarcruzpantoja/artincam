@@ -13,4 +13,4 @@ dev = ["isort>=6.0.1", "ruff>=0.11.2"]
 line-length = 120
 
 [tool.uv]
-python-preferences = "only-system"
+python-preference = "only-system"
