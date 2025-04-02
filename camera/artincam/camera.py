@@ -23,6 +23,32 @@ class TimeUnit(StrEnum):
     DAY = "d"
 
 
+class FileCounter:
+    COUNTER_FILE_PATH = ROOT_DIRECTORY / "config/counter.txt"
+
+    counter: int
+
+    def __init__(self):
+        self._init_counter()
+
+    def _init_counter(self):
+        """Reads the counter value from the file. If the file doesn't exist, returns 0."""
+        if not self.COUNTER_FILE_PATH.exists():
+            self.counter = 0
+
+        with open(self.COUNTER_FILE_PATH, "r") as file:
+            try:
+                self.counter = int(file.read().strip())
+            except ValueError:
+                self.counter = 0
+
+    def increment_counter(self):
+        """Increments the counter and updates the file."""
+        self.counter += 1
+        with open(self.COUNTER_FILE_PATH, "w") as file:
+            file.write(str(self.counter))
+
+
 class Camera:
     _config: dict
     _mode: str
@@ -43,6 +69,7 @@ class Camera:
     picam: Picamera2
     encoder: H264Encoder
     ffmpeg_output: FfmpegOutput
+    file_counter: FileCounter
 
     def __init__(self, config_path: str = "config/config.json"):
         # bit rate data
@@ -56,10 +83,11 @@ class Camera:
         # 1640 x 1232
         # Note: 1920x1080 cannot be used, it limits the FoV of the camera. Not good.
         self.picam = Picamera2()
+        self.file_counter = FileCounter()
         self._validate_and_set_config(ROOT_DIRECTORY / config_path)
 
     def setup(self):
-        frame_duration = 1000000 / self._framerate
+        frame_duration = 1000000 // self._framerate
         video_config = self.picam.create_video_configuration(
             main={"size": (self._height, self._width)},
             controls={"FrameDurationLimits": (frame_duration, frame_duration)},
@@ -91,6 +119,7 @@ class Camera:
         # Capture the image and save to a file
         output_file = self._get_file_name(image=True)
         self.picam.capture_file(output_file)
+        self.file_counter.increment_counter()
         logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
         self._sleep(self._image_rest_time)
 
@@ -103,6 +132,7 @@ class Camera:
         self._sleep(self._recording_time)
         # once time is finished, stop recording
         self.picam.stop_encoder()
+        self.file_counter.increment_counter()
         logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
         self._sleep(self._cycle_rest_time)
 
@@ -184,7 +214,14 @@ class Camera:
         # 1_sj-pr-usa-20-02-2025-06-03-10_UUIDV6.mkv
         # Assuming _pi_id = 1, _location = sj-pr-usa
         file_stride = "jpg" if image else "mkv"
-        file_name = f"{self._pi_id}_{self._location}_{timestamp}_{uuid6.uuid6()}.{file_stride}"
+        file_name = "{pi_id}_{location}_{timestamp}_{unique_id}.{file_stride}".format(
+            pi_id=self._pi_id,
+            location=self._location,
+            timestamp=timestamp,
+            unique_id=f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}",
+            file_stride=file_stride,
+        )
+        file_name = f"{self._pi_id}_{self._location}_{timestamp}_{str(self._pi_id).zfill(4)}.{file_stride}"
         return str(self._output_path / file_name)
 
     def _sleep(self, seconds: float):
