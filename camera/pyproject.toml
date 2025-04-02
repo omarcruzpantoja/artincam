@@ -9,6 +9,7 @@ dependencies = [
     "jsonschema>=4.23.0",
     "picamera2>=0.3.25",
     "pidng>=4.0.9",
+    "uuid6>=2024.7.10",
 ]
 
 [dependency-groups]

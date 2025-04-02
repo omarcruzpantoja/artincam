@@ -2,8 +2,10 @@ import json
 import logging
 import pathlib
 import time
+import uuid6
 from enum import StrEnum
 from datetime import datetime
+
 
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
@@ -36,7 +38,7 @@ class Camera:
     _recording_time: int
     _cycle_rest_time: int
     _time_unit: TimeUnit
-    _output_dir: str
+    _output_path: pathlib.Path
 
     picam: Picamera2
     encoder: H264Encoder
@@ -57,13 +59,13 @@ class Camera:
         self._validate_and_set_config(ROOT_DIRECTORY / config_path)
 
     def setup(self):
-        frame = 1000000 / self._framerate
+        frame_duration = 1000000 / self._framerate
         video_config = self.picam.create_video_configuration(
             main={"size": (self._height, self._width)},
-            controls={"FrameDurationLimits": (frame, frame)},
+            controls={"FrameDurationLimits": (frame_duration, frame_duration)},
         )
         self.picam.configure(video_config)
-        self.encoder = H264Encoder(bitrate=self._bitrate, framerate=self._framerate)
+        self.encoder = H264Encoder(bitrate=self._bitrate, framerate=self._framerate, enable_sps_framerate=True)
         self.ffmpeg_output = FfmpegOutput("")
         self.encoder.output = [self.ffmpeg_output]
 
@@ -89,21 +91,20 @@ class Camera:
         # Capture the image and save to a file
         output_file = self._get_file_name(image=True)
         self.picam.capture_file(output_file)
-        logger.debug(f"Image taken, storing in ({output_file})")
-        logger.debug(f"Image Resting...({self._image_rest_time})")
-        time.sleep(self._image_rest_time)
+        logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
+        self._sleep(self._image_rest_time)
 
     def _capture_video(self):
         output_file = self._get_file_name()
         self.ffmpeg_output.output_filename = output_file
+        logger.debug(f"Starting Recording ({self._recording_time}s)")
         self.picam.start_encoder(self.encoder)
-
-        logger.debug(f"Recording started ({self._recording_time}s)")
         # sleep is needed for it to continue recording
-        time.sleep(self._recording_time)
+        self._sleep(self._recording_time)
         # once time is finished, stop recording
-        logger.debug(f"Recording Finished and stored ({output_file})\Cycle Resting...({self._cycle_rest_time})")
-        time.sleep(self._cycle_rest_time)
+        self.picam.stop_encoder()
+        logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
+        self._sleep(self._cycle_rest_time)
 
     def _validate_and_set_config(self, path: str):
         self._config = json.loads(open(path, "r").read())
@@ -150,8 +151,8 @@ class Camera:
         self._pi_id = camera_config["pi_id"]
 
         # where to store recordings
-        # TODO: if directory does not exist, create it
-        self._output_dir = camera_config["output_dir"]
+        self._output_path = pathlib.Path(f"{ROOT_DIRECTORY}/{camera_config['output_dir']}")
+        self._output_path.mkdir(parents=True, exist_ok=True)
 
     def _set_time_unit_conversion(self, unit: TimeUnit):
         """Depending on the file config's time unit, define the multiplier to convert whatever unit
@@ -176,13 +177,16 @@ class Camera:
         """Defines the name of the file generated for the video."""
 
         # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
-        # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20_02_2025_06_03_10
-        timestamp = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+        # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20-02-2025-06-03-10
+        timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
         # The complete filename however would look like:
-        # 1_sj_pr_usa_20_02_2025_06_03_10.h264
-        # Assuming _pi_id = 1, _location = sj_pr_usa
+        # 1_sj-pr-usa-20-02-2025-06-03-10_UUIDV6.mkv
+        # Assuming _pi_id = 1, _location = sj-pr-usa
         file_stride = "jpg" if image else "mkv"
-        file_name = f"{self._pi_id}_{self._location}_{timestamp}.{file_stride}"
-        # TODO use pathlib and ensure output dir exists
-        return f"{ROOT_DIRECTORY}/{self._output_dir}/{file_name}"
+        file_name = f"{self._pi_id}_{self._location}_{timestamp}_{uuid6.uuid6()}.{file_stride}"
+        return str(self._output_path / file_name)
+
+    def _sleep(self, seconds: float):
+        if seconds > 0:
+            time.sleep(seconds)
