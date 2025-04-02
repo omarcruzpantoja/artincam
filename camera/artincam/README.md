@@ -10,8 +10,8 @@ This project uses the Raspberry Pi Camera Module with picamera2 to capture image
 |------------------|-------------|
 | mode           | Determines the operation mode: image, video, or image/video. |
 | output_dir     | Directory where captured images and videos are stored. |
-| location       | Describes the camera's physical location. |
-| pi_id          | Unique identifier for the Raspberry Pi. |
+| location       | Describes the camera's physical location. (can only have lower case letters and hyphens)|
+| pi_id          | Unique identifier for the Raspberry Pi. (integer from 0 to 9999) |
 
 ### Image Capture Settings
 | Parameter           | Description |
@@ -41,13 +41,13 @@ This project uses the Raspberry Pi Camera Module with picamera2 to capture image
 Each recorded file follows the format:
 
 ```shell
-{pi_id}_{location}_{timestamp}.{ext}
+{pi_id}_{location}_{timestamp}_{unique_identifer}.{ext}
 ```
 
 Example:
 
 ```shell
-1_sj_pr_usa_20_02_2025_06_03_10.h264
+1_sj-pr-usa_20-02-2025-06-03-10_0012-0000000012.h264
 ```
 
 Where:
@@ -56,17 +56,19 @@ Where:
 
 * `location` → Location of the Raspberry Pi
 
-* `timestamp` → Capture timestamp in dd_mm_yyyy_hh_mm_ss
+* `timestamp` → Capture timestamp in dd-mm-yyyy-hh-mm-ss
 
-* `ext` → jpg for images, h264 for videos
+* `unique identifier` → Uses pi_id and a counter to create identifier with 0 padding (4 on pi_id and 10 on counter)
+
+* `ext` → jpg for images, mkv for videos
 
 ## Running the Camera
 
-Place your configuration file in config/config.json.
+Place your configuration file in config/config.json (there is one already by default).
 
 Run the script:
 
-python3 camera_script.py
+python3 main.py
 
 ## Notes
 
