@@ -2,13 +2,15 @@
 import json
 import pathlib
 import os
+import subprocess
 
 import psutil
 from colorama import init, Fore, Style
-from tqdm import tqdm
 
 # Initialize colorama for cross-platform support
 init(autoreset=True)
+
+CAMERA_DIRECTORY = pathlib.Path(__file__).resolve().parent.parent
 
 
 class Color:
@@ -103,32 +105,25 @@ class USBDeviceManager:
         """
         if selected_device:
             print(f"{Color.cyan('🚀 Transferring data to:')} {selected_device['mount_point']}")
-            assets_dir = pathlib.Path("/home/omarcruz/Documents/research/arctincam/camera/artincam/assets/")
-            pi_id = self._get_json_config()["camera"]["pi_id"]
+            config = self._get_json_config()
+            pi_id = config["camera"]["pi_id"]
+            output_dir = config["camera"]["ourput_dir"]
+            assets_dir = pathlib.Path(f"{CAMERA_DIRECTORY}/artincam/{output_dir}/")
+            assets_dir.mkdir(parents=True, exist_ok=True)
             final_transfer_path = pathlib.Path(selected_device["mount_point"] + "/data/" + str(pi_id) + "/")
             final_transfer_path.mkdir(parents=True, exist_ok=True)
+
             for file in sorted(filter(lambda f: f.is_file(), assets_dir.iterdir()))[:-2]:
                 self._transfer_file(file, final_transfer_path)
 
     def _transfer_file(self, source, destination_directory):  # 4MB buffer
         # Create the destination file path by combining the directory and filename
         destination = os.path.join(destination_directory, os.path.basename(source))
-
-        total_size = os.path.getsize(source)
-
-        with (
-            open(source, "rb") as src,
-            open(destination, "wb") as dest,
-            tqdm(total=total_size, unit="B", unit_scale=True, desc="Transferring") as progress,
-        ):
-            while chunk := src.read(4194304):  # 4MB ( 1024 * 1024 * 4 )
-                dest.write(chunk)
-                progress.update(len(chunk))
-
-        os.remove(source)
+        subprocess.run(
+            ["rsync", "--progress", "--remove-source-files", source, destination], check=True
+        )  # Blocks until the rsync process completes
 
     def _get_json_config(self):
-        CAMERA_DIRECTORY = pathlib.Path(__file__).resolve().parent.parent
         return json.load(open(CAMERA_DIRECTORY / "artincam" / "config" / "config.json", "r"))
 
 
