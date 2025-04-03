@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=artincam-pi
 WorkingDirectory=/opt/artincam/
-ExecStart=uv run /opt/artincam/camera/main.py
+ExecStart=/opt/artincam/camera/.venv/bin/python /opt/artincam/camera/main.py
 Restart=on-failure
 RestartSec=10
 
