@@ -3,6 +3,7 @@ import json
 import pathlib
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import psutil
 from colorama import init, Fore, Style
@@ -44,8 +45,11 @@ class Color:
 
 
 class USBDeviceManager:
-    def __init__(self):
+    num_threads: int
+
+    def __init__(self, threads=1):
         self._find_usb_mount_points()
+        self.num_threads = threads
 
     def choose_device(self):
         """
@@ -107,14 +111,25 @@ class USBDeviceManager:
             print(f"{Color.cyan('🚀 Transferring data to:')} {selected_device['mount_point']}")
             config = self._get_json_config()
             pi_id = config["camera"]["pi_id"]
-            output_dir = config["camera"]["ourput_dir"]
+            output_dir = config["camera"]["output_dir"]
             assets_dir = pathlib.Path(f"{CAMERA_DIRECTORY}/artincam/{output_dir}/")
             assets_dir.mkdir(parents=True, exist_ok=True)
             final_transfer_path = pathlib.Path(selected_device["mount_point"] + "/data/" + str(pi_id) + "/")
             final_transfer_path.mkdir(parents=True, exist_ok=True)
 
-            for file in sorted(filter(lambda f: f.is_file(), assets_dir.iterdir()))[:-2]:
-                self._transfer_file(file, final_transfer_path)
+            files_to_transfer = sorted(filter(lambda f: f.is_file(), assets_dir.iterdir()))[:-2]
+
+            with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
+                futures = [
+                    executor.submit(self._transfer_file, file, final_transfer_path) for file in files_to_transfer
+                ]
+
+                # Optional: handle completion or errors
+                for future in as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        print(f"Error during file transfer: {e}")
 
     def _transfer_file(self, source, destination_directory):  # 4MB buffer
         # Create the destination file path by combining the directory and filename
@@ -128,7 +143,7 @@ class USBDeviceManager:
 
 
 if __name__ == "__main__":
-    usb_manager = USBDeviceManager()
+    usb_manager = USBDeviceManager(threads=2)
 
     selected_device = usb_manager.choose_device()
     if selected_device:
