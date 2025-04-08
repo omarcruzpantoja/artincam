@@ -3,7 +3,9 @@ import json
 import pathlib
 import os
 import subprocess
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+import time
+from pynput import keyboard as pynput_keyboard
 
 import psutil
 from colorama import init, Fore, Style
@@ -45,11 +47,11 @@ class Color:
 
 
 class USBDeviceManager:
-    num_threads: int
+    _stop_event: threading.Event
 
-    def __init__(self, threads=1):
+    def __init__(self):
         self._find_usb_mount_points()
-        self.num_threads = threads
+        self._stop_event = threading.Event()
 
     def choose_device(self):
         """
@@ -105,7 +107,7 @@ class USBDeviceManager:
 
     def perform_data_transfer(self, selected_device):
         """
-        Placeholder method for performing the data transfer to the selected device.
+        Method for performing the data transfer to the selected device.
         """
         if selected_device:
             print(f"{Color.cyan('🚀 Transferring data to:')} {selected_device['mount_point']}")
@@ -117,21 +119,29 @@ class USBDeviceManager:
             final_transfer_path = pathlib.Path(selected_device["mount_point"] + "/data/" + str(pi_id) + "/")
             final_transfer_path.mkdir(parents=True, exist_ok=True)
 
-            files_to_transfer = sorted(filter(lambda f: f.is_file(), assets_dir.iterdir()))[:-2]
+            transfer_count = 0
+            start_time = time.time()
+            interrupted = False
 
-            with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
-                futures = [
-                    executor.submit(self._transfer_file, file, final_transfer_path) for file in files_to_transfer
-                ]
+            for file in sorted(filter(lambda f: f.is_file(), assets_dir.iterdir()))[:-2]:
+                if self._stop_event.is_set():
+                    interrupted = True
+                    break
+                self._transfer_file(file, final_transfer_path)
+                transfer_count += 1
+                print(Color.green(f"✅ Transferred: {file.name}\n"))
 
-                # Optional: handle completion or errors
-                for future in as_completed(futures):
-                    try:
-                        future.result()
-                    except Exception as e:
-                        print(f"Error during file transfer: {e}")
+            elapsed_time = time.time() - start_time
+            transfer_message = "⚠️  Transfer was interrupted." if interrupted else "📦 Transfer complete."
+            summary = f"{transfer_message} {transfer_count} file(s) transferred in {elapsed_time:.2f} seconds (avg: {(elapsed_time / transfer_count):.2f} s per file)."
+
+            print(Color.cyan(summary))
+            self._stop_event.set()
 
     def _transfer_file(self, source, destination_directory):  # 4MB buffer
+        """
+        Transfer source file to destination and delete file once completed.
+        """
         # Create the destination file path by combining the directory and filename
         destination = os.path.join(destination_directory, os.path.basename(source))
         subprocess.run(
@@ -141,13 +151,67 @@ class USBDeviceManager:
     def _get_json_config(self):
         return json.load(open(CAMERA_DIRECTORY / "artincam" / "config" / "config.json", "r"))
 
+    def _key_listener(self):
+        """
+        Listens for the 'q' key being held for 3 seconds to trigger exit.
+        """
+        hold_key = "q"
+        held = False
+        hold_start = None
+
+        def on_press(key):
+            nonlocal hold_start, held
+
+            try:
+                if key.char == hold_key:
+                    held = True
+                    if hold_start is None:
+                        hold_start = time.time()
+            except AttributeError:
+                pass  # ignore special keys
+
+        def on_release(key):
+            nonlocal hold_start, held
+
+            try:
+                if key.char == hold_key:
+                    held = False
+                    hold_start = None
+            except AttributeError:
+                pass
+
+        print(Color.cyan("🔍 Listening for 'q' hold (3 seconds) to gracefully exit..."))
+
+        with pynput_keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+            while not self._stop_event.is_set():
+                if held and hold_start:
+                    if time.time() - hold_start >= 3:
+                        print(
+                            Color.red(
+                                "\n'q' held for 3 seconds. Gracefully exiting: once the current file is finished transfering the program will stop."
+                            )
+                        )
+                        self._stop_event.set()
+                        break
+                time.sleep(0.20)
+
+            listener.stop()
+
 
 if __name__ == "__main__":
-    usb_manager = USBDeviceManager(threads=2)
+    usb_manager = USBDeviceManager()
 
     selected_device = usb_manager.choose_device()
     if selected_device:
         # Perform the data transfer with the selected device
-        usb_manager.perform_data_transfer(selected_device)
+        transfer_thread = threading.Thread(target=usb_manager.perform_data_transfer, args=(selected_device,))
+        monitor_thread = threading.Thread(target=usb_manager._key_listener)
     else:
         print(Color.red("❌ No valid device selected."))
+        exit(-1)
+
+    transfer_thread.start()
+    monitor_thread.start()
+
+    transfer_thread.join()
+    monitor_thread.join()
