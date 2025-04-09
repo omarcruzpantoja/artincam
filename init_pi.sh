@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Update PI's packages to latest
+sudo apt update
+sudo apt upgrade
+
 # allow ssh service to turn on automatically on boot
 sudo touch /boot/ssh
 
