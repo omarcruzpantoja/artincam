@@ -1,0 +1,13 @@
+[Unit]
+Description=Artincam Camera Service
+After=network.target
+
+[Service]
+User=zacpi
+WorkingDirectory=/opt/artincam/
+ExecStart=/opt/artincam/camera/.venv/bin/python /opt/artincam/camera/main.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
