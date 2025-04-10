@@ -8,7 +8,7 @@
     "images_per_cycle": 5,
     "image_rest_time": 10,
     "image_time_unit": "s",
-    "framerate": 8,
+    "framerate": 5,
     "bitrate": 8388608,
     "recording_time": 600,
     "cycle_rest_time": 0,
