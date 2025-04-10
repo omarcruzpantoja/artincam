@@ -37,6 +37,23 @@ This project uses the Raspberry Pi Camera Module with picamera2 to capture image
 
 > Note: A resolution of 1920x1080 is not recommended as it limits the Field of View (FoV).
 
+## What is a "cycle"?
+Cycles only become relevant when doing image/video mode. The idea is that in each cycle the camera will take X pictures and then a video of length Y. Following a quick "summary" of how a cycle works. 
+
+
+1. for `images_per_cycle`
+   * take an image
+   * wait `image_rest_time`
+   * repeat... (until however many images are expected in a cycle)
+
+2. Once all images for a cycle have been captured, then a video will be recorded.
+
+3. The video will last `recording_time`
+
+4. After the video has been recorded, there will be a "sleep" time where nothing is done. This is defined by `cycle_rest_time`.
+
+5. Once the sleep is finished, the cycle has finished and it restarts from the top (step 1).
+
 ## File Naming Format
 Each recorded file follows the format:
 
@@ -68,7 +85,9 @@ Place your configuration file in config/config.json (there is one already by def
 
 Run the script:
 
-python3 main.py
+If you havent set up uv venv: `uv venv --system-site-packages` and `uv sync --all-extras`
+
+uv run main.py
 
 ## Notes
 

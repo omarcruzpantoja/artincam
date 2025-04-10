@@ -66,7 +66,13 @@ class USBDeviceManager:
             print(f"{Color.yellow(f'{idx + 1}.')} Device: {usb['device']}, Mount Point: {usb['mount_point']}")
 
         try:
-            choice = int(input(Color.white("Enter the number of the device you want to use: ")))
+            choice = int(
+                input(
+                    Color.white(
+                        f"From the listed devices, enter the number of the device you want to use (1-{len(self.usb_devices)}): "
+                    )
+                )
+            )
             if 1 <= choice <= len(self.usb_devices):
                 selected_device = self.usb_devices[choice - 1]
                 print(f"{Color.cyan('You selected:')} {selected_device['mount_point']}")
