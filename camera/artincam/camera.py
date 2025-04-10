@@ -1,6 +1,8 @@
 import json
 import logging
+import os
 import pathlib
+import shutil
 import time
 from enum import StrEnum
 from datetime import datetime
@@ -9,10 +11,13 @@ from datetime import datetime
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FfmpegOutput
+import psutil
+
 from .logger import logger
 
 ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent
 logger.setLevel(logging.DEBUG)
+one_GB = 2**30
 
 
 class TimeUnit(StrEnum):
@@ -221,7 +226,30 @@ class Camera:
             file_stride=file_stride,
         )
         file_name = f"{self._pi_id}_{self._location}_{timestamp}_{str(self._pi_id).zfill(4)}.{file_stride}"
-        return str(self._output_path / file_name)
+
+        # Automatically add data to usb stick if it can be found, otherwise save in the local disk
+        usb_mount_point = self._find_usb_mount_points()
+        if usb_mount_point and shutil.disk_usage(usb_mount_point).free > one_GB:
+            final_transfer_path = pathlib.Path(usb_mount_point + "/data/" + str(self._pi_id) + "/")
+        else:
+            final_transfer_path = self._output_path
+
+        final_transfer_path.mkdir(parents=True, exist_ok=True)
+
+        return str(final_transfer_path / file_name)
+
+    def _find_usb_mount_points(self):
+        """
+        Lists mounted filesystems that appear to be USB storage devices.
+        """
+        try:
+            partitions = psutil.disk_partitions(all=False)
+        except Exception:
+            return None
+
+        for p in partitions:
+            if p.device.startswith("/dev/sd") and p.mountpoint and os.path.exists(p.mountpoint):
+                return p.mountpoint
 
     def _sleep(self, seconds: float):
         if seconds > 0:

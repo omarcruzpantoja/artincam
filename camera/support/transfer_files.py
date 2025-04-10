@@ -2,6 +2,7 @@
 import json
 import pathlib
 import os
+import shutil
 import subprocess
 import threading
 import time
@@ -115,6 +116,7 @@ class USBDeviceManager:
         """
         Method for performing the data transfer to the selected device.
         """
+        one_GB = 2 * 30
         if selected_device:
             print(f"{Color.cyan('🚀 Transferring data to:')} {selected_device['mount_point']}")
             config = self._get_json_config()
@@ -127,18 +129,21 @@ class USBDeviceManager:
 
             transfer_count = 0
             start_time = time.time()
-            interrupted = False
+            interrupted = ""
 
             for file in sorted(filter(lambda f: f.is_file(), assets_dir.iterdir()))[:-2]:
+                available_space = shutil.disk_usage(selected_device["mount_point"]).free
                 if self._stop_event.is_set():
-                    interrupted = True
+                    interrupted = "⚠️  Transfer was interrupted."
                     break
+                elif available_space < file.stat().st_size or available_space < one_GB:
+                    interrupted = "❌ Not enough space on the selected USB device for transfer."
                 self._transfer_file(file, final_transfer_path)
                 transfer_count += 1
                 print(Color.green(f"✅ Transferred: {file.name}\n"))
 
             elapsed_time = time.time() - start_time
-            transfer_message = "⚠️  Transfer was interrupted." if interrupted else "📦 Transfer complete."
+            transfer_message = interrupted if len(interrupted) > 0 else "📦 Transfer complete."
             summary = f"{transfer_message} {transfer_count} file(s) transferred in {elapsed_time:.2f} seconds (avg: {(elapsed_time / transfer_count):.2f} s per file)."
 
             print(Color.cyan(summary))
