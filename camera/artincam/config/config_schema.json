@@ -12,7 +12,7 @@
       "properties": {
         "mode": {
           "type": "string",
-          "enum": ["stream", "video", "image", "image/video"]
+          "enum": ["rtsp_stream", "video", "image", "image/video"]
         },
         "resolution": {
           "$ref": "#/definitions/Resolution"
