@@ -103,21 +103,29 @@ class Camera:
 
     def run(self):
         # loop forever
-        self.picam.start()
-        match self._mode:
-            case "image":
-                while True:
-                    self._capture_image()
-
-            case "video":
-                while True:
-                    self._capture_video()
-
-            case "image/video":
-                while True:
-                    for _ in range(self._images_per_cycle):
+        try:
+            self.picam.start()
+            match self._mode:
+                case "image":
+                    while True:
                         self._capture_image()
-                    self._capture_video()
+
+                case "video":
+                    while True:
+                        self._capture_video()
+
+                case "image/video":
+                    while True:
+                        for _ in range(self._images_per_cycle):
+                            self._capture_image()
+                        self._capture_video()
+
+                case "rtsp_stream":
+                    self._capture_stream()
+        except Exception:
+            self.picam.stop_encoder()
+            self.picam.stop()
+            raise
 
     def _capture_image(self):
         # Capture the image and save to a file
@@ -140,9 +148,19 @@ class Camera:
         logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
         self._sleep(self._cycle_rest_time)
 
+    def _capture_stream(self):
+        rtsp_stream_output = FfmpegOutput(
+            f"-f rtsp -rtsp_transport udp {self._camera_config['rstp_stream']['address']}", audio=False
+        )
+        self.encoder.output = [rtsp_stream_output]
+        self.picam.start_encoder(self.encoder)
+        while True:
+            self._sleep(84600)
+
     def _validate_and_set_config(self, path: str):
         self._config = json.loads(open(path, "r").read())
         camera_config: dict = self._config["camera"]
+        self._camera_config = camera_config
 
         self._mode = camera_config["mode"]
         # unit used to define video recording time, default is minutes (m)
