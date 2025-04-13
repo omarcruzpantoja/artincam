@@ -41,13 +41,13 @@
 cd /opt/artincam/camera
 
 # run command to initiate transfer file
-uv run support/transfer_files
+./support/transfer_files.sh
 
 # If there is a usb stick to transfer files to, you should be prompted with the option to choose a usb to transfer data to. Choose from the list (1 through X number of devices)
 
 # Confirm that your selection is correct with Y or YES or y or yes
 
-# Stop the transfer at any point by pressing and holding the letter q for 3 seconds. This will gracefully stop the transfer, once the current transfer is finished, the process will be stopped.
+# Stop the transfer at any point by pressing and holding the letter q for 3 seconds. This will gracefully stop the transfer, once the current file transfer is finished, the process will be stopped.
 ```
 
 ## Artincam service commmands
@@ -103,7 +103,7 @@ git pull
 cd camera
 uv sync --all-extras
 ```
+
 ---
 #### Todo in google drive (most likely)
 - add instructions for bluetooth connection
-- add instructions for ssh connection
