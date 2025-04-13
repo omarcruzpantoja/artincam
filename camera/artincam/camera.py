@@ -93,7 +93,7 @@ class Camera:
     def setup(self):
         frame_duration = 1000000 // self._framerate
         video_config = self.picam.create_video_configuration(
-            main={"size": (self._height, self._width)},
+            main={"size": (self._width, self._height)},
             controls={"FrameDurationLimits": (frame_duration, frame_duration)},
         )
         self.picam.configure(video_config)
@@ -129,16 +129,27 @@ class Camera:
 
     # ----- OVERLAYS -----
     def _use_timestamp_overlay(self):
-        colour = (0, 255, 0)
-        origin = (0, 30)
+        text_color = (255, 255, 255)
+        bg_color = (0, 0, 0)
+        padding = 5
         font = cv2.FONT_HERSHEY_SIMPLEX
         scale = 1
         thickness = 2
 
+        x_axis_location = self._width - 400
+        y_axis_location = self._height - 50
+        origin = (x_axis_location, y_axis_location)
+
+        (text_width, text_height), _ = cv2.getTextSize(time.strftime("%Y-%m-%d %X"), font, scale, thickness)
+
+        top_left = (x_axis_location - padding, y_axis_location - text_height - padding)
+        bottom_right = (x_axis_location + text_width + padding, y_axis_location + padding)
+
         def apply_timestamp(request):
-            timestamp = time.strftime("%Y-%m-%d %X")
             with MappedArray(request, "main") as m:
-                cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
+                image = m.array
+                cv2.rectangle(image, top_left, bottom_right, bg_color, cv2.FILLED)
+                cv2.putText(image, time.strftime("%Y-%m-%d %X"), origin, font, scale, text_color, thickness)
 
         self.picam.pre_callback = apply_timestamp
 
