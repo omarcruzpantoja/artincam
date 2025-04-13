@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import threading
 import time
-from pynput import keyboard as pynput_keyboard
+import keyboard
 
 import psutil
 from colorama import init, Fore, Style
@@ -117,6 +117,7 @@ class USBDeviceManager:
         Method for performing the data transfer to the selected device.
         """
         one_GB = 2 * 30
+
         if selected_device:
             print(f"{Color.cyan('🚀 Transferring data to:')} {selected_device['mount_point']}")
             config = self._get_json_config()
@@ -170,43 +171,29 @@ class USBDeviceManager:
         held = False
         hold_start = None
 
-        def on_press(key):
-            nonlocal hold_start, held
-
-            try:
-                if key.char == hold_key:
-                    held = True
-                    if hold_start is None:
-                        hold_start = time.time()
-            except AttributeError:
-                pass  # ignore special keys
-
-        def on_release(key):
-            nonlocal hold_start, held
-
-            try:
-                if key.char == hold_key:
-                    held = False
-                    hold_start = None
-            except AttributeError:
-                pass
-
         print(Color.cyan("🔍 Listening for 'q' hold (3 seconds) to gracefully exit..."))
 
-        with pynput_keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        def monitor():
+            nonlocal held, hold_start
             while not self._stop_event.is_set():
-                if held and hold_start:
-                    if time.time() - hold_start >= 3:
+                if keyboard.is_pressed(hold_key):
+                    if not held:
+                        held = True
+                        hold_start = time.time()
+                    elif hold_start and (time.time() - hold_start >= 3):
                         print(
                             Color.red(
-                                "\n'q' held for 3 seconds. Gracefully exiting: once the current file is finished transfering the program will stop."
+                                "\n'q' held for 3 seconds. Gracefully exiting: once the current file is finished transferring the program will stop."
                             )
                         )
                         self._stop_event.set()
                         break
-                time.sleep(0.20)
+                else:
+                    held = False
+                    hold_start = None
+                time.sleep(0.1)
 
-            listener.stop()
+        monitor()
 
 
 if __name__ == "__main__":
