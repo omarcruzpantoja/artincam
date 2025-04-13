@@ -9,6 +9,7 @@ from enum import StrEnum
 
 import cv2
 import psutil
+from libcamera import Transform
 from picamera2 import Picamera2, MappedArray
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FfmpegOutput, PyavOutput
@@ -92,10 +93,17 @@ class Camera:
 
     def setup(self):
         frame_duration = 1000000 // self._framerate
-        video_config = self.picam.create_video_configuration(
-            main={"size": (self._width, self._height)},
-            controls={"FrameDurationLimits": (frame_duration, frame_duration)},
-        )
+        config_dict = {
+            "main": {"size": (self._width, self._height)},
+            "controls": {"FrameDurationLimits": (frame_duration, frame_duration)},
+        }
+
+        if self._horizontal_flip:
+            config_dict["transform"] = Transform(hflip=1)
+        if self._vertical_flip:
+            config_dict["transform"] = Transform(vflip=1)
+
+        video_config = self.picam.create_video_configuration(**config_dict)
         self.picam.configure(video_config)
         self.encoder = H264Encoder(bitrate=self._bitrate, framerate=self._framerate, enable_sps_framerate=True)
         self.ffmpeg_output = FfmpegOutput("")
@@ -189,11 +197,16 @@ class Camera:
         self._config = json.loads(open(path, "r").read())
         camera_config: dict = self._config["camera"]
         self._camera_config = camera_config
+        transforms = camera_config.get("transforms", {})
 
         self._mode = camera_config["mode"]
         # unit used to define video recording time, default is minutes (m)
         unit_time_multiplier = self._set_time_unit_conversion(camera_config.get("unit_time", TimeUnit.MINUTE))
         image_unit_mult = self._set_time_unit_conversion(camera_config.get("image_time_unit", TimeUnit.MINUTE))
+
+        # ----- STREAM SETUP -----
+        self._vertical_flip = transforms.get("vertical_flip", False)
+        self._horizontal_flip = transforms.get("horizontal_flip", False)
 
         # ----- IMAGE SETUP -----
         # how many images to be taken per cycle (only used in image/video mode)

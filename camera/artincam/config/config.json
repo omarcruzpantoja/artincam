@@ -5,6 +5,11 @@
       "height": 1640,
       "width": 1232
     },
+    "rtsp_stream": {
+      "address": "",
+      "vertical_flip": true,
+      "horizontal_flip": true
+    },
     "images_per_cycle": 10,
     "image_rest_time": 5,
     "image_time_unit": "s",
