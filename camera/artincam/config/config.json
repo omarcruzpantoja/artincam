@@ -2,8 +2,15 @@
   "camera": {
     "mode": "video",
     "resolution": {
-      "height": 1640,
-      "width": 1232
+      "width": 1640,
+      "height": 1232
+    },
+    "rtsp_stream": {
+      "address": ""
+    },
+    "transforms": {
+      "vertical_flip": false,
+      "horizontal_flip": false
     },
     "images_per_cycle": 10,
     "image_rest_time": 5,
