@@ -4,14 +4,14 @@ import os
 import pathlib
 import shutil
 import time
-from enum import StrEnum
 from datetime import datetime
+from enum import StrEnum
 
-
-from picamera2 import Picamera2
-from picamera2.encoders import H264Encoder
-from picamera2.outputs import FfmpegOutput
+import cv2
 import psutil
+from picamera2 import Picamera2, MappedArray
+from picamera2.encoders import H264Encoder
+from picamera2.outputs import FfmpegOutput, PyavOutput
 
 from .logger import logger
 
@@ -127,6 +127,22 @@ class Camera:
             self.picam.stop()
             raise
 
+    # ----- OVERLAYS -----
+    def _use_timestamp_overlay(self):
+        colour = (0, 255, 0)
+        origin = (0, 30)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        scale = 1
+        thickness = 2
+
+        def apply_timestamp(request):
+            timestamp = time.strftime("%Y-%m-%d %X")
+            with MappedArray(request, "main") as m:
+                cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
+
+        self.picam.pre_callback = apply_timestamp
+
+    # ----- MODE HANDLERS -----
     def _capture_image(self):
         # Capture the image and save to a file
         output_file = self._get_file_name(image=True)
@@ -149,14 +165,15 @@ class Camera:
         self._sleep(self._cycle_rest_time)
 
     def _capture_stream(self):
-        rtsp_stream_output = FfmpegOutput(
-            f"-f rtsp -rtsp_transport udp {self._camera_config['rstp_stream']['address']}", audio=False
-        )
+        self._use_timestamp_overlay()
+
+        rtsp_stream_output = PyavOutput(self._camera_config["rtsp_stream"]["address"], format="rtsp")
         self.encoder.output = [rtsp_stream_output]
         self.picam.start_encoder(self.encoder)
         while True:
             self._sleep(84600)
 
+    # ----- VALIDATORS AND CONFIG -----
     def _validate_and_set_config(self, path: str):
         self._config = json.loads(open(path, "r").read())
         camera_config: dict = self._config["camera"]
@@ -225,6 +242,7 @@ class Camera:
                 # 24 hours a day, 60 minutes in an hour, each minute has 60 seconds = 24 * 60 * 60
                 return 86400
 
+    # ----- UTILS -----
     def _get_file_name(self, image=False) -> str:
         """Defines the name of the file generated for the video."""
 
