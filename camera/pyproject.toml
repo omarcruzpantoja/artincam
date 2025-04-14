@@ -13,9 +13,6 @@ dependencies = [
     "psutil>=7.0.0",
 ]
 
-[project.optional-dependencies]
-local-dev = ["picamera2>=0.3.25"]
-
 [dependency-groups]
 dev = ["isort>=6.0.1", "ruff>=0.11.2"]
 
