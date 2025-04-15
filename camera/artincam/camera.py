@@ -12,7 +12,7 @@ import psutil
 from libcamera import Transform
 from picamera2 import Picamera2, MappedArray
 from picamera2.encoders import H264Encoder
-from picamera2.outputs import FfmpegOutput, PyavOutput
+from picamera2.outputs import FfmpegOutput
 
 from .logger import logger
 
@@ -186,9 +186,13 @@ class Camera:
     def _capture_stream(self):
         self._use_timestamp_overlay()
 
-        rtsp_stream_output = PyavOutput(self._camera_config["rtsp_stream"]["address"], format="rtsp")
+        rtsp_stream_output = FfmpegOutput(
+            f"-f rtsp -rtsp_transport udp {self._camera_config['rstp_stream']['address']}", audio=False
+        )
+
         self.encoder.output = [rtsp_stream_output]
         self.picam.start_encoder(self.encoder)
+
         while True:
             self._sleep(84600)
 
