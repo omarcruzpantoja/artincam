@@ -187,7 +187,7 @@ class Camera:
         self._use_timestamp_overlay()
 
         rtsp_stream_output = FfmpegOutput(
-            f"-f rtsp -rtsp_transport udp {self._camera_config['rstp_stream']['address']}", audio=False
+            f"-f rtsp -rtsp_transport udp {self._camera_config['rtsp_stream']['address']}", audio=False
         )
 
         self.encoder.output = [rtsp_stream_output]
