@@ -12,7 +12,7 @@ import psutil
 from libcamera import Transform
 from picamera2 import Picamera2, MappedArray
 from picamera2.encoders import H264Encoder
-from picamera2.outputs import FfmpegOutput
+from picamera2.outputs import FfmpegOutput, PyavOutput
 
 from .logger import logger
 
@@ -113,6 +113,7 @@ class Camera:
         # loop forever
         try:
             self.picam.start()
+            self._use_timestamp_overlay()
             match self._mode:
                 case "image":
                     while True:
@@ -133,11 +134,14 @@ class Camera:
         except Exception:
             self.picam.stop_encoder()
             self.picam.stop()
+            self.picam.close()
             raise
 
     # ----- OVERLAYS -----
     def _use_timestamp_overlay(self):
-        text_color = (255, 255, 255)
+        text_color = (255, 255, 255)  # color - white
+        bg_color = (0, 0, 0)  # color - black
+        padding = 5
         font = cv2.FONT_HERSHEY_SIMPLEX
         scale = 1
         thickness = 2
@@ -146,9 +150,16 @@ class Camera:
         y_axis_location = self._height - 50
         origin = (x_axis_location, y_axis_location)
 
+        (text_width, text_height), _ = cv2.getTextSize(time.strftime("%Y-%m-%d %X"), font, scale, thickness)
+
+        top_left = (x_axis_location - padding, y_axis_location - text_height - padding)
+        bottom_right = (x_axis_location + text_width + padding, y_axis_location + padding)
+
         def apply_timestamp(request):
             with MappedArray(request, "main") as m:
-                cv2.putText(m.array, time.strftime("%Y-%m-%d %X"), origin, font, scale, text_color, thickness)
+                image = m.array
+                cv2.rectangle(image, top_left, bottom_right, bg_color, cv2.FILLED)
+                cv2.putText(image, time.strftime("%Y-%m-%d %X"), origin, font, scale, text_color, thickness)
 
         self.picam.pre_callback = apply_timestamp
 
@@ -156,6 +167,7 @@ class Camera:
     def _capture_image(self):
         # Capture the image and save to a file
         output_file = self._get_file_name(image=True)
+        self._current_time = time.strftime("%Y-%m-%d %X")
         self.picam.capture_file(output_file)
         self.file_counter.increment_counter()
         logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
@@ -166,8 +178,12 @@ class Camera:
         self.ffmpeg_output.output_filename = output_file
         logger.debug(f"Starting Recording ({self._recording_time}s)")
         self.picam.start_encoder(self.encoder)
-        # sleep is needed for it to continue recording
-        self._sleep(self._recording_time)
+
+        # record for however many seconds. On each second update timestamp
+        for _ in range(self._recording_time):
+            self._sleep(1)
+            self._current_time = time.strftime("%Y-%m-%d %X")
+
         # once time is finished, stop recording
         self.picam.stop_encoder()
         self.file_counter.increment_counter()
@@ -175,17 +191,13 @@ class Camera:
         self._sleep(self._cycle_rest_time)
 
     def _capture_stream(self):
-        self._use_timestamp_overlay()
-
-        rtsp_stream_output = FfmpegOutput(
-            f"-f rtsp -rtsp_transport udp {self._camera_config['rtsp_stream']['address']}", audio=False
-        )
-
+        rtsp_stream_output = PyavOutput(self._camera_config["rtsp_stream"]["address"], format="rtsp")
         self.encoder.output = [rtsp_stream_output]
         self.picam.start_encoder(self.encoder)
 
         while True:
-            self._sleep(84600)
+            self._sleep(1)
+            self._current_time = time.strftime("%Y-%m-%d %X")
 
     # ----- VALIDATORS AND CONFIG -----
     def _validate_and_set_config(self, path: str):
@@ -265,6 +277,15 @@ class Camera:
     def _get_file_name(self, image=False) -> str:
         """Defines the name of the file generated for the video."""
 
+        # Automatically add data to usb stick if it can be found, otherwise save in the local disk
+        usb_mount_point = self._find_usb_mount_points()
+        if usb_mount_point and shutil.disk_usage(usb_mount_point).free > one_GB:
+            final_transfer_path = pathlib.Path(usb_mount_point + "/data/" + str(self._pi_id) + "/")
+        else:
+            final_transfer_path = self._output_path
+
+        final_transfer_path.mkdir(parents=True, exist_ok=True)
+
         # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
         # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20-02-2025-06-03-10
         timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
@@ -280,16 +301,6 @@ class Camera:
             unique_id=f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}",
             file_stride=file_stride,
         )
-        file_name = f"{self._pi_id}_{self._location}_{timestamp}_{str(self._pi_id).zfill(4)}.{file_stride}"
-
-        # Automatically add data to usb stick if it can be found, otherwise save in the local disk
-        usb_mount_point = self._find_usb_mount_points()
-        if usb_mount_point and shutil.disk_usage(usb_mount_point).free > one_GB:
-            final_transfer_path = pathlib.Path(usb_mount_point + "/data/" + str(self._pi_id) + "/")
-        else:
-            final_transfer_path = self._output_path
-
-        final_transfer_path.mkdir(parents=True, exist_ok=True)
 
         return str(final_transfer_path / file_name)
 
