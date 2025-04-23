@@ -17,6 +17,29 @@
         "resolution": {
           "$ref": "#/definitions/Resolution"
         },
+        "rtsp_stream": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            }
+          },
+          "required": ["address"]
+        },
+        "transforms": {
+          "type": "object",
+          "properties": {
+            "vertical_flip": {
+              "type": "boolean",
+              "default": false
+            },
+            "horizontal_flip": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": ["vertical_flip", "horizontal_flip"]
+        },
         "framerate": {
           "type": "integer",
           "default": 24,
@@ -31,15 +54,20 @@
           "default": 10,
           "minimum": 1
         },
+        "recording_time_unit": {
+          "type": "string",
+          "enum": ["s", "m", "h", "d"],
+          "default": "s"
+        },
         "cycle_rest_time": {
           "type": "integer",
           "default": 0,
           "minimum": 0
         },
-        "unit_time": {
+        "cycle_rest_time_unit": {
           "type": "string",
           "enum": ["s", "m", "h", "d"],
-          "default": "m"
+          "default": "s"
         },
         "output_dir": {
           "type": "string"
@@ -55,17 +83,22 @@
           "minimum": 0,
           "maximum": 9999
         },
-        "images_per_cycle": {
+        "image_capture_time": {
           "type": "integer",
           "default": 5,
           "minimum": 1
+        },
+        "image_capture_time_unit": {
+          "type": "string",
+          "enum": ["s", "m", "h", "d"],
+          "default": "s"
         },
         "image_rest_time": {
           "type": "number",
           "default": 10,
           "minimum": 0
         },
-        "image_time_unit": {
+        "image_rest_time_unit": {
           "type": "string",
           "enum": ["s", "m", "h", "d"],
           "default": "s"

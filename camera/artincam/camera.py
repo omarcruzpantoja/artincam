@@ -64,7 +64,7 @@ class Camera:
     _bitrate: int
 
     _image_rest_time: int
-    _images_per_cycle: int
+    _image_capture_time: int
 
     _recording_time: int
     _cycle_rest_time: int
@@ -114,6 +114,7 @@ class Camera:
         try:
             self.picam.start()
             self._use_timestamp_overlay()
+            time.sleep(2)  # let the camera start running properly
             match self._mode:
                 case "image":
                     while True:
@@ -125,7 +126,8 @@ class Camera:
 
                 case "image/video":
                     while True:
-                        for _ in range(self._images_per_cycle):
+                        start_time = time.time()
+                        while time.time() - start_time < self._image_capture_time:
                             self._capture_image()
                         self._capture_video()
 
@@ -208,8 +210,16 @@ class Camera:
 
         self._mode = camera_config["mode"]
         # unit used to define video recording time, default is minutes (m)
-        unit_time_multiplier = self._set_time_unit_conversion(camera_config.get("unit_time", TimeUnit.MINUTE))
-        image_unit_mult = self._set_time_unit_conversion(camera_config.get("image_time_unit", TimeUnit.MINUTE))
+        image_capture_time_unit = self._set_time_unit_conversion(
+            camera_config.get("image_capture_time_unit", TimeUnit.MINUTE)
+        )
+        image_rest_time_unit = self._set_time_unit_conversion(
+            camera_config.get("image_rest_time_unit", TimeUnit.MINUTE)
+        )
+        recording_time_unit = self._set_time_unit_conversion(camera_config.get("recording_time_unit", TimeUnit.MINUTE))
+        cycle_rest_time_unit = self._set_time_unit_conversion(
+            camera_config.get("cycle_rest_time_unit", TimeUnit.MINUTE)
+        )
 
         # ----- STREAM SETUP -----
         self._vertical_flip = transforms.get("vertical_flip", False)
@@ -217,21 +227,21 @@ class Camera:
 
         # ----- IMAGE SETUP -----
         # how many images to be taken per cycle (only used in image/video mode)
-        self._images_per_cycle = camera_config.get("images_per_cycle")
+        self._image_capture_time = camera_config.get("image_capture_time") * image_capture_time_unit
         # wait time between images
-        self._image_rest_time = camera_config.get("image_rest_time") * image_unit_mult
+        self._image_rest_time = camera_config.get("image_rest_time") * image_rest_time_unit
 
         # ----- VIDEO SETUP -----
         # how long should each video be, default is 10
-        self._recording_time = camera_config.get("recording_time", 10) * unit_time_multiplier
-
-        # how many frames per second, default 24
-        self._framerate = camera_config.get("framerate", 24)
+        self._recording_time = camera_config.get("recording_time", 10) * recording_time_unit
 
         # rest time defines how much time to wait till next video starts being saved, default is 0
         # this means, once a video is finished being recorded, the next one will start being recorded
         # immediately
-        self._cycle_rest_time = camera_config.get("cycle_rest_time", 0) * unit_time_multiplier
+        self._cycle_rest_time = camera_config.get("cycle_rest_time", 0) * cycle_rest_time_unit
+
+        # how many frames per second, default 24
+        self._framerate = camera_config.get("framerate", 24)
 
         # bitrate is used to determine the quality of image during compression. The higher the value the
         # better quality image, the more space it takes
