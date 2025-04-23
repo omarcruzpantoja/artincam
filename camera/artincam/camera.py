@@ -134,6 +134,7 @@ class Camera:
         except Exception:
             self.picam.stop_encoder()
             self.picam.stop()
+            self.picam.close()
             raise
 
     # ----- OVERLAYS -----
@@ -160,7 +161,7 @@ class Camera:
                 cv2.rectangle(image, top_left, bottom_right, bg_color, cv2.FILLED)
                 cv2.putText(image, time.strftime("%Y-%m-%d %X"), origin, font, scale, text_color, thickness)
 
-        self.picam.post_callback = apply_timestamp
+        self.picam.pre_callback = apply_timestamp
 
     # ----- MODE HANDLERS -----
     def _capture_image(self):
@@ -276,6 +277,15 @@ class Camera:
     def _get_file_name(self, image=False) -> str:
         """Defines the name of the file generated for the video."""
 
+        # Automatically add data to usb stick if it can be found, otherwise save in the local disk
+        usb_mount_point = self._find_usb_mount_points()
+        if usb_mount_point and shutil.disk_usage(usb_mount_point).free > one_GB:
+            final_transfer_path = pathlib.Path(usb_mount_point + "/data/" + str(self._pi_id) + "/")
+        else:
+            final_transfer_path = self._output_path
+
+        final_transfer_path.mkdir(parents=True, exist_ok=True)
+
         # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
         # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20-02-2025-06-03-10
         timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
@@ -291,16 +301,6 @@ class Camera:
             unique_id=f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}",
             file_stride=file_stride,
         )
-        file_name = f"{self._pi_id}_{self._location}_{timestamp}_{str(self._pi_id).zfill(4)}.{file_stride}"
-
-        # Automatically add data to usb stick if it can be found, otherwise save in the local disk
-        usb_mount_point = self._find_usb_mount_points()
-        if usb_mount_point and shutil.disk_usage(usb_mount_point).free > one_GB:
-            final_transfer_path = pathlib.Path(usb_mount_point + "/data/" + str(self._pi_id) + "/")
-        else:
-            final_transfer_path = self._output_path
-
-        final_transfer_path.mkdir(parents=True, exist_ok=True)
 
         return str(final_transfer_path / file_name)
 
