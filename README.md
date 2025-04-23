@@ -8,6 +8,8 @@
     - [Image Capture Settings](#image-capture-settings)
     - [Video Capture Settings](#video-capture-settings)
     - [Resolution Settings](#resolution-settings)
+    - [RTSP Stream Settings](#rtsp-stream-settings)
+    - [Transform Settings](#transform-settings)
     - [What is a "cycle"?](#what-is-a-cycle)
       - [Example Configuration](#example-configuration)
         - [Example #1](#example-1)
@@ -83,34 +85,47 @@ Whether you're setting this up on a fresh Raspberry Pi or updating an existing d
 ### General Settings
 | Parameter         | Description |
 |------------------|-------------|
-| mode           | Determines the operation mode: image, video, or image/video. |
-| output_dir     | Directory where captured images and videos are stored. |
-| location       | Describes the camera's physical location. (can only have lower case letters and hyphens)|
-| pi_id          | Unique identifier for the Raspberry Pi. (integer from 0 to 9999) |
+| `mode`             | Determines the operation mode: `image`, `video`, `image/video`, or `rtsp_stream`. |
+| `output_dir`       | Directory where captured images and videos are stored. |
+| `location`         | Describes the camera's physical location. (Only lowercase letters, numbers, and hyphens allowed) |
+| `pi_id`            | Unique identifier for the Raspberry Pi. (Integer from 0 to 9999) |
 
 ### Image Capture Settings
-| Parameter           | Description |
-|--------------------|-------------|
-| image_capture_time | Total duration to keep capturing images for each cycle. |
-| image_rest_time    | Time (in seconds) between image captures. |
-| image_time_unit    | Unit of time for image_capture_time (s, m, h, d). |
+| Parameter                 | Description |
+|--------------------------|-------------|
+| `image_capture_time`     | Total duration to keep capturing images for each cycle. |
+| `image_capture_time_unit`| Unit of time for `image_capture_time` (`s`, `m`, `h`, `d`). |
+| `image_rest_time`        | Time to wait between consecutive image captures. |
+| `image_rest_time_unit`   | Unit of time for `image_rest_time` (`s`, `m`, `h`, `d`). |
 
 ### Video Capture Settings
-| Parameter          | Description |
-|-------------------|-------------|
-| recording_time  | Duration of each video in seconds. |
-| framerate       | Number of frames per second (default: 24). |
-| cycle_rest_time | Time delay before starting the next video cycle. |
-| bitrate         | Video compression quality (higher values increase quality and file size). Recommended: 8388608 (8MB). |
-| unit_time       | Time unit for video recording duration (s, m, h, d). |
+| Parameter                | Description |
+|--------------------------|-------------|
+| `recording_time`         | Duration of each video. |
+| `recording_time_unit`    | Unit of time for `recording_time` (`s`, `m`, `h`, `d`). |
+| `framerate`              | Number of frames per second. Default is 24. |
+| `cycle_rest_time`        | Time delay before starting the next cycle. |
+| `cycle_rest_time_unit`   | Unit of time for `cycle_rest_time` (`s`, `m`, `h`, `d`). |
+| `bitrate`                | Video compression quality. Higher values increase quality and file size. Recommended: `8388608` (8MB). |
 
 ### Resolution Settings
-| Parameter      | Description |
-|--------------|-------------|
-| resolution.width  | Video width in pixels (default: 1640). |
-| resolution.height | Video height in pixels (default: 1232). |
+| Parameter            | Description |
+|----------------------|-------------|
+| `resolution.width`   | Image/video width in pixels (Default: `1640`). |
+| `resolution.height`  | Image/video height in pixels (Default: `1232`). |
 
-> Note: A resolution of 1920x1080 is not recommended as it limits the Field of View (FoV).
+> ⚠️ **Note**: A resolution of `1920x1080` is not recommended as it limits the Field of View (FoV).
+
+### RTSP Stream Settings
+| Parameter              | Description |
+|------------------------|-------------|
+| `rtsp_stream.address`  | Optional RTSP stream address. Used only if `mode` is `rtsp_stream`. |
+
+### Transform Settings
+| Parameter                   | Description |
+|-----------------------------|-------------|
+| `transforms.vertical_flip`   | Boolean to vertically flip the image/video. |
+| `transforms.horizontal_flip` | Boolean to horizontally flip the image/video. |
 
 ### What is a "cycle"?
 In image/video mode, the concept of "cycles" becomes relevant. A cycle involves capturing a series of images followed by recording a video, all controlled by specific timing parameters. Here's a quick overview of how a cycle works:
@@ -131,32 +146,40 @@ In image/video mode, the concept of "cycles" becomes relevant. A cycle involves 
 #### Example Configuration
 
 ##### Example #1
-To create a configuration for capturing 1 image per minute for 50 minutes and recording a 10-minute video at 5 fps, the key values in the JSON would have the following values
+To create a configuration for capturing 1 image per minute for 50 minutes and recording a 10-minute video at 5 fps
 
 ```python
-image_capture_time=1
-image_rest_time=1
-image_time_unit=m
+image_capture_time = 50
+image_capture_time_unit = "m"
 
-recording_time=10
-framerate=5
+image_rest_time = 1
+image_rest_time_unit = "m"
+
+recording_time = 10
+recording_time_unit = "m"
+
+framerate = 5
 # cycle rest time with value of 0 implies, start the next cycle immediately
-cycle_rest_time=0
-unit_time=m
+cycle_rest_time = 0
+cycle_rest_time_unit = "m"
 ```
 
 ##### Example #2
-Goal an image every 2 seconds for 50 minutes and a 10 minute recording video. 
+Goal an image every 2 seconds for 50 minutes, a 10 minute recording video and no rest time between cycles.
 
 ```python
-image_capture_time=50
-image_rest_time=2
-image_time_unit=s
+image_capture_time = 50
+image_capture_time_unit = "m"
 
-recording_time=10
-framerate=5
-cycle_rest_time=0
-unit_time=m
+image_rest_time = 2
+image_rest_time_unit = "s"
+
+recording_time = 10
+recording_time_unit = "m"
+
+framerate = 5
+cycle_rest_time = 0
+cycle_rest_time_unit = "m"
 ```
 
 Note: the provided example above is NOT JSON format. This is just displaying what would be the values. 
