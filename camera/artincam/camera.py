@@ -114,6 +114,7 @@ class Camera:
         try:
             self.picam.start()
             self._use_timestamp_overlay()
+            time.sleep(2)  # let the camera start running properly
             match self._mode:
                 case "image":
                     while True:
