@@ -21,7 +21,7 @@ picam = Picamera2()
 
 video_config = picam.create_preview_configuration(raw=picam.sensor_modes[1])
 video_config = picam.create_preview_configuration(
-    {"size": (resolution["height"], resolution["width"])},
+    {"size": (resolution["width"], resolution["height"])},
     controls={"FrameDurationLimits": (frame_duration, frame_duration)},
     colour_space=ColorSpace.Sycc(),
 )
