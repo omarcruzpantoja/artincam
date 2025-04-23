@@ -76,15 +76,15 @@
     "Resolution": {
       "type": "object",
       "properties": {
-        "height": {
-          "type": "integer",
-          "default": 1920,
-          "minimum": 1
-        },
         "width": {
           "type": "integer",
           "minimum": 1,
-          "default": 1080
+          "default": 1640
+        },
+        "height": {
+          "type": "integer",
+          "default": 1232,
+          "minimum": 1
         }
       },
       "required": ["height", "width"]
