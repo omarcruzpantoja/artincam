@@ -12,7 +12,7 @@
       "vertical_flip": false,
       "horizontal_flip": false
     },
-    "images_per_cycle": 10,
+    "image_capture_time": 10,
     "image_rest_time": 5,
     "image_time_unit": "s",
     "framerate": 5,

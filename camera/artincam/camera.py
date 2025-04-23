@@ -64,7 +64,7 @@ class Camera:
     _bitrate: int
 
     _image_rest_time: int
-    _images_per_cycle: int
+    _image_capture_time: int
 
     _recording_time: int
     _cycle_rest_time: int
@@ -125,7 +125,8 @@ class Camera:
 
                 case "image/video":
                     while True:
-                        for _ in range(self._images_per_cycle):
+                        start_time = time.time()
+                        while time.time() - start_time < self._image_capture_time:
                             self._capture_image()
                         self._capture_video()
 
@@ -217,7 +218,7 @@ class Camera:
 
         # ----- IMAGE SETUP -----
         # how many images to be taken per cycle (only used in image/video mode)
-        self._images_per_cycle = camera_config.get("images_per_cycle")
+        self._image_capture_time = camera_config.get("image_capture_time")
         # wait time between images
         self._image_rest_time = camera_config.get("image_rest_time") * image_unit_mult
 
