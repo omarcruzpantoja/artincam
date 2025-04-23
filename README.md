@@ -215,15 +215,19 @@ Place your configuration file in config/config.json (there is one already by def
 
 Run the script:
 
-If you havent set up uv venv: `uv venv --system-site-packages` and `uv sync --all-extras`
+```shell
+# If you havent set up uv venv: 
+uv venv --system-site-packages
+uv sync --all-extras
 
+# To run the script
 uv run main.py
+
+```
 
 #### Notes
 
 The script automatically adjusts time units (seconds, minutes, hours, days) based on the configuration.
-
-For any issues, refer to the official picamera2 documentation.
 
 
 ## Transfering files from output directory to usb stick
@@ -268,12 +272,4 @@ cd /opt/artincam/camera
 
 # run the preview.py file
 uv run preview.py
-```
-
-## Updating repo to its latest
-```shell
-cd /opt/artincam
-git pull
-cd camera
-uv sync --all-extras
 ```
