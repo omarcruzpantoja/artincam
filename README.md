@@ -61,7 +61,7 @@ Whether you're setting this up on a fresh Raspberry Pi or updating an existing d
 2. **Set Static IP (for LAN cable connection)**  
    If you're connecting over a LAN cable, set a static IP to ensure stable access:
    - Open the network settings on your Raspberry Pi.
-   - Go to the **IPv4** settings and set a static IP, such as `192.168.0.101` with a subnet mask of `/24`.
+   - Go to the **IPv4** settings and set a static IP, such as `192.168.0.101` with a subnet mask of `24`.
 
 3. **Establish Wi-Fi connection**  
    Connect the Raspberry Pi to Wi-Fi to download the latest updates and dependencies for the project.
