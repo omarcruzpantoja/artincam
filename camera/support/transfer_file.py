@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 import json
-import pathlib
 import os
+import pathlib
+import select
 import shutil
 import subprocess
+import sys
 import threading
 import time
-import keyboard
 
 import psutil
-from colorama import init, Fore, Style
+from colorama import Fore, Style, init
 
 # Initialize colorama for cross-platform support
 init(autoreset=True)
@@ -167,33 +168,21 @@ class USBDeviceManager:
         """
         Listens for the 'q' key being held for 3 seconds to trigger exit.
         """
-        hold_key = "q"
-        held = False
-        hold_start = None
 
-        print(Color.cyan("🔍 Listening for 'q' hold (3 seconds) to gracefully exit..."))
+        print(Color.cyan("🔍 Type for 'stop' and press enter to gracefully exit..."))
 
-        def monitor():
-            nonlocal held, hold_start
-            while not self._stop_event.is_set():
-                if keyboard.is_pressed(hold_key):
-                    if not held:
-                        held = True
-                        hold_start = time.time()
-                    elif hold_start and (time.time() - hold_start >= 3):
-                        print(
-                            Color.red(
-                                "\n'q' held for 3 seconds. Gracefully exiting: once the current file is finished transferring the program will stop."
-                            )
+        while not self._stop_event.is_set():
+            rlist, _, _ = select.select([sys.stdin], [], [], 2)
+            if rlist:
+                user_input = sys.stdin.readline().strip().lower()
+                if user_input == "stop":
+                    print(
+                        Color.red(
+                            "\nStop command found. Gracefully exiting: once the current file is finished transfering the program will stop."
                         )
-                        self._stop_event.set()
-                        break
-                else:
-                    held = False
-                    hold_start = None
-                time.sleep(0.1)
-
-        monitor()
+                    )
+                    self._stop_event.set()
+                    break
 
 
 if __name__ == "__main__":

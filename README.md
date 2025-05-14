@@ -20,7 +20,6 @@
   - [Transfering files from output directory to usb stick](#transfering-files-from-output-directory-to-usb-stick)
   - [Artincam service commmands](#artincam-service-commmands)
     - [Preview camera](#preview-camera)
-  - [Updating repo to its latest](#updating-repo-to-its-latest)
 
 
 ## Overview
@@ -236,13 +235,13 @@ The script automatically adjusts time units (seconds, minutes, hours, days) base
 cd /opt/artincam/camera
 
 # run command to initiate transfer file
-./support/transfer_files.sh
+./support/transfer_file.py
 
 # If there is a usb stick to transfer files to, you should be prompted with the option to choose a usb to transfer data to. Choose from the list (1 through X number of devices)
 
 # Confirm that your selection is correct with Y or YES or y or yes
 
-# Stop the transfer at any point by pressing and holding the letter q for 3 seconds. This will gracefully stop the transfer, once the current file transfer is finished, the process will be stopped.
+# Stop the transfer at any point by typing the word 'stop' and press enter. After the word is written and submitted, the process will gracefully stop once the current file transfer is fnished.
 ```
 
 
