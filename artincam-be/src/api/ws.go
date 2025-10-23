@@ -4,7 +4,6 @@ import (
 	"artincam-be/src/tools/connectionmap"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -57,11 +56,6 @@ func arcticPiHandler(connMap *connectionmap.ConnectionMap, wsConn *connectionmap
 
 		fmt.Printf("→ Received: %s\n", msg)
 
-		// Echo (or handle commands later)
-		for range 5 {
-			wsConn.Conn.WriteMessage(websocket.TextMessage, []byte("ack"))
-			time.Sleep(1 * time.Second)
-		}
 	}
 
 }

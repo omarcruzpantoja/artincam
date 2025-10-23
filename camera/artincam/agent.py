@@ -5,6 +5,8 @@ import queue
 import threading
 import websockets
 
+from .schemas import CameraCommand
+
 
 def get_env(name: str, required: bool = False):
     # TODO: this needs to be moved to a utils
@@ -52,7 +54,6 @@ class ArtincamAgent:
         while not self._stop.is_set():
             try:
                 cmd = self._actions.get()
-                print(f"[Camera] Got command: {cmd}")
                 self._mode = cmd
             except queue.Empty:
                 pass
@@ -60,21 +61,43 @@ class ArtincamAgent:
             print(f"[Camera] Running in mode: {self._mode}")
 
     async def _initialize_ws_connection(self):
-        self._ws = await websockets.connect(
-            f"ws://{get_env('BACKEND_SERVICE_URL')}/ws/agent?x-agent-id={self._agent_id}"
-        )
+        """Continuously maintain a WebSocket connection with auto-reconnect."""
+        while True:
+            try:
+                print("[WS] connecting to backend...")
+                async with websockets.connect(
+                    f"ws://{get_env('BACKEND_SERVICE_URL')}/ws/agent?x-agent-id={self._agent_id}"
+                ) as ws:
+                    self._ws = ws
+                    print("[WS] connected.")
 
+                    # Listen until closed
+                    async for msg in ws:
+                        self._parse_message(msg)
+
+            except (websockets.ConnectionClosedError, websockets.ConnectionClosedOK, ConnectionRefusedError) as e:
+                print(f"[WS] connection lost: {e}. Reconnecting in 5s...")
+
+            except Exception as e:
+                print(f"[WS] unexpected error: {e}. Reconnecting in 5s...")
+
+            finally:
+                # Always clear reference and pause before retry
+                self._ws = None
+                await asyncio.sleep(5)
+                print("[WS] retrying connection...")
+
+    def _parse_message(self, msg: str):
         try:
-            async for msg in self._ws:
-                if cmd := self._parse_message(msg):
-                    self._actions.put(cmd)
+            parsed_msg: dict = json.loads(msg)
 
-        except Exception as e:
-            print("WS error:", e)
-            await asyncio.sleep(5)  # reconnect
+            match parsed_msg.get("type", ""):
+                case "camera-command":
+                    self._handle_camera_command(parsed_msg)
 
-    def _parse_message(msg: str):
-        try:
-            return json.loads(msg)
         except Exception as e:
             print("parsing error: ", e)
+
+    def _handle_camera_command(self, msg: dict):
+        schema = CameraCommand(**msg)
+        self._actions.put(schema.mode)
