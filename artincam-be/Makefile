@@ -19,6 +19,13 @@ run:
 build:
 	@go build -o bin/artincam src/main.go
 
+build-arm:
+	@GOOS=linux GOARCH=arm GOARM=7 go build -o bin/artincam src/main.go
+
+build-arm64:
+	@GOOS=linux GOARCH=arm64 go build -o bin/artincam src/main.go
+
+
 live-run:
 	@air --build.cmd "swag init --dir src && go build -o bin/artincam src/main.go" \
 	     --build.bin "./bin/artincam" \

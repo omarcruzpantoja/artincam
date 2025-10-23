@@ -33,6 +33,7 @@ fi
 
 echo 'export GOPATH=$HOME/.local/share/go' >> "$SHELL_RC"
 echo 'export PATH=$HOME/.local/share/go/bin:$PATH' >> "$SHELL_RC"
+echo "source ~/$SHELL_RC"
 
 ## Verify the installation
 if [ -x "$(command -v go)" ]; then
