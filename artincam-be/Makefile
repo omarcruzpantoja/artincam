@@ -14,9 +14,11 @@ ifeq ($(html),true)
 endif
 
 run:
+	@swag init --dir src
 	@go run src/main.go
 
 build:
+	@swag init --dir src
 	@go build -o bin/artincam src/main.go
 
 build-arm:
