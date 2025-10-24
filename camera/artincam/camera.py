@@ -3,18 +3,31 @@ import logging
 import os
 import pathlib
 import shutil
+import threading
 import time
 from datetime import datetime
 from enum import StrEnum
+from queue import Queue
 
 import cv2
 import psutil
-from libcamera import Transform
-from picamera2 import Picamera2, MappedArray
-from picamera2.encoders import H264Encoder
-from picamera2.outputs import FfmpegOutput, PyavOutput
+
+from .constants import CameraAction
+
+# libcamera and pimcamera2 will already be installed in the raspberry pis
+# when working outside a raspberry PI we will use a libcamera and picamera mocks
+# to help us test. But camera controls will only occur in the actual raspberry pi
+try:
+    from libcamera import Transform
+    from picamera2 import MappedArray, Picamera2
+    from picamera2.encoders import H264Encoder
+    from picamera2.outputs import FfmpegOutput, PyavOutput
+except ModuleNotFoundError:
+    from .mocks.libcamera import Transform
+    from .mocks.picamera2 import Picamera2, MappedArray, H264Encoder, FfmpegOutput, PyavOutput
 
 from .logger import logger
+
 
 ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent
 logger.setLevel(logging.DEBUG)
@@ -71,12 +84,20 @@ class Camera:
     _time_unit: TimeUnit
     _output_path: pathlib.Path
 
+    _camera_actions: Queue[tuple[CameraAction, dict | None]] | None
+    _stop: threading.Event
+
     picam: Picamera2
     encoder: H264Encoder
     ffmpeg_output: FfmpegOutput
     file_counter: FileCounter
 
-    def __init__(self, config_path: str = "config/config.json"):
+    def __init__(
+        self,
+        camera_actions: Queue[tuple[CameraAction, dict | None]],
+        stop_event: threading.Event,
+        config_path: str = "config/config.json",
+    ):
         # bit rate data
         # 33554432 (33MB)- 30MB per 10s video
         # 16777216 (16MB)- 20MB per 10s video
@@ -86,10 +107,12 @@ class Camera:
 
         # Resolution
         # 1640 x 1232
-        # Note: 1920x1080 cannot be used, it limits the FoV of the camera. Not good.
+        # Note: 1920x1080 should not be used, it limits the FoV of the camera. Not good.
         self.picam = Picamera2()
         self.file_counter = FileCounter()
         self._validate_and_set_config(ROOT_DIRECTORY / config_path)
+        self._camera_actions = camera_actions
+        self._stop = stop_event
 
     def setup(self):
         frame_duration = 1000000 // self._framerate
@@ -110,34 +133,52 @@ class Camera:
         self.encoder.output = [self.ffmpeg_output]
 
     def run(self):
-        # loop forever
-        try:
-            self.picam.start()
-            self._use_timestamp_overlay()
-            time.sleep(2)  # let the camera start running properly
+        # initialize camera
+        self.picam.start()
+        time.sleep(2)  # let the camera start running properly
+        first_cycle = True
+
+        while not self._stop.is_set():  # while stop event is not set, keep running
+            # self._use_timestamp_overlay()
+
+            if not self._camera_actions.empty():
+                msg = self._camera_actions.get()
+                self._process_action(msg[0], msg[1])
+                first_cycle = True
+
             match self._mode:
                 case "image":
-                    while True:
-                        self._capture_image()
+                    if not first_cycle:
+                        self._sleep(self._image_rest_time)
+
+                    self._capture_image()
 
                 case "video":
-                    while True:
-                        self._capture_video()
+                    if not first_cycle:
+                        self._sleep(self._cycle_rest_time)
+
+                    self._capture_video()
 
                 case "image/video":
-                    while True:
-                        start_time = time.time()
-                        while time.time() - start_time < self._image_capture_time:
-                            self._capture_image()
-                        self._capture_video()
+                    if not first_cycle:
+                        self._sleep(self._cycle_rest_time)
+
+                    start_time = time.time()
+                    while time.time() - start_time < self._image_capture_time:
+                        self._capture_image(sleep=True)
+                    self._capture_video(sleep=True)
 
                 case "rtsp_stream":
                     self._capture_stream()
-        except Exception:
-            self.picam.stop_encoder()
-            self.picam.stop()
-            self.picam.close()
-            raise
+
+                case "stop":
+                    self._sleep(1)
+
+            first_cycle = False
+
+        self.picam.stop_encoder()
+        self.picam.stop()
+        self.picam.close()
 
     # ----- OVERLAYS -----
     def _use_timestamp_overlay(self):
@@ -166,14 +207,16 @@ class Camera:
         self.picam.pre_callback = apply_timestamp
 
     # ----- MODE HANDLERS -----
-    def _capture_image(self):
+    def _capture_image(self, sleep: bool = False):
         # Capture the image and save to a file
         output_file = self._get_file_name(image=True)
         self._current_time = time.strftime("%Y-%m-%d %X")
         self.picam.capture_file(output_file)
         self.file_counter.increment_counter()
-        logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
-        self._sleep(self._image_rest_time)
+        # logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
+
+        if sleep:
+            self._sleep(self._image_rest_time)
 
     def _capture_video(self):
         output_file = self._get_file_name()
@@ -189,15 +232,14 @@ class Camera:
         # once time is finished, stop recording
         self.picam.stop_encoder()
         self.file_counter.increment_counter()
-        logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
-        self._sleep(self._cycle_rest_time)
+        # logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
 
     def _capture_stream(self):
         rtsp_stream_output = PyavOutput(self._camera_config["rtsp_stream"]["address"], format="rtsp")
         self.encoder.output = [rtsp_stream_output]
         self.picam.start_encoder(self.encoder)
 
-        while True:
+        while self._camera_actions.empty():
             self._sleep(1)
             self._current_time = time.strftime("%Y-%m-%d %X")
 
@@ -330,3 +372,9 @@ class Camera:
     def _sleep(self, seconds: float):
         if seconds > 0:
             time.sleep(seconds)
+
+    def _process_action(self, action: CameraAction, params: dict):
+        match action:
+            case CameraAction.CHANGE_MODE:
+                logger.debug(f"[Camera] Changing mode to {params}")
+                self._mode = params

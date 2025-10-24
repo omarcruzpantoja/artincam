@@ -1,6 +1,6 @@
 {
   "camera": {
-    "mode": "video",
+    "mode": "image",
     "resolution": {
       "width": 1640,
       "height": 1232
@@ -19,7 +19,7 @@
     "framerate": 5,
     "bitrate": 8388608,
     "recording_time": 10,
-    "recording_time_unit": "m",
+    "recording_time_unit": "s",
     "cycle_rest_time": 0,
     "cycle_rest_time_unit": "s",
     "output_dir": "assets",

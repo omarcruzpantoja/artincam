@@ -1,4 +1,3 @@
-# from artincam.camera import Camera
 from artincam.agent import ArtincamAgent
 import asyncio
 import os
@@ -10,10 +9,6 @@ def get_env(name: str, required: bool = False):
 
 
 async def main():
-    # camera = Camera()
-    # camera.setup()
-    # camera.run()
-
     agent = ArtincamAgent("1")
     agent.start()
 

@@ -1,10 +1,14 @@
 import asyncio
 import json
 import os
-import queue
+from queue import Queue, Empty as QueueEmpty
 import threading
+
 import websockets
 
+
+from .camera import Camera
+from .constants import CameraAction
 from .schemas import CameraCommand
 
 
@@ -14,19 +18,22 @@ def get_env(name: str, required: bool = False):
 
 
 class ArtincamAgent:
-    _actions: queue.Queue
+    _actions: Queue
     _stop: threading.Event
     _mode: str
     _agent_id: str
     _camera_thread: threading.Thread
 
     def __init__(self, agent_id: str):
-        self._actions = queue.Queue()
+        self._actions = Queue()
+        self._camera_actions = Queue()
         self._stop = threading.Event()
         self._mode = "idle"
         self._agent_id = agent_id
 
-        self._camera_thread = threading.Thread(target=self._camera_loop, daemon=True)
+        self.camera = Camera(camera_actions=self._camera_actions, stop_event=self._stop)
+        self.camera.setup()
+        self._camera_thread = threading.Thread(target=self.camera.run, daemon=True)
         self._ws_task = None
         self._ws = None
 
@@ -46,6 +53,7 @@ class ArtincamAgent:
 
         # force camera loop to receive a message to close
         self._actions.put_nowait("exit")
+        self._camera_actions.put_nowait((CameraAction.EXIT, None))
 
         # wait for the camera thread to safely exit
         self._camera_thread.join()
@@ -55,7 +63,7 @@ class ArtincamAgent:
             try:
                 cmd = self._actions.get()
                 self._mode = cmd
-            except queue.Empty:
+            except QueueEmpty:
                 pass
 
             print(f"[Camera] Running in mode: {self._mode}")
@@ -100,4 +108,4 @@ class ArtincamAgent:
 
     def _handle_camera_command(self, msg: dict):
         schema = CameraCommand(**msg)
-        self._actions.put(schema.mode)
+        self._camera_actions.put((CameraAction.CHANGE_MODE, schema.mode))
