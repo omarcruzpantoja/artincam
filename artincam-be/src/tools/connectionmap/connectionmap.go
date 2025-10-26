@@ -1,10 +1,11 @@
 package connectionmap
 
 import (
-	"artincam-be/src/tools/safemap"
 	"sync"
 
 	"github.com/gorilla/websocket"
+
+	"artincam-be/src/tools/safemap"
 )
 
 type WSConnection struct {

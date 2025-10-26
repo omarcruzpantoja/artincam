@@ -1,11 +1,12 @@
 package api
 
 import (
-	"artincam-be/src/tools/connectionmap"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+
+	"artincam-be/src/tools/connectionmap"
 )
 
 var upgrader = websocket.Upgrader{

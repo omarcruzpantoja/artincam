@@ -1,16 +1,16 @@
 package api
 
 import (
-	_ "artincam-be/docs"
-
 	"github.com/go-chi/chi/v5"
-
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	_ "artincam-be/docs"
 )
 
 func (s *Server) registerRoutes() {
 	s.router.Route("/api/", func(r chi.Router) {
-		r.Mount("/v1/agents", agentRouter(s))
+		r.Mount("/v1/agents", s.agentRouter())
+		r.Mount("/v1/agent-types", s.agentTypeRouter())
 	})
 	s.router.Get("/ws/agent", WsAgentConnectionHandler(s.Connections))
 

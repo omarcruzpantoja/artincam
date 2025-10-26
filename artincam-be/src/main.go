@@ -1,10 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"artincam-be/src/api"
+	"artincam-be/src/db/qx"
+	"artincam-be/src/tools"
 )
 
 // @title Artincam Control Center API Docs
@@ -19,10 +24,22 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 func main() {
-	s := api.NewServer(":8080")
+	dbConn, err := sql.Open("sqlite3", tools.Getenv("GOOSE_DBSTRING", "", true))
+
+	if err != nil {
+		log.Fatal("❌ Failed to connect to the database:", err)
+	}
+
+	s := api.NewServer(fmt.Sprintf(":%s", tools.Getenv("SERVICE_PORT", "8080", false)), WithDbConn(dbConn))
 
 	fmt.Println("✅ Server running on", s.Addr)
 	if err := s.Start(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func WithDbConn(dbConn qx.DBTX) api.ServerOption {
+	return func(s *api.Server) {
+		s.DbConn = dbConn
 	}
 }
