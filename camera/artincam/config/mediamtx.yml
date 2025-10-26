@@ -1,0 +1,32 @@
+############################################################
+# Minimal MediaMTX config with dynamic paths
+############################################################
+
+logLevel: info
+logDestinations: [stdout]
+
+# ---- Enable only RTSP
+rtsp: true
+rtspAddress: :8554 # Default port is 8554 but it can be changed.
+rtspTransports: [tcp]
+
+# ---- Disable all other protocols
+rtmp: false
+hls: false
+webrtc: false
+srt: false
+metrics: false
+api: false
+pprof: false
+playback: false
+
+# ---- Default path behaviour
+pathDefaults:
+  source: publisher
+  overridePublisher: yes
+
+# ---- Allow any dynamic path
+paths:
+  all:
+    source: publisher
+    overridePublisher: yes

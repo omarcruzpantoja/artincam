@@ -59,3 +59,5 @@ else
 fi
 
 echo "✅ Go $VERSION installed successfully."
+
+# TODO: add mediamtx setup, installation and configuration as a service
