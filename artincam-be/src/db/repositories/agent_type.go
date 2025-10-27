@@ -55,8 +55,8 @@ func (r *AgentTypeRepository) CreateAgentType(agentType qx.CreateAgentTypeParams
 	return &at, nil
 }
 
-func (r *AgentTypeRepository) UpdateAgent(agent qx.UpdateAgentParams) (*qx.Agent, error) {
-	at, err := qx.New(r.Db).UpdateAgent(r.Ctx, agent)
+func (r *AgentTypeRepository) PatchAgentType(agent qx.PatchAgentTypeParams) (*qx.AgentType, error) {
+	at, err := qx.New(r.Db).PatchAgentType(r.Ctx, agent)
 
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func (r *AgentTypeRepository) UpdateAgent(agent qx.UpdateAgentParams) (*qx.Agent
 	return &at, nil
 }
 
-func (r *AgentTypeRepository) DeleteAgent(id string) error {
-	err := qx.New(r.Db).DeleteAgent(r.Ctx, id)
+func (r *AgentTypeRepository) DeleteAgentType(id int64) error {
+	err := qx.New(r.Db).DeleteAgentType(r.Ctx, id)
 
 	if err != nil {
 		return err

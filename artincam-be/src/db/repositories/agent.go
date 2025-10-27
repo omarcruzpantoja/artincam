@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
 	"artincam-be/src/db/qx"
+
+	"github.com/google/uuid"
 )
 
 type AgentRepoOption func(*AgentRepository)
@@ -47,18 +50,23 @@ func (r *AgentRepository) GetAgentByID(id string) (*qx.Agent, error) {
 }
 
 func (r *AgentRepository) CreateAgent(agent qx.CreateAgentParams) (*qx.Agent, error) {
+	agent.ID = uuid.New().String()
 	a, err := qx.New(r.Db).CreateAgent(r.Ctx, agent)
+
 	if err != nil {
+		fmt.Println("Error creating agent:", err, agent)
+
 		return nil, err
 	}
 
 	return &a, nil
 }
 
-func (r *AgentRepository) UpdateAgent(agent qx.UpdateAgentParams) (*qx.Agent, error) {
-	a, err := qx.New(r.Db).UpdateAgent(r.Ctx, agent)
+func (r *AgentRepository) PatchAgent(agent qx.PatchAgentParams) (*qx.Agent, error) {
+	a, err := qx.New(r.Db).PatchAgent(r.Ctx, agent)
 
 	if err != nil {
+		fmt.Println("Error patching agent:", err, agent)
 		return nil, err
 	}
 

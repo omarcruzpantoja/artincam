@@ -9,8 +9,8 @@ INSERT INTO agent_type (name, description, created_at, updated_at)
 VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING *;
 
--- name: UpdateAgentType :one
-UPDATE agent
+-- name: PatchAgentType :one
+UPDATE agent_type
 SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
 RETURNING *;

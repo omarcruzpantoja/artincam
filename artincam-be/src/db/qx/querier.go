@@ -17,8 +17,8 @@ type Querier interface {
 	GetAgentTypeByID(ctx context.Context, id int64) (AgentType, error)
 	GetAllAgentTypes(ctx context.Context) ([]AgentType, error)
 	GetAllAgents(ctx context.Context) ([]Agent, error)
-	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
-	UpdateAgentType(ctx context.Context, arg UpdateAgentTypeParams) (Agent, error)
+	PatchAgent(ctx context.Context, arg PatchAgentParams) (Agent, error)
+	PatchAgentType(ctx context.Context, arg PatchAgentTypeParams) (AgentType, error)
 }
 
 var _ Querier = (*Queries)(nil)

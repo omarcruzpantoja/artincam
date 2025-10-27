@@ -10,12 +10,13 @@ import (
 )
 
 const CreateAgent = `-- name: CreateAgent :one
-INSERT INTO agent (name, description, agent_type_id, config, created_at, updated_at)
-VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+INSERT INTO agent (id, name, description, agent_type_id, config, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING id, name, description, agent_type_id, config, created_at, updated_at
 `
 
 type CreateAgentParams struct {
+	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	AgentTypeID int64  `json:"agent_type_id"`
@@ -24,6 +25,7 @@ type CreateAgentParams struct {
 
 func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error) {
 	row := q.db.QueryRowContext(ctx, CreateAgent,
+		arg.ID,
 		arg.Name,
 		arg.Description,
 		arg.AgentTypeID,
@@ -105,22 +107,22 @@ func (q *Queries) GetAllAgents(ctx context.Context) ([]Agent, error) {
 	return items, nil
 }
 
-const UpdateAgent = `-- name: UpdateAgent :one
+const PatchAgent = `-- name: PatchAgent :one
 UPDATE agent
 SET name = ?, description = ?, config = ?, updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
 RETURNING id, name, description, agent_type_id, config, created_at, updated_at
 `
 
-type UpdateAgentParams struct {
+type PatchAgentParams struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Config      string `json:"config"`
 	ID          string `json:"id"`
 }
 
-func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error) {
-	row := q.db.QueryRowContext(ctx, UpdateAgent,
+func (q *Queries) PatchAgent(ctx context.Context, arg PatchAgentParams) (Agent, error) {
+	row := q.db.QueryRowContext(ctx, PatchAgent,
 		arg.Name,
 		arg.Description,
 		arg.Config,

@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS agent_type (
 );
 
 CREATE TABLE IF NOT EXISTS agent (
-  id TEXT PRIMARY KEY, -- UUID stored as TEXT
+id TEXT PRIMARY KEY NOT NULL
+   CHECK(length(id)=36 AND id GLOB '????????-????-4???-[89ab]???-????????????'),
   name TEXT NOT NULL CHECK (LENGTH(name) < 256),
   description TEXT NOT NULL DEFAULT '' CHECK (LENGTH(description) < 1024),
   agent_type_id INTEGER NOT NULL,

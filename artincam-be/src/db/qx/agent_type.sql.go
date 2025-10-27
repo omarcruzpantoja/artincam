@@ -92,28 +92,26 @@ func (q *Queries) GetAllAgentTypes(ctx context.Context) ([]AgentType, error) {
 	return items, nil
 }
 
-const UpdateAgentType = `-- name: UpdateAgentType :one
-UPDATE agent
+const PatchAgentType = `-- name: PatchAgentType :one
+UPDATE agent_type
 SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP
 WHERE id = ?
-RETURNING id, name, description, agent_type_id, config, created_at, updated_at
+RETURNING id, name, description, created_at, updated_at
 `
 
-type UpdateAgentTypeParams struct {
+type PatchAgentTypeParams struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	ID          string `json:"id"`
+	ID          int64  `json:"id"`
 }
 
-func (q *Queries) UpdateAgentType(ctx context.Context, arg UpdateAgentTypeParams) (Agent, error) {
-	row := q.db.QueryRowContext(ctx, UpdateAgentType, arg.Name, arg.Description, arg.ID)
-	var i Agent
+func (q *Queries) PatchAgentType(ctx context.Context, arg PatchAgentTypeParams) (AgentType, error) {
+	row := q.db.QueryRowContext(ctx, PatchAgentType, arg.Name, arg.Description, arg.ID)
+	var i AgentType
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.Description,
-		&i.AgentTypeID,
-		&i.Config,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
