@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import pathlib
@@ -12,6 +11,7 @@ from queue import Queue
 import cv2
 import psutil
 
+from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, ModeEnum
 from .constants import CameraAction
 
 # libcamera and pimcamera2 will already be installed in the raspberry pis
@@ -28,7 +28,7 @@ except ModuleNotFoundError:
 
 from .logger import logger
 
-
+DEFAULT_BITRATE = 8_388_608  # example: 8MB
 ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent
 logger.setLevel(logging.DEBUG)
 one_GB = 2**30
@@ -96,7 +96,6 @@ class Camera:
         self,
         camera_actions: Queue[tuple[CameraAction, dict | None]],
         stop_event: threading.Event,
-        config_path: str = "config/config.json",
     ):
         # bit rate data
         # 33554432 (33MB)- 30MB per 10s video
@@ -110,9 +109,21 @@ class Camera:
         # Note: 1920x1080 should not be used, it limits the FoV of the camera. Not good.
         self.picam = Picamera2()
         self.file_counter = FileCounter()
-        self._validate_and_set_config(ROOT_DIRECTORY / config_path)
         self._camera_actions = camera_actions
         self._stop = stop_event
+        self._camera_config = None
+
+        # default values
+        self._framerate = 24
+        self._bitrate = DEFAULT_BITRATE
+        self._vertical_flip = False
+        self._horizontal_flip = False
+        self._width = 1640
+        self._height = 1232
+        self._pi_id = None
+        self._location = None
+        self._output_path = ROOT_DIRECTORY
+        self._camera_config = None
 
     def setup(self):
         frame_duration = 1000000 // self._framerate
@@ -133,6 +144,14 @@ class Camera:
         self.encoder.output = [self.ffmpeg_output]
 
     def run(self):
+        while self._camera_config is None:
+            logger.debug("[Camera] Waiting for initial configuration...")
+            msg = self._camera_actions.get()
+            self._process_action(msg[0], msg[1])
+
+        # initial camera setup
+        self.setup()
+
         # initialize camera
         self.picam.start()
         time.sleep(2)  # let the camera start running properly
@@ -147,19 +166,19 @@ class Camera:
                 first_cycle = True
 
             match self._mode:
-                case "image":
+                case ModeEnum.IMAGE:
                     if not first_cycle:
                         self._sleep(self._image_rest_time)
 
                     self._capture_image()
 
-                case "video":
+                case ModeEnum.VIDEO:
                     if not first_cycle:
                         self._sleep(self._cycle_rest_time)
 
                     self._capture_video()
 
-                case "image/video":
+                case ModeEnum.IMAGE_VIDEO:
                     if not first_cycle:
                         self._sleep(self._cycle_rest_time)
 
@@ -168,7 +187,7 @@ class Camera:
                         self._capture_image(sleep=True)
                     self._capture_video(sleep=True)
 
-                case "rtsp_stream":
+                case ModeEnum.RTSP_STREAM:
                     self._capture_stream()
 
                 case "stop":
@@ -235,7 +254,7 @@ class Camera:
         # logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
 
     def _capture_stream(self):
-        rtsp_stream_output = PyavOutput(self._camera_config["rtsp_stream"]["address"], format="rtsp")
+        rtsp_stream_output = PyavOutput(self._camera_config.rtsp_stream.address, format="rtsp")
         self.encoder.output = [rtsp_stream_output]
         self.picam.start_encoder(self.encoder)
 
@@ -244,66 +263,60 @@ class Camera:
             self._current_time = time.strftime("%Y-%m-%d %X")
 
     # ----- VALIDATORS AND CONFIG -----
-    def _validate_and_set_config(self, path: str):
-        self._config = json.loads(open(path, "r").read())
-        camera_config: dict = self._config["camera"]
+    def _set_config_update(self, config: ArtincamPiAgentConfig):
+        # self._config = json.loads(open(path, "r").read())
+        camera_config: ArtincamPiCamera = config.camera
         self._camera_config = camera_config
-        transforms = camera_config.get("transforms", {})
+        transforms = camera_config.transforms
 
-        self._mode = camera_config["mode"]
+        self._mode = camera_config.mode
         # unit used to define video recording time, default is minutes (m)
-        image_capture_time_unit = self._set_time_unit_conversion(
-            camera_config.get("image_capture_time_unit", TimeUnit.MINUTE)
-        )
-        image_rest_time_unit = self._set_time_unit_conversion(
-            camera_config.get("image_rest_time_unit", TimeUnit.MINUTE)
-        )
-        recording_time_unit = self._set_time_unit_conversion(camera_config.get("recording_time_unit", TimeUnit.MINUTE))
-        cycle_rest_time_unit = self._set_time_unit_conversion(
-            camera_config.get("cycle_rest_time_unit", TimeUnit.MINUTE)
-        )
+        image_capture_time_unit = self._set_time_unit_conversion(camera_config.image_capture_time_unit)
+        image_rest_time_unit = self._set_time_unit_conversion(camera_config.image_rest_time_unit)
+        recording_time_unit = self._set_time_unit_conversion(camera_config.recording_time_unit)
+        cycle_rest_time_unit = self._set_time_unit_conversion(camera_config.cycle_rest_time_unit)
 
         # ----- STREAM SETUP -----
-        self._vertical_flip = transforms.get("vertical_flip", False)
-        self._horizontal_flip = transforms.get("horizontal_flip", False)
+        self._vertical_flip = transforms.vertical_flip
+        self._horizontal_flip = transforms.horizontal_flip
 
         # ----- IMAGE SETUP -----
         # how many images to be taken per cycle (only used in image/video mode)
-        self._image_capture_time = camera_config.get("image_capture_time") * image_capture_time_unit
+        self._image_capture_time = camera_config.image_capture_time * image_capture_time_unit
         # wait time between images
-        self._image_rest_time = camera_config.get("image_rest_time") * image_rest_time_unit
+        self._image_rest_time = camera_config.image_rest_time * image_rest_time_unit
 
         # ----- VIDEO SETUP -----
         # how long should each video be, default is 10
-        self._recording_time = camera_config.get("recording_time", 10) * recording_time_unit
+        self._recording_time = camera_config.recording_time * recording_time_unit
 
         # rest time defines how much time to wait till next video starts being saved, default is 0
         # this means, once a video is finished being recorded, the next one will start being recorded
         # immediately
-        self._cycle_rest_time = camera_config.get("cycle_rest_time", 0) * cycle_rest_time_unit
+        self._cycle_rest_time = camera_config.cycle_rest_time * cycle_rest_time_unit
 
         # how many frames per second, default 24
-        self._framerate = camera_config.get("framerate", 24)
+        self._framerate = camera_config.framerate
 
         # bitrate is used to determine the quality of image during compression. The higher the value the
         # better quality image, the more space it takes
-        self._bitrate = camera_config.get("bitrate", 8388608)
+        self._bitrate = camera_config.bitrate
 
         # how many width pixels, think of it as if you were providing measurements for a box ( width x height )
         # the bigger width x height, the better the image, the more storage it takes. Default is 1640
-        self._width = camera_config.get("resolution", {}).get("width", 1640)
+        self._width = camera_config.resolution.width
         # how many height pixels, default is 1232
-        self._height = camera_config.get("resolution", {}).get("height", 1232)
+        self._height = camera_config.resolution.height
 
         # location of where the rapsberry pi will be located in, no default value, must only have hyphens and lower
         # case letters with a max of 30 characters
-        self._location = camera_config["location"]
+        self._location = camera_config.location
 
         # identifier of raspberry pi, no default value
-        self._pi_id = camera_config["pi_id"]
+        self._pi_id = camera_config.pi_id
 
         # where to store recordings
-        self._output_path = pathlib.Path(f"{ROOT_DIRECTORY}/{camera_config['output_dir']}")
+        self._output_path = pathlib.Path(f"{ROOT_DIRECTORY}/{camera_config.output_dir}")
         self._output_path.mkdir(parents=True, exist_ok=True)
 
     def _set_time_unit_conversion(self, unit: TimeUnit):
@@ -373,8 +386,12 @@ class Camera:
         if seconds > 0:
             time.sleep(seconds)
 
-    def _process_action(self, action: CameraAction, params: dict):
+    def _process_action(self, action: CameraAction, params: str | ArtincamPiAgentConfig):
         match action:
             case CameraAction.CHANGE_MODE:
                 logger.debug(f"[Camera] Changing mode to {params}")
                 self._mode = params
+            case CameraAction.CONFIG_UPDATE:
+                config: ArtincamPiAgentConfig = params
+                self._set_config_update(config)
+                logger.debug("[Camera] Configuration updated.")

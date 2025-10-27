@@ -12,7 +12,10 @@ func (s *Server) registerRoutes() {
 		r.Mount("/v1/agents", s.agentRouter())
 		r.Mount("/v1/agent-types", s.agentTypeRouter())
 	})
-	s.router.Get("/ws/agent", WsAgentConnectionHandler(s.Connections))
+
+	s.router.Route("/ws/", func(r chi.Router) {
+		r.Get("/v1/agent/{id}", s.wsAgentConnectionHandler(s.Connections))
+	})
 
 	// access swagger in browser with /swagger/index.html
 	s.router.Get("/swagger/*", httpSwagger.Handler(

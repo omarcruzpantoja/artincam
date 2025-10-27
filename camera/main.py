@@ -9,7 +9,7 @@ def get_env(name: str, required: bool = False):
 
 
 async def main():
-    agent = ArtincamAgent("1")
+    agent = ArtincamAgent(get_env("ARTINCAM_AGENT_ID", required=True))
     agent.start()
 
     # Hook Ctrl+C for graceful exit

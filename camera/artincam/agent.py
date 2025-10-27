@@ -9,7 +9,7 @@ import websockets
 
 from .camera import Camera
 from .constants import CameraAction
-from .schemas import CameraCommand
+from .schemas import AgentInit, CameraCommand
 
 
 def get_env(name: str, required: bool = False):
@@ -20,7 +20,6 @@ def get_env(name: str, required: bool = False):
 class ArtincamAgent:
     _actions: Queue
     _stop: threading.Event
-    _mode: str
     _agent_id: str
     _camera_thread: threading.Thread
 
@@ -28,18 +27,16 @@ class ArtincamAgent:
         self._actions = Queue()
         self._camera_actions = Queue()
         self._stop = threading.Event()
-        self._mode = "idle"
         self._agent_id = agent_id
 
         self.camera = Camera(camera_actions=self._camera_actions, stop_event=self._stop)
-        self.camera.setup()
         self._camera_thread = threading.Thread(target=self.camera.run, daemon=True)
         self._ws_task = None
         self._ws = None
 
     def start(self):
-        self._camera_thread.start()
         self._ws_task = asyncio.create_task(self._initialize_ws_connection())
+        self._camera_thread.start()
 
     async def stop(self):
         # send signal to stop the camera loop
@@ -58,23 +55,13 @@ class ArtincamAgent:
         # wait for the camera thread to safely exit
         self._camera_thread.join()
 
-    def _camera_loop(self):
-        while not self._stop.is_set():
-            try:
-                cmd = self._actions.get()
-                self._mode = cmd
-            except QueueEmpty:
-                pass
-
-            print(f"[Camera] Running in mode: {self._mode}")
-
     async def _initialize_ws_connection(self):
         """Continuously maintain a WebSocket connection with auto-reconnect."""
         while True:
             try:
                 print("[WS] connecting to backend...")
                 async with websockets.connect(
-                    f"ws://{get_env('BACKEND_SERVICE_URL')}/ws/agent?x-agent-id={self._agent_id}"
+                    f"ws://{get_env('BACKEND_SERVICE_URL')}/ws/v1/agent/{self._agent_id}"
                 ) as ws:
                     self._ws = ws
                     print("[WS] connected.")
@@ -102,6 +89,8 @@ class ArtincamAgent:
             match parsed_msg.get("type", ""):
                 case "camera-command":
                     self._handle_camera_command(parsed_msg)
+                case "agent-init":
+                    self._handle_agent_init(parsed_msg)
 
         except Exception as e:
             print("parsing error: ", e)
@@ -109,3 +98,7 @@ class ArtincamAgent:
     def _handle_camera_command(self, msg: dict):
         schema = CameraCommand(**msg)
         self._camera_actions.put((CameraAction.CHANGE_MODE, schema.mode))
+
+    def _handle_agent_init(self, msg: dict):
+        schema = AgentInit(**msg)
+        self._camera_actions.put((CameraAction.CONFIG_UPDATE, schema.config))
