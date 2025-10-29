@@ -20,6 +20,7 @@ func (s *Server) agentRouter() http.Handler {
 	r.Post("/", s.createAgentHandler)
 	r.Patch("/{id}", s.patchAgentHandler)
 	r.Delete("/{id}", s.deleteAgentHandler)
+	r.Post("/{id}/ws-message", s.agentWsMessage)
 	// r.Get("/", TempAgentListHandler(s))
 	// r.Post("/{id}/action", AgentCommandHandler(s))
 
@@ -212,31 +213,76 @@ func (s *Server) deleteAgentHandler(w http.ResponseWriter, r *http.Request) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Agent ID"
+// @Param        type   query      string  true  "Message type"
 // @Param        agent-action  body      dto.AgentActionMessage  true  "AgentAction"
-// @Router       /api/v1/agents/{id}/action [post]
-func AgentCommandHandler(s *Server) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var action dto.AgentActionMessage
+// @Router       /api/v1/agents/{id}/ws-message [post]
+func (s *Server) agentWsMessage(w http.ResponseWriter, r *http.Request) {
+	var (
+		agent *qx.Agent
+		err   error
+	)
 
-		if err := DecodeRequestBody(w, r, &action); err != nil {
+	id := chi.URLParam(r, "id")
+	t := r.URL.Query().Get("type")
+
+	if t == "" {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, CreateErrorResponse("Message type is required."))
+		return
+	}
+
+	conn, exists := s.Connections.Get(id)
+
+	if !exists {
+		render.Status(r, http.StatusNotFound)
+		render.JSON(w, r, CreateErrorResponse("Agent is not connected."))
+		return
+	}
+
+	repo := repositories.NewAgentRepository(r.Context(), s.DbConn)
+	agent, err = repo.GetAgentByID(id)
+
+	if err != nil {
+		render.Status(r, http.StatusNotFound)
+		render.JSON(w, r, CreateErrorResponse("Agent not found."))
+		return
+	}
+
+	switch t {
+	case "config-update":
+		{
+			config := &dto.ArtincamPiAgentConfig{}
+			err := json.Unmarshal([]byte(agent.Config), &config)
+
+			if err != nil {
+				render.Status(r, http.StatusInternalServerError)
+				render.JSON(w, r, CreateErrorResponse("Failed to parse agent config."))
+				return
+			}
+
+			initMessage := dto.ConfigUpdateMessage{
+				Mode:   config.Camera.Mode,
+				Config: *config,
+				Type:   "config-update",
+			}
+
+			err = conn.Conn.WriteJSON(initMessage)
+
+			if err != nil {
+				render.Status(r, http.StatusInternalServerError)
+				render.JSON(w, r, CreateErrorResponse("Failed to send message to agent."))
+				return
+			}
+		}
+	default:
+		{
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, CreateErrorResponse("Invalid message type."))
 			return
 		}
-
-		agentId := chi.URLParam(r, "id")
-		conn, exists := s.Connections.Get(agentId)
-
-		if !exists {
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, CreateErrorResponse("Agent is not online."))
-		}
-
-		// send message
-		action.Type = "camera-command"
-		conn.Conn.WriteJSON(action)
-
-		render.Status(r, http.StatusCreated)
-		render.JSON(w, r, CreateResponse(action))
 	}
+
+	render.Status(r, http.StatusNoContent)
 }
 
 func validateConfig(agentType int64, configBytes []byte) error {

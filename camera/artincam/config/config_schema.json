@@ -16,7 +16,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["RUNNING", "STOPPED", "FAILURE"],
+          "enum": ["ACTIVE", "STOPPED", "FAILURE"],
           "description": "Current operational status of the camera."
         },
         "resolution": {

@@ -34,7 +34,7 @@ type AgentActionMessage struct {
 	Type string `json:"type"`
 }
 
-type AgentInitMessage struct {
+type ConfigUpdateMessage struct {
 	Mode   string                `json:"mode"`
 	Config ArtincamPiAgentConfig `json:"config"`
 	Type   string                `json:"type"`
@@ -47,7 +47,7 @@ type ArtincamPiAgentConfig struct {
 
 type Camera struct {
 	Mode                 string      `json:"mode" example:"video"`
-	Status               string      `json:"status,omitempty" example:"RUNNING"`
+	Status               string      `json:"status,omitempty" example:"ACTIVE"`
 	Resolution           Resolution  `json:"resolution"`
 	RtspStream           *RtspStream `json:"rtsp_stream,omitempty"`
 	Transforms           Transforms  `json:"transforms"`

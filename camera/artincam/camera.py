@@ -11,8 +11,8 @@ from queue import Queue
 import cv2
 import psutil
 
-from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, ModeEnum
-from .constants import CameraAction
+from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, ModeEnum, StatusEnum
+from .constants import AgentMessage
 
 # libcamera and pimcamera2 will already be installed in the raspberry pis
 # when working outside a raspberry PI we will use a libcamera and picamera mocks
@@ -69,7 +69,8 @@ class FileCounter:
 
 class Camera:
     _config: dict
-    _mode: str
+    _mode: ModeEnum
+    _status: StatusEnum
 
     _width: int
     _height: int
@@ -84,8 +85,9 @@ class Camera:
     _time_unit: TimeUnit
     _output_path: pathlib.Path
 
-    _camera_actions: Queue[tuple[CameraAction, dict | None]] | None
+    _agent_messages: Queue[tuple[AgentMessage, dict | None]] | None
     _stop: threading.Event
+    _interrupt_sleep: threading.Event
 
     picam: Picamera2
     encoder: H264Encoder
@@ -94,7 +96,7 @@ class Camera:
 
     def __init__(
         self,
-        camera_actions: Queue[tuple[CameraAction, dict | None]],
+        agent_messages: Queue[tuple[AgentMessage, dict | None]],
         stop_event: threading.Event,
     ):
         # bit rate data
@@ -109,9 +111,16 @@ class Camera:
         # Note: 1920x1080 should not be used, it limits the FoV of the camera. Not good.
         self.picam = Picamera2()
         self.file_counter = FileCounter()
-        self._camera_actions = camera_actions
+        self._agent_messages = agent_messages
         self._stop = stop_event
+        self._interrupt_sleep = threading.Event()
         self._camera_config = None
+
+        self._agent_message_thread = threading.Thread(
+            target=self._camera_command_loop,
+            daemon=True,
+        )
+        self._agent_message_thread.start()
 
         # default values
         self._framerate = 24
@@ -144,57 +153,50 @@ class Camera:
         self.encoder.output = [self.ffmpeg_output]
 
     def run(self):
-        while self._camera_config is None:
+        while self._camera_config is None and not self._stop.is_set():
             logger.debug("[Camera] Waiting for initial configuration...")
-            msg = self._camera_actions.get()
-            self._process_action(msg[0], msg[1])
+            self._interruptable_sleep(10)
 
         # initial camera setup
         self.setup()
-
         # initialize camera
         self.picam.start()
-        time.sleep(2)  # let the camera start running properly
-        first_cycle = True
+        self._sleep(2)  # let the camera start running properly
 
         while not self._stop.is_set():  # while stop event is not set, keep running
-            # self._use_timestamp_overlay()
-
-            if not self._camera_actions.empty():
-                msg = self._camera_actions.get()
-                self._process_action(msg[0], msg[1])
-                first_cycle = True
+            if self._status != StatusEnum.ACTIVE:
+                self._sleep(1)
+                continue
 
             match self._mode:
                 case ModeEnum.IMAGE:
-                    if not first_cycle:
-                        self._sleep(self._image_rest_time)
-
                     self._capture_image()
+                    self._interruptable_sleep(self._image_rest_time)
 
                 case ModeEnum.VIDEO:
-                    if not first_cycle:
-                        self._sleep(self._cycle_rest_time)
-
                     self._capture_video()
+                    self._interruptable_sleep(self._cycle_rest_time)
 
                 case ModeEnum.IMAGE_VIDEO:
-                    if not first_cycle:
-                        self._sleep(self._cycle_rest_time)
-
                     start_time = time.time()
-                    while time.time() - start_time < self._image_capture_time:
+
+                    while time.time() - start_time < self._image_capture_time and not self._break_cycle_condition():
                         self._capture_image(sleep=True)
-                    self._capture_video(sleep=True)
+                        self._interruptable_sleep(self._image_rest_time)
+
+                        if self._break_cycle_condition():
+                            break
+
+                        self._capture_video(sleep=True)
+                        self._interruptable_sleep(self._cycle_rest_time)
 
                 case ModeEnum.RTSP_STREAM:
                     self._capture_stream()
 
-                case "stop":
+                case _:
                     self._sleep(1)
 
-            first_cycle = False
-
+            self._interrupt_sleep.clear()
         self.picam.stop_encoder()
         self.picam.stop()
         self.picam.close()
@@ -232,10 +234,7 @@ class Camera:
         self._current_time = time.strftime("%Y-%m-%d %X")
         self.picam.capture_file(output_file)
         self.file_counter.increment_counter()
-        # logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
-
-        if sleep:
-            self._sleep(self._image_rest_time)
+        logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
 
     def _capture_video(self):
         output_file = self._get_file_name()
@@ -245,7 +244,9 @@ class Camera:
 
         # record for however many seconds. On each second update timestamp
         for _ in range(self._recording_time):
-            self._sleep(1)
+            if self._interruptable_sleep(1):
+                break
+
             self._current_time = time.strftime("%Y-%m-%d %X")
 
         # once time is finished, stop recording
@@ -258,9 +259,10 @@ class Camera:
         self.encoder.output = [rtsp_stream_output]
         self.picam.start_encoder(self.encoder)
 
-        while self._camera_actions.empty():
-            self._sleep(1)
+        while not self._break_cycle_condition():
             self._current_time = time.strftime("%Y-%m-%d %X")
+
+        self.picam.stop_encoder()
 
     # ----- VALIDATORS AND CONFIG -----
     def _set_config_update(self, config: ArtincamPiAgentConfig):
@@ -270,6 +272,7 @@ class Camera:
         transforms = camera_config.transforms
 
         self._mode = camera_config.mode
+        self._status = camera_config.status
         # unit used to define video recording time, default is minutes (m)
         image_capture_time_unit = self._set_time_unit_conversion(camera_config.image_capture_time_unit)
         image_rest_time_unit = self._set_time_unit_conversion(camera_config.image_rest_time_unit)
@@ -326,16 +329,14 @@ class Camera:
         match unit:
             case TimeUnit.SECOND:
                 return 1
-                # do nothing
-                pass
             case TimeUnit.MINUTE:
-                # Theres 60 seconds in a method
+                # There's 60 seconds in a minute
                 return 60
             case TimeUnit.HOUR:
-                # in 60 minutes in an hour, each minute has 60 seconds = 60 * 60
+                # There's 60 minutes in an hour, each minute has 60 seconds = 60 * 60
                 return 3600
             case TimeUnit.DAY:
-                # 24 hours a day, 60 minutes in an hour, each minute has 60 seconds = 24 * 60 * 60
+                # There's 24 hours a day, 60 minutes in an hour, each minute has 60 seconds = 24 * 60 * 60
                 return 86400
 
     # ----- UTILS -----
@@ -386,12 +387,26 @@ class Camera:
         if seconds > 0:
             time.sleep(seconds)
 
-    def _process_action(self, action: CameraAction, params: str | ArtincamPiAgentConfig):
-        match action:
-            case CameraAction.CHANGE_MODE:
-                logger.debug(f"[Camera] Changing mode to {params}")
-                self._mode = params
-            case CameraAction.CONFIG_UPDATE:
+    def _interruptable_sleep(self, seconds: float) -> bool:
+        if self._break_cycle_condition():
+            return True
+
+        return self._interrupt_sleep.wait(timeout=seconds)
+
+    def _break_cycle_condition(self) -> bool:
+        return self._interrupt_sleep.is_set() or self._stop.is_set()
+
+    def _process_message(self, message: AgentMessage, params: str | ArtincamPiAgentConfig):
+        match message:
+            case AgentMessage.CONFIG_UPDATE:
                 config: ArtincamPiAgentConfig = params
+                self._status = StatusEnum.STOPPED
+                self._interrupt_sleep.set()
                 self._set_config_update(config)
+                self._interrupt_sleep.clear()
                 logger.debug("[Camera] Configuration updated.")
+
+    def _camera_command_loop(self):
+        while not self._stop.is_set():
+            msg = self._agent_messages.get()
+            self._process_message(msg[0], msg[1])

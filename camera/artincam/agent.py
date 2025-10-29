@@ -8,8 +8,8 @@ import websockets
 
 
 from .camera import Camera
-from .constants import CameraAction
-from .schemas import AgentInit, CameraCommand
+from .constants import AgentMessage
+from .schemas import ConfigUpdate, CameraCommand
 
 
 def get_env(name: str, required: bool = False):
@@ -25,11 +25,11 @@ class ArtincamAgent:
 
     def __init__(self, agent_id: str):
         self._actions = Queue()
-        self._camera_actions = Queue()
+        self._camera_messages = Queue()
         self._stop = threading.Event()
         self._agent_id = agent_id
 
-        self.camera = Camera(camera_actions=self._camera_actions, stop_event=self._stop)
+        self.camera = Camera(agent_messages=self._camera_messages, stop_event=self._stop)
         self._camera_thread = threading.Thread(target=self.camera.run, daemon=True)
         self._ws_task = None
         self._ws = None
@@ -50,7 +50,7 @@ class ArtincamAgent:
 
         # force camera loop to receive a message to close
         self._actions.put_nowait("exit")
-        self._camera_actions.put_nowait((CameraAction.EXIT, None))
+        self._camera_messages.put_nowait((AgentMessage.EXIT, None))
 
         # wait for the camera thread to safely exit
         self._camera_thread.join()
@@ -89,16 +89,18 @@ class ArtincamAgent:
             match parsed_msg.get("type", ""):
                 case "camera-command":
                     self._handle_camera_command(parsed_msg)
-                case "agent-init":
-                    self._handle_agent_init(parsed_msg)
+                case "config-update":
+                    self._handle_config_update(parsed_msg)
+                case _:
+                    print("unknown message type:", parsed_msg.get("type", ""))
 
         except Exception as e:
             print("parsing error: ", e)
 
     def _handle_camera_command(self, msg: dict):
         schema = CameraCommand(**msg)
-        self._camera_actions.put((CameraAction.CHANGE_MODE, schema.mode))
+        self._camera_messages.put((AgentMessage.CHANGE_MODE, schema.mode))
 
-    def _handle_agent_init(self, msg: dict):
-        schema = AgentInit(**msg)
-        self._camera_actions.put((CameraAction.CONFIG_UPDATE, schema.config))
+    def _handle_config_update(self, msg: dict):
+        schema = ConfigUpdate(**msg)
+        self._camera_messages.put((AgentMessage.CONFIG_UPDATE, schema.config))

@@ -67,8 +67,8 @@ func arcticPiHandler(agent *qx.Agent, connMap *connectionmap.ConnectionMap, wsCo
 		fmt.Println("error unmarshalling agent config:", err)
 	} else {
 
-		var action dto.AgentInitMessage
-		action.Type = "agent-init"
+		var action dto.ConfigUpdateMessage
+		action.Type = "config-update"
 		action.Mode = config.Camera.Mode
 		action.Config = *config
 		wsConn.Conn.WriteJSON(action)

@@ -20,7 +20,7 @@ class ModeEnum(str, Enum):
 
 
 class StatusEnum(str, Enum):
-    RUNNING = "RUNNING"
+    ACTIVE = "ACTIVE"
     STOPPED = "STOPPED"
     FAILURE = "FAILURE"
 
@@ -100,6 +100,6 @@ class ArtincamPiAgentConfig(BaseModel):
 # ---- END Artincam Pi Agent Config -----
 
 
-class AgentInit(BaseModel):
+class ConfigUpdate(BaseModel):
     type: str
     config: ArtincamPiAgentConfig

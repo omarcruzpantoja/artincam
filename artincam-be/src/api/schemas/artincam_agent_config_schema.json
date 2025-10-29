@@ -16,7 +16,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["RUNNING", "STOPPED", "FAILURE"],
+          "enum": ["ACTIVE", "STOPPED", "FAILURE"],
           "description": "Current operational status of the camera."
         },
         "resolution": {
@@ -109,7 +109,14 @@
           "default": "s"
         }
       },
-      "required": ["mode", "resolution", "output_dir", "location", "pi_id"]
+      "required": [
+        "mode",
+        "resolution",
+        "output_dir",
+        "location",
+        "pi_id",
+        "status"
+      ]
     },
     "Resolution": {
       "type": "object",
