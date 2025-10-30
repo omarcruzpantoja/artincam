@@ -6,6 +6,7 @@ package qx
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Agent struct {
@@ -24,6 +25,18 @@ type AgentType struct {
 	Description string       `json:"description"`
 	CreatedAt   sql.NullTime `json:"created_at"`
 	UpdatedAt   sql.NullTime `json:"updated_at"`
+}
+
+type AssetFile struct {
+	ID        int64        `json:"id"`
+	CameraID  string       `json:"camera_id"`
+	Location  string       `json:"location"`
+	Timestamp time.Time    `json:"timestamp"`
+	UniqueID  string       `json:"unique_id"`
+	FileName  string       `json:"file_name"`
+	FileSize  int64        `json:"file_size"`
+	CreatedAt sql.NullTime `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
 }
 
 type GooseDbVersion struct {

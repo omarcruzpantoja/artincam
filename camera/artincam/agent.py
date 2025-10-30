@@ -1,20 +1,13 @@
 import asyncio
 import json
-import os
-from queue import Queue, Empty as QueueEmpty
 import threading
+from queue import Queue
 
 import websockets
 
-
 from .camera import Camera
-from .constants import AgentMessage
-from .schemas import ConfigUpdate, CameraCommand
-
-
-def get_env(name: str, required: bool = False):
-    # TODO: this needs to be moved to a utils
-    return os.getenv(name)
+from .constants import BACKEND_HOST, USE_HTTPS, AgentMessage
+from .schemas import CameraMessage, ConfigUpdate
 
 
 class ArtincamAgent:
@@ -61,7 +54,7 @@ class ArtincamAgent:
             try:
                 print("[WS] connecting to backend...")
                 async with websockets.connect(
-                    f"ws://{get_env('BACKEND_SERVICE_URL')}/ws/v1/agent/{self._agent_id}"
+                    f"ws{'s' if USE_HTTPS else ''}://{BACKEND_HOST}/ws/v1/agent/{self._agent_id}"
                 ) as ws:
                     self._ws = ws
                     print("[WS] connected.")
@@ -98,7 +91,7 @@ class ArtincamAgent:
             print("parsing error: ", e)
 
     def _handle_camera_command(self, msg: dict):
-        schema = CameraCommand(**msg)
+        schema = CameraMessage(**msg)
         self._camera_messages.put((AgentMessage.CHANGE_MODE, schema.mode))
 
     def _handle_config_update(self, msg: dict):

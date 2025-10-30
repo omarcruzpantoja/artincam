@@ -11,6 +11,7 @@ func (s *Server) registerRoutes() {
 	s.router.Route("/api/", func(r chi.Router) {
 		r.Mount("/v1/agents", s.agentRouter())
 		r.Mount("/v1/agent-types", s.agentTypeRouter())
+		r.Mount("/v1/asset-files", s.assetFileRouter())
 	})
 
 	s.router.Route("/ws/", func(r chi.Router) {

@@ -1,11 +1,13 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/guregu/null/v6"
 
 	"artincam-be/src/api/dto"
 	"artincam-be/src/api/schemas"
@@ -118,6 +120,7 @@ func (s *Server) patchAgentHandler(w http.ResponseWriter, r *http.Request) {
 		agt         qx.PatchAgentParams
 		agentParams dto.AgentPatchRequestParams
 		configBytes []byte
+		config      sql.NullString
 		err         error
 		agent       *qx.Agent
 	)
@@ -136,26 +139,32 @@ func (s *Server) patchAgentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	configBytes, err = json.Marshal(agentParams.Config)
+	if agentParams.Config != nil {
+		configBytes, err = json.Marshal(agentParams.Config)
 
-	if err != nil {
-		render.Status(r, http.StatusUnprocessableEntity)
-		render.JSON(w, r, CreateErrorResponse("Invalid agent config json."))
-		return
-	}
+		if err != nil {
+			render.Status(r, http.StatusUnprocessableEntity)
+			render.JSON(w, r, CreateErrorResponse("Invalid agent config json."))
+			return
+		}
 
-	if err = validateConfig(agent.AgentTypeID, configBytes); err != nil {
-		render.Status(r, http.StatusUnprocessableEntity)
-		render.JSON(w, r, CreateErrorResponse("Invalid agent config format."))
-		return
+		if err = validateConfig(agent.AgentTypeID, configBytes); err != nil {
+			render.Status(r, http.StatusUnprocessableEntity)
+			render.JSON(w, r, CreateErrorResponse("Invalid agent config format."))
+			return
+		}
+
+		config = sql.NullString{String: string(configBytes), Valid: true}
+	} else {
+		config = sql.NullString{Valid: false}
 	}
 
 	agt.ID = id
-	agt.Name = agentParams.Name
-	agt.Description = agentParams.Description
-	agt.Config = string(configBytes)
-	agent, err = repo.PatchAgent(agt)
+	agt.Name = null.StringFromPtr(agentParams.Name).NullString
+	agt.Description = null.StringFromPtr(agentParams.Description).NullString
+	agt.Config = config
 
+	agent, err = repo.PatchAgent(agt)
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
 		render.JSON(w, r, CreateErrorResponse("Failed to update agent."))
@@ -287,7 +296,7 @@ func (s *Server) agentWsMessage(w http.ResponseWriter, r *http.Request) {
 
 func validateConfig(agentType int64, configBytes []byte) error {
 	switch agentType {
-	case 1: // Artincam
+	case 0: // Artincam
 		return schemas.Validate(schemas.ArtincamAgentConfigSchema, configBytes)
 	}
 	return nil

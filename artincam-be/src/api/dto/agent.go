@@ -23,10 +23,10 @@ type AgentCreateRequestParams struct {
 }
 
 type AgentPatchRequestParams struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	Config      interface{} `json:"config"`
-	ID          string      `json:"id"`
+	Name        *string      `json:"name"`
+	Description *string      `json:"description"`
+	Config      *interface{} `json:"config"`
+	ID          string       `json:"id"`
 }
 
 type AgentActionMessage struct {

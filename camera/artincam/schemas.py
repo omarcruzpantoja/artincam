@@ -1,17 +1,25 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, conint, confloat, constr
+from pydantic import BaseModel, Field
+
+# ----- DB Schema Models-----
 
 
-class CameraCommand(BaseModel):
-    mode: str
-    type: str
+class AssetFile(BaseModel):
+    id: Optional[int] = Field(None, description="Primary key")
+    camera_id: str = Field(..., description="Camera ID")
+    location: str = Field(..., description="Location", max_length=512)
+    timestamp: str = Field(..., description="Timestamp in ISO format")
+    unique_id: str = Field(..., description="Unique ID", max_length=64)
+    file_name: str = Field(..., description="File name", max_length=256)
+    file_size: int = Field(0, description="File size in bytes", ge=0)
+
+
+# ----- END DB Schema -----
 
 
 # ----- Artincam Pi Agent Config -----
-
-
 class ModeEnum(str, Enum):
     RTSP_STREAM = "rtsp_stream"
     VIDEO = "video"
@@ -30,15 +38,6 @@ class TimeUnitEnum(str, Enum):
     M = "m"
     H = "h"
     D = "d"
-
-
-# Constrained types
-# PositiveInt = conint(ge=1)
-# NonNegativeInt = conint(ge=0)
-# PiID = conint(ge=0, le=9999)
-# Framerate = conint(ge=1)
-# Bitrate = conint(ge=1)
-# LocationStr = constr(regex=r"^[a-z-0-9]+$", max_length=30)
 
 
 class ArticamPiResolution(BaseModel):
@@ -100,6 +99,15 @@ class ArtincamPiAgentConfig(BaseModel):
 # ---- END Artincam Pi Agent Config -----
 
 
+# ----- Websocket Schemas -----
+class CameraMessage(BaseModel):
+    mode: str
+    type: str
+
+
 class ConfigUpdate(BaseModel):
     type: str
     config: ArtincamPiAgentConfig
+
+
+# ----- END Websocket Schemas -----

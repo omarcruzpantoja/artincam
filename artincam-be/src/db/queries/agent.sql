@@ -11,9 +11,13 @@ RETURNING *;
 
 -- name: PatchAgent :one
 UPDATE agent
-SET name = ?, description = ?, config = ?, updated_at = CURRENT_TIMESTAMP
-WHERE id = ?
+SET
+  name   = COALESCE(sqlc.narg('name'), name),
+  description = COALESCE(sqlc.narg('description'), description),
+  config = COALESCE(sqlc.narg('config'), config),
+  updated_at = CURRENT_TIMESTAMP
+WHERE id = sqlc.arg('id')
 RETURNING *;
 
 -- name: DeleteAgent :exec
-DELETE FROM agent WHERE id = ?;
+DELETE FROM agent WHERE id = sqlc.arg('id');

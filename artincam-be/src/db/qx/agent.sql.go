@@ -7,6 +7,7 @@ package qx
 
 import (
 	"context"
+	"database/sql"
 )
 
 const CreateAgent = `-- name: CreateAgent :one
@@ -45,7 +46,7 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent
 }
 
 const DeleteAgent = `-- name: DeleteAgent :exec
-DELETE FROM agent WHERE id = ?
+DELETE FROM agent WHERE id = ?1
 `
 
 func (q *Queries) DeleteAgent(ctx context.Context, id string) error {
@@ -109,16 +110,20 @@ func (q *Queries) GetAllAgents(ctx context.Context) ([]Agent, error) {
 
 const PatchAgent = `-- name: PatchAgent :one
 UPDATE agent
-SET name = ?, description = ?, config = ?, updated_at = CURRENT_TIMESTAMP
-WHERE id = ?
+SET
+  name   = COALESCE(?1, name),
+  description = COALESCE(?2, description),
+  config = COALESCE(?3, config),
+  updated_at = CURRENT_TIMESTAMP
+WHERE id = ?4
 RETURNING id, name, description, agent_type_id, config, created_at, updated_at
 `
 
 type PatchAgentParams struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Config      string `json:"config"`
-	ID          string `json:"id"`
+	Name        sql.NullString `json:"name"`
+	Description sql.NullString `json:"description"`
+	Config      sql.NullString `json:"config"`
+	ID          string         `json:"id"`
 }
 
 func (q *Queries) PatchAgent(ctx context.Context, arg PatchAgentParams) (Agent, error) {

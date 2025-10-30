@@ -1,15 +1,12 @@
-from artincam.agent import ArtincamAgent
 import asyncio
-import os
 import signal
 
-
-def get_env(name: str, required: bool = False):
-    return os.getenv(name)
+from artincam.agent import ArtincamAgent
+from artincam.constants import ARTINCAM_AGENT_ID
 
 
 async def main():
-    agent = ArtincamAgent(get_env("ARTINCAM_AGENT_ID", required=True))
+    agent = ArtincamAgent(ARTINCAM_AGENT_ID)
     agent.start()
 
     # Hook Ctrl+C for graceful exit

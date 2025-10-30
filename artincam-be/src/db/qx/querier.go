@@ -11,14 +11,19 @@ import (
 type Querier interface {
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error)
 	CreateAgentType(ctx context.Context, arg CreateAgentTypeParams) (AgentType, error)
+	CreateAssetFile(ctx context.Context, arg CreateAssetFileParams) (AssetFile, error)
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteAgentType(ctx context.Context, id int64) error
+	DeleteAssetFile(ctx context.Context, id int64) error
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
 	GetAgentTypeByID(ctx context.Context, id int64) (AgentType, error)
 	GetAllAgentTypes(ctx context.Context) ([]AgentType, error)
 	GetAllAgents(ctx context.Context) ([]Agent, error)
+	GetAllAssetFiles(ctx context.Context) ([]AssetFile, error)
+	GetAssetFileByID(ctx context.Context, id int64) (AssetFile, error)
 	PatchAgent(ctx context.Context, arg PatchAgentParams) (Agent, error)
 	PatchAgentType(ctx context.Context, arg PatchAgentTypeParams) (AgentType, error)
+	PatchAssetFile(ctx context.Context, arg PatchAssetFileParams) (AssetFile, error)
 }
 
 var _ Querier = (*Queries)(nil)

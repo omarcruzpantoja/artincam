@@ -11,8 +11,8 @@ from queue import Queue
 import cv2
 import psutil
 
-from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, ModeEnum, StatusEnum
 from .constants import AgentMessage
+from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, AssetFile, ModeEnum, StatusEnum
 
 # libcamera and pimcamera2 will already be installed in the raspberry pis
 # when working outside a raspberry PI we will use a libcamera and picamera mocks
@@ -39,6 +39,11 @@ class TimeUnit(StrEnum):
     MINUTE = "m"
     HOUR = "h"
     DAY = "d"
+
+
+class APIMethod(StrEnum):
+    POST = "POST"
+    PATCH = "PATCH"
 
 
 class FileCounter:
@@ -86,6 +91,7 @@ class Camera:
     _output_path: pathlib.Path
 
     _agent_messages: Queue[tuple[AgentMessage, dict | None]] | None
+    _messages_to_backend: Queue
     _stop: threading.Event
     _interrupt_sleep: threading.Event
 
@@ -121,6 +127,7 @@ class Camera:
             daemon=True,
         )
         self._agent_message_thread.start()
+        self._messages_to_backend = Queue()
 
         # default values
         self._framerate = 24
@@ -230,15 +237,15 @@ class Camera:
     # ----- MODE HANDLERS -----
     def _capture_image(self, sleep: bool = False):
         # Capture the image and save to a file
-        output_file = self._get_file_name(image=True)
+        output_filepath, asset_file = self._get_file_name(image=True)
         self._current_time = time.strftime("%Y-%m-%d %X")
-        self.picam.capture_file(output_file)
+        self.picam.capture_file(output_filepath)
         self.file_counter.increment_counter()
-        logger.debug(f"Image taken, storing in ({output_file})\nImage Resting...({self._image_rest_time})")
+        logger.debug(f"Image taken, storing in ({output_filepath})\nImage Resting...({self._image_rest_time})")
 
     def _capture_video(self):
-        output_file = self._get_file_name()
-        self.ffmpeg_output.output_filename = output_file
+        output_filepath, asset_file = self._get_file_name()
+        self.ffmpeg_output.output_filename = output_filepath
         logger.debug(f"Starting Recording ({self._recording_time}s)")
         self.picam.start_encoder(self.encoder)
 
@@ -354,7 +361,9 @@ class Camera:
 
         # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
         # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20-02-2025-06-03-10
-        timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+        current_time = datetime.now()
+        timestamp = current_time.strftime("%d-%m-%Y-%H-%M-%S")
+        unique_id = f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}"
 
         # The complete filename however would look like:
         # 1_sj-pr-usa-20-02-2025-06-03-10_UUIDV6.mkv
@@ -364,11 +373,20 @@ class Camera:
             pi_id=self._pi_id,
             location=self._location,
             timestamp=timestamp,
-            unique_id=f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}",
+            unique_id=unique_id,
             file_stride=file_stride,
         )
 
-        return str(final_transfer_path / file_name)
+        asset_file = AssetFile(
+            camera_id=self._pi_id,
+            location=self._location,
+            timestamp=current_time.strftime("%Y-%m-%d-%H-%M-%S"),
+            unique_id=unique_id,
+            file_name=file_name,
+            file_size=0,
+        )
+
+        return str(final_transfer_path / file_name), asset_file
 
     def _find_usb_mount_points(self):
         """

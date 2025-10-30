@@ -11,9 +11,12 @@ RETURNING *;
 
 -- name: PatchAgentType :one
 UPDATE agent_type
-SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP
-WHERE id = ?
+SET 
+  name   = COALESCE(sqlc.narg('name'), name),
+  description = COALESCE(sqlc.narg('description'), description),
+  updated_at = CURRENT_TIMESTAMP
+WHERE id = sqlc.arg('id')
 RETURNING *;
 
 -- name: DeleteAgentType :exec
-DELETE FROM agent_type WHERE id = ?;
+DELETE FROM agent_type WHERE id = sqlc.arg('id');
