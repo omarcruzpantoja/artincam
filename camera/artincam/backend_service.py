@@ -44,7 +44,7 @@ class BackendService:
             "file_size": asset_file.file_size,
         }
 
-        url = f"{self.BASE_URL}/api/v1/image-files"
+        url = f"{self.BASE_URL}/api/v1/asset-files"
         logger.debug("Sending image-file create payload to %s: %s", url, payload)
 
         resp = self._request_with_retries("POST", url, json=payload)
@@ -59,8 +59,8 @@ class BackendService:
             return
 
         payload = {"file_size": asset_file.file_size}
-        url = f"{self.BASE_URL}/api/v1/image-files/{asset_file.id}"
+        url = f"{self.BASE_URL}/api/v1/asset-files/{asset_file.id}"
         logger.debug("Updating image-file %s with payload %s", asset_file.id, payload)
 
-        resp = self._request_with_retries("PUT", url, json=payload)
+        resp = self._request_with_retries("PATCH", url, json=payload)
         logger.info("Image file updated (id=%s) status=%s", asset_file.id, resp.status_code)

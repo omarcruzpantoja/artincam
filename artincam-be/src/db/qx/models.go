@@ -35,6 +35,7 @@ type AssetFile struct {
 	UniqueID  string       `json:"unique_id"`
 	FileName  string       `json:"file_name"`
 	FileSize  int64        `json:"file_size"`
+	FileType  string       `json:"file_type"`
 	CreatedAt sql.NullTime `json:"created_at"`
 	UpdatedAt sql.NullTime `json:"updated_at"`
 }

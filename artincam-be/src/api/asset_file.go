@@ -18,7 +18,7 @@ func (s *Server) assetFileRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", s.assetFileListHandler)
 	r.Post("/", s.createAssetFileHandler)
-	r.Patch("/{id}/", s.PatchAssetFileHandler)
+	r.Patch("/{id}", s.PatchAssetFileHandler)
 
 	return r
 }

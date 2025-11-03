@@ -4,15 +4,17 @@ import pathlib
 import shutil
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import StrEnum
 from queue import Queue
 
 import cv2
 import psutil
 
+
+from .backend_service import BackendService
 from .constants import AgentMessage
-from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, AssetFile, ModeEnum, StatusEnum
+from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, AssetFile, AssetFileTypeEnum, ModeEnum, StatusEnum
 
 # libcamera and pimcamera2 will already be installed in the raspberry pis
 # when working outside a raspberry PI we will use a libcamera and picamera mocks
@@ -91,9 +93,11 @@ class Camera:
     _output_path: pathlib.Path
 
     _agent_messages: Queue[tuple[AgentMessage, dict | None]] | None
-    _messages_to_backend: Queue
     _stop: threading.Event
     _interrupt_sleep: threading.Event
+
+    _backend_client: BackendService
+    _messages_to_backend: Queue
 
     picam: Picamera2
     encoder: H264Encoder
@@ -123,11 +127,18 @@ class Camera:
         self._camera_config = None
 
         self._agent_message_thread = threading.Thread(
-            target=self._camera_command_loop,
+            target=self._camera_listener_loop,
             daemon=True,
         )
         self._agent_message_thread.start()
         self._messages_to_backend = Queue()
+
+        self._camera_callbacks_thread = threading.Thread(
+            target=self._camera_callbacks_loop,
+            daemon=True,
+        )
+        self._camera_callbacks_thread.start()
+        self._backend_client = BackendService()
 
         # default values
         self._framerate = 24
@@ -204,6 +215,7 @@ class Camera:
                     self._sleep(1)
 
             self._interrupt_sleep.clear()
+        self._messages_to_backend.put(None)
         self.picam.stop_encoder()
         self.picam.stop()
         self.picam.close()
@@ -237,14 +249,19 @@ class Camera:
     # ----- MODE HANDLERS -----
     def _capture_image(self, sleep: bool = False):
         # Capture the image and save to a file
-        output_filepath, asset_file = self._get_file_name(image=True)
+        output_filepath, asset_file = self._get_file_name(AssetFileTypeEnum.IMAGE, image=True)
         self._current_time = time.strftime("%Y-%m-%d %X")
+        self._messages_to_backend.put(self._create_asset_file_callback(asset_file))
         self.picam.capture_file(output_filepath)
+        # TODO: add function to get/update the asset file size
+        asset_file.file_size = 1
+        self._messages_to_backend.put(self._update_asset_file_callback(asset_file))
         self.file_counter.increment_counter()
         logger.debug(f"Image taken, storing in ({output_filepath})\nImage Resting...({self._image_rest_time})")
 
     def _capture_video(self):
-        output_filepath, asset_file = self._get_file_name()
+        output_filepath, asset_file = self._get_file_name(AssetFileTypeEnum.VIDEO)
+        self._messages_to_backend.put(self._create_asset_file_callback(asset_file))
         self.ffmpeg_output.output_filename = output_filepath
         logger.debug(f"Starting Recording ({self._recording_time}s)")
         self.picam.start_encoder(self.encoder)
@@ -259,6 +276,10 @@ class Camera:
         # once time is finished, stop recording
         self.picam.stop_encoder()
         self.file_counter.increment_counter()
+
+        # TODO: add function to get/update the asset file size
+        asset_file.file_size = 1
+        self._messages_to_backend.put(self._update_asset_file_callback(asset_file))
         # logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
 
     def _capture_stream(self):
@@ -347,7 +368,7 @@ class Camera:
                 return 86400
 
     # ----- UTILS -----
-    def _get_file_name(self, image=False) -> str:
+    def _get_file_name(self, file_type: AssetFileTypeEnum, image=False) -> tuple[str, AssetFile]:
         """Defines the name of the file generated for the video."""
 
         # Automatically add data to usb stick if it can be found, otherwise save in the local disk
@@ -361,7 +382,7 @@ class Camera:
 
         # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
         # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20-02-2025-06-03-10
-        current_time = datetime.now()
+        current_time = datetime.now(timezone.utc)
         timestamp = current_time.strftime("%d-%m-%Y-%H-%M-%S")
         unique_id = f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}"
 
@@ -376,14 +397,15 @@ class Camera:
             unique_id=unique_id,
             file_stride=file_stride,
         )
-
+        # 2006-01-02T15:04:05Z07:00
         asset_file = AssetFile(
-            camera_id=self._pi_id,
+            camera_id=str(self._pi_id),
             location=self._location,
-            timestamp=current_time.strftime("%Y-%m-%d-%H-%M-%S"),
+            timestamp=current_time.isoformat(),
             unique_id=unique_id,
             file_name=file_name,
-            file_size=0,
+            file_size=-1,
+            file_type=file_type,
         )
 
         return str(final_transfer_path / file_name), asset_file
@@ -424,7 +446,30 @@ class Camera:
                 self._interrupt_sleep.clear()
                 logger.debug("[Camera] Configuration updated.")
 
-    def _camera_command_loop(self):
+    def _camera_listener_loop(self):
         while not self._stop.is_set():
             msg = self._agent_messages.get()
             self._process_message(msg[0], msg[1])
+
+    def _camera_callbacks_loop(self):
+        while not self._stop.is_set():
+            callback = self._messages_to_backend.get()
+
+            if callback is None:
+                break
+
+            callback()
+
+    def _create_asset_file_callback(self, asset_file: AssetFile):
+        def callback():
+            response = self._backend_client.create_asset_file(asset_file)
+            payload = response.json()
+            asset_file.id = payload["data"]["id"]
+
+        return callback
+
+    def _update_asset_file_callback(self, asset_file: AssetFile):
+        def callback():
+            self._backend_client.update_asset_file(asset_file)
+
+        return callback

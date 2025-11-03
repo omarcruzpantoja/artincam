@@ -3,7 +3,11 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+
 # ----- DB Schema Models-----
+class AssetFileTypeEnum(Enum):
+    IMAGE = "image"
+    VIDEO = "video"
 
 
 class AssetFile(BaseModel):
@@ -13,7 +17,8 @@ class AssetFile(BaseModel):
     timestamp: str = Field(..., description="Timestamp in ISO format")
     unique_id: str = Field(..., description="Unique ID", max_length=64)
     file_name: str = Field(..., description="File name", max_length=256)
-    file_size: int = Field(0, description="File size in bytes", ge=0)
+    file_size: int = Field(0, description="File size in bytes", ge=-1)
+    file_type: AssetFileTypeEnum
 
 
 # ----- END DB Schema -----

@@ -5,8 +5,8 @@ SELECT * FROM asset_file;
 SELECT * FROM asset_file WHERE id = ? LIMIT 1;
 
 -- name: CreateAssetFile :one
-INSERT INTO asset_file (camera_id, location, timestamp, unique_id, file_name, file_size, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+INSERT INTO asset_file (camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING *;
 
 -- name: PatchAssetFile :one

@@ -30,7 +30,8 @@ CREATE TABLE asset_file (
   timestamp DATETIME NOT NULL,
   unique_id TEXT UNIQUE NOT NULL CHECK (LENGTH(unique_id) < 64),
   file_name TEXT NOT NULL CHECK (LENGTH(file_name) < 256),
-  file_size INTEGER NOT NULL DEFAULT 0 CHECK (file_size >= 0),
+  file_size INTEGER NOT NULL DEFAULT -1 CHECK (file_size >= -1),
+  file_type TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

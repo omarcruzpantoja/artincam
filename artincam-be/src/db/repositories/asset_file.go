@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
 	"artincam-be/src/db/qx"
 )
@@ -49,6 +50,7 @@ func (r *AssetFileRepository) GetAssetFileByID(id int64) (*qx.AssetFile, error) 
 func (r *AssetFileRepository) CreateAssetFile(agentType qx.CreateAssetFileParams) (*qx.AssetFile, error) {
 	at, err := qx.New(r.Db).CreateAssetFile(r.Ctx, agentType)
 	if err != nil {
+		fmt.Println((err))
 		return nil, err
 	}
 
