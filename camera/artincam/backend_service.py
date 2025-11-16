@@ -1,10 +1,9 @@
 import logging
+import requests
 import time
 
-import requests
-
 from .constants import BACKEND_HOST, USE_HTTPS
-from .schemas import AssetFile
+from .schemas import AssetFile, ActionLog
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +32,18 @@ class BackendService:
         logger.exception("All request attempts failed for %s %s", method, url)
         raise last_exc
 
-    def create_asset_file(self, asset_file: AssetFile) -> requests.Response:
-        """POST image file metadata to backend. Raises on failure."""
+    # ---- Action log calls ----
+    def create_action_log(self, payload: ActionLog):
+        url = f"{self.BASE_URL}/api/v1/action-logs"
+        logger.debug("Creating action log: %s", payload)
+
+        resp = self._request_with_retries("POST", url, json=payload.model_dump())
+        logger.info("Action log created status=%s", resp.status_code)
+        return resp
+
+    # ---- Asset file calls ----
+
+    def create_asset_file(self, asset_file: AssetFile):
         payload = {
             "camera_id": asset_file.camera_id,
             "location": asset_file.location,
@@ -48,19 +57,19 @@ class BackendService:
         logger.debug("Sending image-file create payload to %s: %s", url, payload)
 
         resp = self._request_with_retries("POST", url, json=payload)
-
-        logger.info("Image file metadata created (unique_id=%s) status=%s", asset_file.unique_id, resp.status_code)
+        logger.info("Image file created (unique_id=%s) status=%s", asset_file.unique_id, resp.status_code)
         return resp
 
-    def update_asset_file(self, asset_file: AssetFile) -> requests.Response | None:
-        """PUT update to an existing image file metadata. Raises on failure."""
+    def update_asset_file(self, asset_file: AssetFile):
         if asset_file.id is None:
             logger.error("asset_file.id is required for update")
-            return
+            return None
 
         payload = {"file_size": asset_file.file_size}
+
         url = f"{self.BASE_URL}/api/v1/asset-files/{asset_file.id}"
         logger.debug("Updating image-file %s with payload %s", asset_file.id, payload)
 
         resp = self._request_with_retries("PATCH", url, json=payload)
         logger.info("Image file updated (id=%s) status=%s", asset_file.id, resp.status_code)
+        return resp

@@ -21,6 +21,13 @@ class AssetFile(BaseModel):
     file_type: AssetFileTypeEnum
 
 
+class ActionLog(BaseModel):
+    id: Optional[int] = Field(None, description="Primary key")
+    agent_id: str = Field(..., description="Agent ID")
+    message: dict = Field(..., description="Contains the message to be stored for the action log")
+    category: str = Field(..., description="Contains an identifying category to the action log")
+
+
 # ----- END DB Schema -----
 
 

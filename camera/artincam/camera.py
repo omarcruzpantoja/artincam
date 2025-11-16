@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import pathlib
@@ -7,6 +8,7 @@ import time
 from datetime import datetime, timezone
 from enum import StrEnum
 from queue import Queue
+from .constants import ARTINCAM_AGENT_ID
 
 import cv2
 import psutil
@@ -14,7 +16,15 @@ import psutil
 
 from .backend_service import BackendService
 from .constants import AgentMessage
-from .schemas import ArtincamPiAgentConfig, ArtincamPiCamera, AssetFile, AssetFileTypeEnum, ModeEnum, StatusEnum
+from .schemas import (
+    ArtincamPiAgentConfig,
+    ArtincamPiCamera,
+    AssetFile,
+    AssetFileTypeEnum,
+    ModeEnum,
+    StatusEnum,
+    ActionLog,
+)
 
 # libcamera and pimcamera2 will already be installed in the raspberry pis
 # when working outside a raspberry PI we will use a libcamera and picamera mocks
@@ -125,6 +135,7 @@ class Camera:
         self._stop = stop_event
         self._interrupt_sleep = threading.Event()
         self._camera_config = None
+        self._backend_client = BackendService()
 
         self._agent_message_thread = threading.Thread(
             target=self._camera_listener_loop,
@@ -138,7 +149,11 @@ class Camera:
             daemon=True,
         )
         self._camera_callbacks_thread.start()
-        self._backend_client = BackendService()
+        self._health_check_thread = threading.Thread(
+            target=self._health_check_loop,
+            daemon=True,
+        )
+        self._health_check_thread.start()
 
         # default values
         self._framerate = 24
@@ -446,12 +461,17 @@ class Camera:
                 self._interrupt_sleep.clear()
                 logger.debug("[Camera] Configuration updated.")
 
+    # ---- thread loops ----
     def _camera_listener_loop(self):
+        # thread used to listen for events that are sent to the agent
+
         while not self._stop.is_set():
             msg = self._agent_messages.get()
             self._process_message(msg[0], msg[1])
 
     def _camera_callbacks_loop(self):
+        # thread used to run action callbacks (for example making api calls to the backend)
+
         while not self._stop.is_set():
             callback = self._messages_to_backend.get()
 
@@ -460,6 +480,12 @@ class Camera:
 
             callback()
 
+    def _health_check_loop(self):
+        while not self._stop.is_set():
+            self._messages_to_backend.put(self._health_check_log_callback())
+            time.sleep(5)
+
+    # ---- CAMERA CALLBACKS ----
     def _create_asset_file_callback(self, asset_file: AssetFile):
         def callback():
             response = self._backend_client.create_asset_file(asset_file)
@@ -471,5 +497,13 @@ class Camera:
     def _update_asset_file_callback(self, asset_file: AssetFile):
         def callback():
             self._backend_client.update_asset_file(asset_file)
+
+        return callback
+
+    def _health_check_log_callback(self):
+        action_log = ActionLog(agent_id=ARTINCAM_AGENT_ID, category="health", message={"OK": "OK"})
+
+        def callback():
+            self._backend_client.create_action_log(action_log)
 
         return callback
