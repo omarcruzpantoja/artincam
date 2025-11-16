@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+type ActionLog struct {
+	ID        int64        `json:"id"`
+	AgentID   string       `json:"agent_id"`
+	Message   string       `json:"message"`
+	Category  string       `json:"category"`
+	CreatedAt sql.NullTime `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
+}
+
 type Agent struct {
 	ID          string       `json:"id"`
 	Name        string       `json:"name"`

@@ -9,14 +9,18 @@ import (
 )
 
 type Querier interface {
+	CreateActionLog(ctx context.Context, arg CreateActionLogParams) (ActionLog, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error)
 	CreateAgentType(ctx context.Context, arg CreateAgentTypeParams) (AgentType, error)
 	CreateAssetFile(ctx context.Context, arg CreateAssetFileParams) (AssetFile, error)
+	DeleteActionLog(ctx context.Context, id int64) error
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteAgentType(ctx context.Context, id int64) error
 	DeleteAssetFile(ctx context.Context, id int64) error
+	GetActionLogByID(ctx context.Context, id int64) (ActionLog, error)
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
 	GetAgentTypeByID(ctx context.Context, id int64) (AgentType, error)
+	GetAllActionLogs(ctx context.Context) ([]ActionLog, error)
 	GetAllAgentTypes(ctx context.Context) ([]AgentType, error)
 	GetAllAgents(ctx context.Context) ([]Agent, error)
 	GetAllAssetFiles(ctx context.Context) ([]AssetFile, error)

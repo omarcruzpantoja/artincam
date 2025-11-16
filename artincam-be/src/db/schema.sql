@@ -35,3 +35,13 @@ CREATE TABLE asset_file (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE action_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agent_id TEXT NOT NULL
+    CHECK(length(agent_id)=36 AND agent_id GLOB '????????-????-4???-[89ab]???-????????????'),
+  message TEXT NOT NULL CHECK (json_valid(message)),
+  category TEXT NOT NULL CHECK (category IN ('health')),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (agent_id) REFERENCES agent(id) ON DELETE CASCADE
+);
