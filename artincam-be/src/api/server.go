@@ -4,14 +4,17 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/cors"
 
 	"artincam-be/src/db/qx"
+	"artincam-be/src/tools"
 	"artincam-be/src/tools/connectionmap"
 )
 
 type Server struct {
 	Addr        string
 	router      *chi.Mux
+	httpHandler http.Handler
 	Connections *connectionmap.ConnectionMap
 	DbConn      qx.DBTX
 	// In here we have wss connection holder
@@ -21,11 +24,21 @@ type ServerOption func(*Server)
 
 func NewServer(addr string, opts ...ServerOption) *Server {
 	r := chi.NewRouter()
+	feOrigin := tools.Getenv("FRONTEND_APP_ORIGIN", "http://localhost:5173", false)
+
+	// ----- Set up CORS -----
+	handler := cors.New(cors.Options{
+		AllowedOrigins:   []string{feOrigin}, // TODO: fix the origin for the app
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: false, // if sending cookies/auth headers
+	}).Handler(r)
 
 	s := &Server{
 		Addr:        addr,
 		router:      r,
 		Connections: connectionmap.New(),
+		httpHandler: handler,
 	}
 
 	for _, opt := range opts {
@@ -37,5 +50,5 @@ func NewServer(addr string, opts ...ServerOption) *Server {
 }
 
 func (s *Server) Start() error {
-	return http.ListenAndServe(s.Addr, s.router)
+	return http.ListenAndServe(s.Addr, s.httpHandler)
 }

@@ -5,7 +5,7 @@ import { CssBaseline } from "@mui/material";
 import { Layout } from "@components/Layout";
 import { ThemeContextProvider } from "@components/Contexts/ThemeContext";
 import { Dashboard } from "@components/Screens/Dashboard";
-import { Agent } from "@components/Screens/Agent";
+import { AgentList } from "@components/Screens/AgentList";
 
 import "./App.css";
 // -----------------------------
@@ -20,7 +20,7 @@ function App(): React.JSX.Element {
         {/* Layout wraps all “app” routes */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
-          <Route path="agents" element={<Agent />} />
+          <Route path="agents" element={<AgentList />} />
           {/* <Route path="schedules" element={<SchedulesPage />} /> */}
           {/* <Route path="logs" element={<LogsPage />} /> */}
           {/* <Route path="settings" element={<SettingsPage />} /> */}
