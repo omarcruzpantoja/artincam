@@ -482,7 +482,8 @@ class Camera:
 
     def _health_check_loop(self):
         while not self._stop.is_set():
-            self._messages_to_backend.put(self._health_check_log_callback())
+            if self._status == StatusEnum.ACTIVE:
+                self._messages_to_backend.put(self._health_check_log_callback())
             time.sleep(5)
 
     # ---- CAMERA CALLBACKS ----
@@ -501,6 +502,7 @@ class Camera:
         return callback
 
     def _health_check_log_callback(self):
+        # todo only send health logs when the camera is acrively sending data
         action_log = ActionLog(agent_id=ARTINCAM_AGENT_ID, category="health", message={"OK": "OK"})
 
         def callback():
