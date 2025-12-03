@@ -3,14 +3,16 @@ import {
   Card,
   CardHeader,
   CardContent,
+  Chip,
   Collapse,
   IconButton,
+  Link,
   Stack,
   Typography,
-  Chip,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { Agent } from "@services/agentService";
+import { Link as RouterLink } from "react-router-dom";
 
 export type AgentStatus = "ACTIVE" | "STOPPED" | "FAILURE";
 
@@ -68,7 +70,16 @@ export const AgentCard = ({
           >
             {/* Title + ID */}
             <Stack spacing={0.5}>
-              <Typography variant="h6">{agent.name}</Typography>
+              <Typography variant="h6">
+                <Link
+                  component={RouterLink}
+                  to={`/agents/${agent.id}`}
+                  underline="hover"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {agent.name}
+                </Link>
+              </Typography>
               <Typography variant="body2" color="text.secondary">
                 PI ID: {agent.config.camera.pi_id}
               </Typography>

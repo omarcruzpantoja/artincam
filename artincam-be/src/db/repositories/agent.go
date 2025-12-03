@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"artincam-be/src/db/qx"
 
@@ -54,7 +53,6 @@ func (r *AgentRepository) CreateAgent(agent qx.CreateAgentParams) (*qx.Agent, er
 	a, err := qx.New(r.Db).CreateAgent(r.Ctx, agent)
 
 	if err != nil {
-		fmt.Println("Error creating agent:", err, agent)
 
 		return nil, err
 	}
@@ -66,7 +64,6 @@ func (r *AgentRepository) PatchAgent(agent qx.PatchAgentParams) (*qx.Agent, erro
 	a, err := qx.New(r.Db).PatchAgent(r.Ctx, agent)
 
 	if err != nil {
-		fmt.Println("Error patching agent:", err, agent)
 		return nil, err
 	}
 

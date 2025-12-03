@@ -11,13 +11,42 @@ import (
 	"time"
 )
 
+const CountAssetFiles = `-- name: CountAssetFiles :one
+SELECT COUNT(*) AS count
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+`
+
+type CountAssetFilesParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+}
+
+func (q *Queries) CountAssetFiles(ctx context.Context, arg CountAssetFilesParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, CountAssetFiles,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const CreateAssetFile = `-- name: CreateAssetFile :one
-INSERT INTO asset_file (camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+INSERT INTO asset_file (agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
 `
 
 type CreateAssetFileParams struct {
+	AgentID   string    `json:"agent_id"`
 	CameraID  string    `json:"camera_id"`
 	Location  string    `json:"location"`
 	Timestamp time.Time `json:"timestamp"`
@@ -29,6 +58,7 @@ type CreateAssetFileParams struct {
 
 func (q *Queries) CreateAssetFile(ctx context.Context, arg CreateAssetFileParams) (AssetFile, error) {
 	row := q.db.QueryRowContext(ctx, CreateAssetFile,
+		arg.AgentID,
 		arg.CameraID,
 		arg.Location,
 		arg.Timestamp,
@@ -40,6 +70,7 @@ func (q *Queries) CreateAssetFile(ctx context.Context, arg CreateAssetFileParams
 	var i AssetFile
 	err := row.Scan(
 		&i.ID,
+		&i.AgentID,
 		&i.CameraID,
 		&i.Location,
 		&i.Timestamp,
@@ -63,11 +94,34 @@ func (q *Queries) DeleteAssetFile(ctx context.Context, id int64) error {
 }
 
 const GetAllAssetFiles = `-- name: GetAllAssetFiles :many
-SELECT id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at FROM asset_file
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY timestamp ASC
+LIMIT ? OFFSET ?
 `
 
-func (q *Queries) GetAllAssetFiles(ctx context.Context) ([]AssetFile, error) {
-	rows, err := q.db.QueryContext(ctx, GetAllAssetFiles)
+type GetAllAssetFilesParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllAssetFiles(ctx context.Context, arg GetAllAssetFilesParams) ([]AssetFile, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllAssetFiles,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +131,317 @@ func (q *Queries) GetAllAssetFiles(ctx context.Context) ([]AssetFile, error) {
 		var i AssetFile
 		if err := rows.Scan(
 			&i.ID,
+			&i.AgentID,
+			&i.CameraID,
+			&i.Location,
+			&i.Timestamp,
+			&i.UniqueID,
+			&i.FileName,
+			&i.FileSize,
+			&i.FileType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetAllAssetFilesFileNameAsc = `-- name: GetAllAssetFilesFileNameAsc :many
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY file_name ASC
+LIMIT ? OFFSET ?
+`
+
+type GetAllAssetFilesFileNameAscParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllAssetFilesFileNameAsc(ctx context.Context, arg GetAllAssetFilesFileNameAscParams) ([]AssetFile, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllAssetFilesFileNameAsc,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AssetFile{}
+	for rows.Next() {
+		var i AssetFile
+		if err := rows.Scan(
+			&i.ID,
+			&i.AgentID,
+			&i.CameraID,
+			&i.Location,
+			&i.Timestamp,
+			&i.UniqueID,
+			&i.FileName,
+			&i.FileSize,
+			&i.FileType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetAllAssetFilesFileNameDesc = `-- name: GetAllAssetFilesFileNameDesc :many
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY file_name DESC
+LIMIT ? OFFSET ?
+`
+
+type GetAllAssetFilesFileNameDescParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllAssetFilesFileNameDesc(ctx context.Context, arg GetAllAssetFilesFileNameDescParams) ([]AssetFile, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllAssetFilesFileNameDesc,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AssetFile{}
+	for rows.Next() {
+		var i AssetFile
+		if err := rows.Scan(
+			&i.ID,
+			&i.AgentID,
+			&i.CameraID,
+			&i.Location,
+			&i.Timestamp,
+			&i.UniqueID,
+			&i.FileName,
+			&i.FileSize,
+			&i.FileType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetAllAssetFilesTimestampDesc = `-- name: GetAllAssetFilesTimestampDesc :many
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY timestamp DESC
+LIMIT ? OFFSET ?
+`
+
+type GetAllAssetFilesTimestampDescParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllAssetFilesTimestampDesc(ctx context.Context, arg GetAllAssetFilesTimestampDescParams) ([]AssetFile, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllAssetFilesTimestampDesc,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AssetFile{}
+	for rows.Next() {
+		var i AssetFile
+		if err := rows.Scan(
+			&i.ID,
+			&i.AgentID,
+			&i.CameraID,
+			&i.Location,
+			&i.Timestamp,
+			&i.UniqueID,
+			&i.FileName,
+			&i.FileSize,
+			&i.FileType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetAllAssetFilesUniqueIdAsc = `-- name: GetAllAssetFilesUniqueIdAsc :many
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY unique_id ASC
+LIMIT ? OFFSET ?
+`
+
+type GetAllAssetFilesUniqueIdAscParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllAssetFilesUniqueIdAsc(ctx context.Context, arg GetAllAssetFilesUniqueIdAscParams) ([]AssetFile, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllAssetFilesUniqueIdAsc,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AssetFile{}
+	for rows.Next() {
+		var i AssetFile
+		if err := rows.Scan(
+			&i.ID,
+			&i.AgentID,
+			&i.CameraID,
+			&i.Location,
+			&i.Timestamp,
+			&i.UniqueID,
+			&i.FileName,
+			&i.FileSize,
+			&i.FileType,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const GetAllAssetFilesUniqueIdDesc = `-- name: GetAllAssetFilesUniqueIdDesc :many
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY unique_id DESC
+LIMIT ? OFFSET ?
+`
+
+type GetAllAssetFilesUniqueIdDescParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	CameraID string      `json:"camera_id"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllAssetFilesUniqueIdDesc(ctx context.Context, arg GetAllAssetFilesUniqueIdDescParams) ([]AssetFile, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllAssetFilesUniqueIdDesc,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.CameraID,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AssetFile{}
+	for rows.Next() {
+		var i AssetFile
+		if err := rows.Scan(
+			&i.ID,
+			&i.AgentID,
 			&i.CameraID,
 			&i.Location,
 			&i.Timestamp,
@@ -101,7 +466,7 @@ func (q *Queries) GetAllAssetFiles(ctx context.Context) ([]AssetFile, error) {
 }
 
 const GetAssetFileByID = `-- name: GetAssetFileByID :one
-SELECT id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at FROM asset_file WHERE id = ? LIMIT 1
+SELECT id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at FROM asset_file WHERE id = ? LIMIT 1
 `
 
 func (q *Queries) GetAssetFileByID(ctx context.Context, id int64) (AssetFile, error) {
@@ -109,6 +474,7 @@ func (q *Queries) GetAssetFileByID(ctx context.Context, id int64) (AssetFile, er
 	var i AssetFile
 	err := row.Scan(
 		&i.ID,
+		&i.AgentID,
 		&i.CameraID,
 		&i.Location,
 		&i.Timestamp,
@@ -133,7 +499,7 @@ SET
   file_size   = COALESCE(?6, file_size),
   updated_at  = CURRENT_TIMESTAMP
 WHERE id = ?7
-RETURNING id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
+RETURNING id, agent_id, camera_id, location, timestamp, unique_id, file_name, file_size, file_type, created_at, updated_at
 `
 
 type PatchAssetFileParams struct {
@@ -159,6 +525,7 @@ func (q *Queries) PatchAssetFile(ctx context.Context, arg PatchAssetFileParams) 
 	var i AssetFile
 	err := row.Scan(
 		&i.ID,
+		&i.AgentID,
 		&i.CameraID,
 		&i.Location,
 		&i.Timestamp,

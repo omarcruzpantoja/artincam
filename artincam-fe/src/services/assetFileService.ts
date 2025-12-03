@@ -1,0 +1,53 @@
+// assetFileService.ts
+import { BaseApiService, type ApiResponse } from "./baseService";
+
+const ASSET_FILE_PATH = "/api/v1/asset-files";
+
+export interface AssetFile {
+  id: number;
+  agent_id: string;
+  camera_id: string;
+  location: string;
+  timestamp: string;
+  unique_id: string;
+  file_name: string;
+  file_size: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SortOrder = "asc" | "desc";
+
+export interface ListAssetFilesParams {
+  agentId: string;
+  limit?: number;
+  offset?: number;
+  sortField?: string; // e.g. "timestamp", "file_name"
+  sortOrder?: SortOrder; // "asc" | "desc"
+}
+
+export class AssetFileService extends BaseApiService {
+  constructor(baseUrl?: string) {
+    super(baseUrl);
+  }
+
+  listByAgent(params: ListAssetFilesParams): Promise<ApiResponse<AssetFile[]>> {
+    const { agentId, limit, offset, sortField, sortOrder } = params;
+
+    if (!agentId) {
+      throw new Error("agentId is required to list asset files");
+    }
+
+    return this.get<AssetFile[]>(ASSET_FILE_PATH, {
+      query: {
+        agent_id: agentId,
+        limit,
+        offset,
+        sort_field: sortField,
+        sort_order: sortOrder,
+      },
+    });
+  }
+}
+
+export const assetFileService = new AssetFileService();

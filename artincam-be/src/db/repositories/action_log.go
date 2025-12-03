@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 
 	"artincam-be/src/db/qx"
 )
@@ -51,7 +50,6 @@ func (r *ActionLogRepository) CreateActionLog(agentType qx.CreateActionLogParams
 	at, err := qx.New(r.Db).CreateActionLog(r.Ctx, agentType)
 
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

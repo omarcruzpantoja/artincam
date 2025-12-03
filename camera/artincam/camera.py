@@ -129,6 +129,19 @@ class Camera:
         # Resolution
         # 1640 x 1232
         # Note: 1920x1080 should not be used, it limits the FoV of the camera. Not good.
+        # default values
+        self._framerate = 24
+        self._status = StatusEnum.STOPPED
+        self._bitrate = DEFAULT_BITRATE
+        self._vertical_flip = False
+        self._horizontal_flip = False
+        self._width = 1640
+        self._height = 1232
+        self._pi_id = None
+        self._location = None
+        self._output_path = ROOT_DIRECTORY
+        self._camera_config = None
+
         self.picam = Picamera2()
         self.file_counter = FileCounter()
         self._agent_messages = agent_messages
@@ -154,18 +167,6 @@ class Camera:
             daemon=True,
         )
         self._health_check_thread.start()
-
-        # default values
-        self._framerate = 24
-        self._bitrate = DEFAULT_BITRATE
-        self._vertical_flip = False
-        self._horizontal_flip = False
-        self._width = 1640
-        self._height = 1232
-        self._pi_id = None
-        self._location = None
-        self._output_path = ROOT_DIRECTORY
-        self._camera_config = None
 
     def setup(self):
         frame_duration = 1000000 // self._framerate
@@ -264,7 +265,7 @@ class Camera:
     # ----- MODE HANDLERS -----
     def _capture_image(self, sleep: bool = False):
         # Capture the image and save to a file
-        output_filepath, asset_file = self._get_file_name(AssetFileTypeEnum.IMAGE, image=True)
+        output_filepath, asset_file = self._get_asset_file_meta(AssetFileTypeEnum.IMAGE, image=True)
         self._current_time = time.strftime("%Y-%m-%d %X")
         self._messages_to_backend.put(self._create_asset_file_callback(asset_file))
         self.picam.capture_file(output_filepath)
@@ -275,7 +276,7 @@ class Camera:
         logger.debug(f"Image taken, storing in ({output_filepath})\nImage Resting...({self._image_rest_time})")
 
     def _capture_video(self):
-        output_filepath, asset_file = self._get_file_name(AssetFileTypeEnum.VIDEO)
+        output_filepath, asset_file = self._get_asset_file_meta(AssetFileTypeEnum.VIDEO)
         self._messages_to_backend.put(self._create_asset_file_callback(asset_file))
         self.ffmpeg_output.output_filename = output_filepath
         logger.debug(f"Starting Recording ({self._recording_time}s)")
@@ -383,7 +384,7 @@ class Camera:
                 return 86400
 
     # ----- UTILS -----
-    def _get_file_name(self, file_type: AssetFileTypeEnum, image=False) -> tuple[str, AssetFile]:
+    def _get_asset_file_meta(self, file_type: AssetFileTypeEnum, image=False) -> tuple[str, AssetFile]:
         """Defines the name of the file generated for the video."""
 
         # Automatically add data to usb stick if it can be found, otherwise save in the local disk
@@ -414,6 +415,7 @@ class Camera:
         )
         # 2006-01-02T15:04:05Z07:00
         asset_file = AssetFile(
+            agent_id=ARTINCAM_AGENT_ID,
             camera_id=str(self._pi_id),
             location=self._location,
             timestamp=current_time.isoformat(),
@@ -489,7 +491,12 @@ class Camera:
     # ---- CAMERA CALLBACKS ----
     def _create_asset_file_callback(self, asset_file: AssetFile):
         def callback():
+            print(asset_file.agent_id, "--")
             response = self._backend_client.create_asset_file(asset_file)
+
+            if response is None:
+                return
+
             payload = response.json()
             asset_file.id = payload["data"]["id"]
 
@@ -497,6 +504,10 @@ class Camera:
 
     def _update_asset_file_callback(self, asset_file: AssetFile):
         def callback():
+            if asset_file.id is None:
+                logger.error("asset_file.id is required for update")
+                return
+
             self._backend_client.update_asset_file(asset_file)
 
         return callback

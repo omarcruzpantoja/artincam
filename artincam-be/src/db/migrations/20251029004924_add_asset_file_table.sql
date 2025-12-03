@@ -2,6 +2,8 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS asset_file (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  agent_id TEXT NOT NULL
+    CHECK(length(agent_id)=36 AND agent_id GLOB '????????-????-4???-[89ab]???-????????????'),
   camera_id TEXT NOT NULL,
   location TEXT NOT NULL CHECK (LENGTH(location) < 512),
   timestamp DATETIME NOT NULL,
@@ -10,7 +12,8 @@ CREATE TABLE IF NOT EXISTS asset_file (
   file_size INTEGER NOT NULL DEFAULT -1 CHECK (file_size >= -1),
   file_type TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (agent_id) REFERENCES agent(id) ON DELETE CASCADE
 );
 -- +goose StatementEnd
 

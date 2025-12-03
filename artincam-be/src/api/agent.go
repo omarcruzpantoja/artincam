@@ -19,6 +19,7 @@ import (
 func (s *Server) agentRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", s.agentListHandler)
+	r.Get("/{id}", s.agentDetailHandler)
 	r.Post("/", s.createAgentHandler)
 	r.Patch("/{id}", s.patchAgentHandler)
 	r.Delete("/{id}", s.deleteAgentHandler)
@@ -49,6 +50,28 @@ func (s *Server) agentListHandler(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusCreated)
 	render.JSON(w, r, CreateResponse(serializers.SerializeAgents(agents)))
+}
+
+// List godoc
+// @Summary      Get agent detail
+// @Description  Get agent detail
+// @Tags         agent
+// @Accept       json
+// @Produce      json
+// @Router       /api/v1/agents/{id} [get]
+// @Success      200 {object} dto.AgentResponse
+func (s *Server) agentDetailHandler(w http.ResponseWriter, r *http.Request) {
+	repo := repositories.NewAgentRepository(r.Context(), s.DbConn)
+	agent, err := repo.GetAgentByID(chi.URLParam(r, "id"))
+
+	if err != nil {
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, CreateErrorResponse("Failed to fetch agent."))
+		return
+	}
+
+	render.Status(r, http.StatusCreated)
+	render.JSON(w, r, CreateResponse(serializers.SerializeAgent(agent)))
 }
 
 // Agent godoc

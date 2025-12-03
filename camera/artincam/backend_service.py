@@ -17,20 +17,18 @@ class BackendService:
         self.backoff = backoff
 
     def _request_with_retries(self, method: str, url: str, **kwargs) -> requests.Response:
-        last_exc = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 resp = requests.request(method, url, timeout=self.timeout, **kwargs)
                 resp.raise_for_status()
                 return resp
             except requests.RequestException as exc:
-                last_exc = exc
                 logger.debug("Request attempt %d failed for %s %s: %s", attempt, method, url, exc)
                 if attempt < self.max_retries:
                     time.sleep(self.backoff * attempt)
 
         logger.exception("All request attempts failed for %s %s", method, url)
-        raise last_exc
+        return None
 
     # ---- Action log calls ----
     def create_action_log(self, payload: ActionLog):
@@ -45,6 +43,7 @@ class BackendService:
 
     def create_asset_file(self, asset_file: AssetFile):
         payload = {
+            "agent_id": asset_file.agent_id,
             "camera_id": asset_file.camera_id,
             "location": asset_file.location,
             "timestamp": asset_file.timestamp,
@@ -57,6 +56,10 @@ class BackendService:
         logger.debug("Sending image-file create payload to %s: %s", url, payload)
 
         resp = self._request_with_retries("POST", url, json=payload)
+
+        if resp is None:
+            return None
+
         logger.info("Image file created (unique_id=%s) status=%s", asset_file.unique_id, resp.status_code)
         return resp
 

@@ -22,6 +22,7 @@ func SerializeAssetFile(at *qx.AssetFile) *dto.AssetFileResponse {
 
 	return &dto.AssetFileResponse{
 		ID:        at.ID,
+		AgentID:   at.AgentID,
 		CameraID:  at.CameraID,
 		Location:  at.Location,
 		Timestamp: at.Timestamp,

@@ -38,6 +38,7 @@ type AgentType struct {
 
 type AssetFile struct {
 	ID        int64        `json:"id"`
+	AgentID   string       `json:"agent_id"`
 	CameraID  string       `json:"camera_id"`
 	Location  string       `json:"location"`
 	Timestamp time.Time    `json:"timestamp"`

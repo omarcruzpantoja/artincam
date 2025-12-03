@@ -6,6 +6,7 @@ import { Layout } from "@components/Layout";
 import { ThemeContextProvider } from "@components/Contexts/ThemeContext";
 import { Dashboard } from "@components/Screens/Dashboard";
 import { AgentList } from "@components/Screens/AgentList";
+import { AgentDetail } from "@components/Screens/AgentDetail";
 
 import "./App.css";
 // -----------------------------
@@ -21,6 +22,7 @@ function App(): React.JSX.Element {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="agents" element={<AgentList />} />
+          <Route path="/agents/:agentId" element={<AgentDetail />} />
           {/* <Route path="schedules" element={<SchedulesPage />} /> */}
           {/* <Route path="logs" element={<LogsPage />} /> */}
           {/* <Route path="settings" element={<SettingsPage />} /> */}

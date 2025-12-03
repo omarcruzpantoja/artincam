@@ -12,6 +12,7 @@ class AssetFileTypeEnum(Enum):
 
 class AssetFile(BaseModel):
     id: Optional[int] = Field(None, description="Primary key")
+    agent_id: str = Field(..., description="Agent ID")
     camera_id: str = Field(..., description="Camera ID")
     location: str = Field(..., description="Location", max_length=512)
     timestamp: str = Field(..., description="Timestamp in ISO format")

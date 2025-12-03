@@ -9,6 +9,7 @@ import (
 	"github.com/guregu/null/v6"
 
 	"artincam-be/src/api/dto"
+	"artincam-be/src/api/filters"
 	"artincam-be/src/api/serializers"
 	"artincam-be/src/db/qx"
 	"artincam-be/src/db/repositories"
@@ -30,10 +31,27 @@ func (s *Server) assetFileRouter() http.Handler {
 // @Accept       json
 // @Produce      json
 // @Router       /api/v1/asset-files [get]
+// @Param        agent_id   query     string  false  "Filter by Agent ID"
+// @Param        limit      query     int64   false  "Limit number of results"
+// @Param        offset     query     int64   false  "Offset for results"
 // @Success      200 {array} dto.AssetFileResponse
 func (s *Server) assetFileListHandler(w http.ResponseWriter, r *http.Request) {
 	repo := repositories.NewAssetFileRepository(r.Context(), s.DbConn)
-	assetFiles, err := repo.GetAllAssetFiles()
+	filter := filters.AssetFileFilter{}
+
+	if err := filter.Parse(r.URL.Query()); err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, CreateErrorResponse("Invalid filter parameters."))
+		return
+	}
+
+	params := qx.GetAllAssetFilesParams{
+		Column1: null.StringFromPtr(filter.AgentID).NullString,
+		AgentID: null.StringFromPtr(filter.AgentID).String,
+		Limit:   filter.Limit,
+		Offset:  filter.Offset,
+	}
+	assetFiles, err := repo.GetAllAssetFiles(params, filter.SortField, filter.SortOrder)
 
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
@@ -41,8 +59,24 @@ func (s *Server) assetFileListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	assetFileCount, err := repo.CountAssetFiles(qx.CountAssetFilesParams{
+		Column1: null.StringFromPtr(filter.AgentID).NullString,
+		AgentID: null.StringFromPtr(filter.AgentID).String,
+	})
+
+	if err != nil {
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, CreateErrorResponse("Failed to fetch assetFiles"))
+		return
+	}
+
+	response := CreateResponse(serializers.SerializeAssetFiles(assetFiles))
+	response.Meta = MetaResponse{
+		Count: assetFileCount,
+	}
+
 	render.Status(r, http.StatusCreated)
-	render.JSON(w, r, CreateResponse(serializers.SerializeAssetFiles(assetFiles)))
+	render.JSON(w, r, response)
 }
 
 // Agent godoc

@@ -19,6 +19,10 @@ type ErrorResponse struct {
 	Detail string `json:"detail,omitempty"`
 }
 
+type MetaResponse struct {
+	Count int64 `json:"count,omitempty"`
+}
+
 func DecodeRequestBody(w http.ResponseWriter, r *http.Request, bind interface{}) error {
 	err := json.NewDecoder(r.Body).Decode(&bind)
 

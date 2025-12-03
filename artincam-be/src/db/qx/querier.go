@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CountAssetFiles(ctx context.Context, arg CountAssetFilesParams) (int64, error)
 	CreateActionLog(ctx context.Context, arg CreateActionLogParams) (ActionLog, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error)
 	CreateAgentType(ctx context.Context, arg CreateAgentTypeParams) (AgentType, error)
@@ -23,7 +24,12 @@ type Querier interface {
 	GetAllActionLogs(ctx context.Context) ([]ActionLog, error)
 	GetAllAgentTypes(ctx context.Context) ([]AgentType, error)
 	GetAllAgents(ctx context.Context) ([]Agent, error)
-	GetAllAssetFiles(ctx context.Context) ([]AssetFile, error)
+	GetAllAssetFiles(ctx context.Context, arg GetAllAssetFilesParams) ([]AssetFile, error)
+	GetAllAssetFilesFileNameAsc(ctx context.Context, arg GetAllAssetFilesFileNameAscParams) ([]AssetFile, error)
+	GetAllAssetFilesFileNameDesc(ctx context.Context, arg GetAllAssetFilesFileNameDescParams) ([]AssetFile, error)
+	GetAllAssetFilesTimestampDesc(ctx context.Context, arg GetAllAssetFilesTimestampDescParams) ([]AssetFile, error)
+	GetAllAssetFilesUniqueIdAsc(ctx context.Context, arg GetAllAssetFilesUniqueIdAscParams) ([]AssetFile, error)
+	GetAllAssetFilesUniqueIdDesc(ctx context.Context, arg GetAllAssetFilesUniqueIdDescParams) ([]AssetFile, error)
 	GetAssetFileByID(ctx context.Context, id int64) (AssetFile, error)
 	PatchAgent(ctx context.Context, arg PatchAgentParams) (Agent, error)
 	PatchAgentType(ctx context.Context, arg PatchAgentTypeParams) (AgentType, error)

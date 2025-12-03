@@ -1,4 +1,4 @@
-import type React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,7 +10,7 @@ import {
   ListItemText,
   Paper,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import Dashboard from "@mui/icons-material/Dashboard";
 import Videocam from "@mui/icons-material/Videocam";
 
@@ -18,14 +18,21 @@ type NavItem = {
   label: string;
   path: string;
   icon: React.ReactElement;
+  identifier: string;
 };
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", path: "/", icon: <Dashboard /> },
+  {
+    label: "Dashboard",
+    path: "/",
+    icon: <Dashboard />,
+    identifier: "dashboard",
+  },
   {
     label: "Agents",
     path: "/agents",
     icon: <Videocam />,
+    identifier: "agentList",
   },
   // {
   //   label: "Schedules",
@@ -46,6 +53,19 @@ const navItems: NavItem[] = [
 ];
 
 const Sidebar = (): React.JSX.Element => {
+  const location = useLocation();
+  const [activeNav, setActiveNav] = React.useState<string>("");
+
+  useEffect(() => {
+    const currentItem = navItems.find(
+      (item) => item.path === location.pathname
+    );
+
+    if (currentItem) {
+      setActiveNav(currentItem.identifier);
+    }
+  }, [location.pathname]);
+
   return (
     <Box
       component={Paper}
@@ -86,17 +106,12 @@ const Sidebar = (): React.JSX.Element => {
       <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
         <List dense>
           {navItems.map((item) => {
-            const isActive =
-              item.path === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(item.path);
-
             return (
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
                   component={NavLink}
                   to={item.path}
-                  selected={isActive}
+                  selected={activeNav === item.identifier}
                 >
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.label} />
