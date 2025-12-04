@@ -74,9 +74,9 @@ const CameraConfiguration = ({
                   .join(" • ") || "None";
 
               return (
-                <Grid container spacing={4}>
+                <Grid container>
                   {/* LEFT COLUMN */}
-                  <Grid>
+                  <Grid flex={1}>
                     <Row label="Mode" value={camera.mode} />
                     <Row label="Status" value={camera.status ?? "UNKNOWN"} />
                     <Row label="Location" value={camera.location} />
@@ -87,7 +87,7 @@ const CameraConfiguration = ({
                   </Grid>
 
                   {/* RIGHT COLUMN */}
-                  <Grid>
+                  <Grid flex={1}>
                     <Row label="Bitrate" value={bitrateLabel} />
                     <Row label="Recording time" value={recordingTimeLabel} />
                     <Row label="Cycle rest time" value={cycleRestTimeLabel} />

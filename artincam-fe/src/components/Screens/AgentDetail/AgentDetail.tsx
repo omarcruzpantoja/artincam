@@ -102,7 +102,14 @@ const AgentDetail = () => {
       ? "success"
       : status === "STOPPED"
       ? "default"
-      : "warning";
+      : "error";
+
+  const statusLabel =
+    status === "ACTIVE"
+      ? "Active"
+      : status === "STOPPED"
+      ? "Offline"
+      : "Failure";
 
   const actionItems: ActionItem<AgentAction>[] = [
     { value: "edit", label: "Edit agent" },
@@ -151,7 +158,15 @@ const AgentDetail = () => {
             alignItems="center"
           >
             <Stack spacing={0.5}>
-              <Typography variant="h4">{agent.name}</Typography>
+              <Typography variant="h4">
+                {agent.name}{" "}
+                <Chip
+                  size="medium"
+                  label={statusLabel}
+                  color={statusColor}
+                  sx={{ textTransform: "capitalize" }}
+                />
+              </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   <Typography variant="body2" color="text.secondary">
@@ -175,19 +190,13 @@ const AgentDetail = () => {
                     </IconButton>
                   </Tooltip>
                 </Stack>
-
-                <Chip
-                  size="small"
-                  label={status}
-                  color={statusColor}
-                  sx={{ textTransform: "capitalize" }}
-                />
-                {location && (
-                  <Typography variant="body2" color="text.secondary">
-                    • {location}
-                  </Typography>
-                )}
               </Stack>
+              <Row label="Status" value={status} />
+              {location && <Row label="Location" value={location} />}
+
+              {agent.description && (
+                <Row label="Description" value={agent.description} />
+              )}
             </Stack>
 
             <ActionsMenu<AgentAction>
@@ -200,38 +209,9 @@ const AgentDetail = () => {
         </Paper>
 
         {/* Main content */}
-        <Grid container spacing={3}>
-          <Grid>
-            <Paper
-              elevation={0}
-              sx={(theme) => ({
-                p: 3,
-                borderRadius: 2,
-                border: `1px solid ${theme.palette.divider}`,
-              })}
-            >
-              <Typography variant="h6" gutterBottom>
-                Overview
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-
-              <Stack spacing={1.25}>
-                <Row label="Status" value={status} />
-                {location && <Row label="Location" value={location} />}
-
-                {agent.description && (
-                  <Row label="Description" value={agent.description} />
-                )}
-              </Stack>
-            </Paper>
-          </Grid>
-
-          {/* Placeholder for future sections */}
-          {/* Camera config section */}
-          <CameraConfiguration agent={agent} />
-        </Grid>
+        <CameraConfiguration agent={agent} />
+        <AssetFileTable agentId={agent.id} />
       </Stack>
-      <AssetFileTable agentId={agent.id} />
     </Container>
   );
 };
