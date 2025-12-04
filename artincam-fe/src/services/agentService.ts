@@ -7,44 +7,46 @@ import {
 const AGENT_PATH = "/api/v1/agents";
 
 export type AgentStatus = "ACTIVE" | "STOPPED" | "FAILURE";
+export type TimeUnit = "s" | "m" | "h" | "d";
+export type CameraMode = "rtsp_stream" | "video" | "image" | "image/video";
 
-interface Transforms {
+export interface CameraTransforms {
   vertical_flip: boolean;
   horizontal_flip: boolean;
 }
 
-interface RtspStream {
+export interface RtspStream {
   address: string;
 }
 
-interface Resolution {
+export interface Resolution {
   width: number;
   height: number;
 }
 
-interface Camera {
-  mode: string;
+export interface CameraConfig {
+  mode: CameraMode;
   status?: AgentStatus;
   resolution: Resolution;
   rtsp_stream?: RtspStream | null;
-  transforms: Transforms;
+  transforms: CameraTransforms;
   framerate?: number;
   bitrate?: number | null;
   recording_time?: number;
-  recording_time_unit?: string;
+  recording_time_unit?: TimeUnit;
   cycle_rest_time?: number;
-  cycle_rest_time_unit?: string;
+  cycle_rest_time_unit?: TimeUnit;
   output_dir: string;
   location: string;
   pi_id: number;
   image_capture_time?: number;
-  image_capture_time_unit?: string;
+  image_capture_time_unit?: TimeUnit;
   image_rest_time?: number;
-  image_rest_time_unit?: string;
+  image_rest_time_unit?: TimeUnit;
 }
 
-interface ArtincamPiAgentConfig {
-  camera: Camera;
+export interface ArtincamPiAgentConfig {
+  camera: CameraConfig;
 }
 
 export interface Agent {
@@ -57,19 +59,11 @@ export interface Agent {
   updated_at: string | null;
 }
 
-export interface CreateAgentPayload {
+export interface WriteAgentPayload {
   name: string;
-  location?: string;
-  description?: string;
-  tags?: string[];
-}
-
-export interface UpdateAgentPayload {
-  name?: string;
-  location?: string;
-  description?: string;
-  tags?: string[];
-  status?: AgentStatus;
+  description: string;
+  agent_type_id: number;
+  config: ArtincamPiAgentConfig;
 }
 
 export interface ListAgentsParams {
@@ -112,15 +106,15 @@ export class AgentService extends BaseApiService {
     return this.get<Agent>(`${AGENT_PATH}/${encodeURIComponent(id)}`);
   }
 
-  createAgent(payload: CreateAgentPayload): Promise<ApiResponse<Agent>> {
-    return this.post<Agent, CreateAgentPayload>(AGENT_PATH, payload);
+  createAgent(payload: WriteAgentPayload): Promise<ApiResponse<Agent>> {
+    return this.post<Agent, WriteAgentPayload>(AGENT_PATH, payload);
   }
 
   updateAgent(
     id: string,
-    payload: UpdateAgentPayload
+    payload: WriteAgentPayload
   ): Promise<ApiResponse<Agent>> {
-    return this.put<Agent, UpdateAgentPayload>(
+    return this.patch<Agent, WriteAgentPayload>(
       `${AGENT_PATH}/${encodeURIComponent(id)}`,
       payload
     );

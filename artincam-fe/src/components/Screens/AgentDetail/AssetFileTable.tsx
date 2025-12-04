@@ -110,7 +110,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   return (
     <Grid>
       <Typography variant="h6" gutterBottom>
-        Captured Images
+        Asset Files
       </Typography>
       <Divider sx={{ mb: 2 }} />
 

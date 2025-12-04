@@ -58,7 +58,7 @@ export const AgentCard = ({
       : "warning";
 
   return (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={{ mb: 2 }}>
       {/* ----------------------- HEADER ----------------------- */}
       <CardHeader
         title={

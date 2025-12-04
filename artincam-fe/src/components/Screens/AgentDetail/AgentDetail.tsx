@@ -1,6 +1,6 @@
 // src/components/Screens/AgentDetailScreen.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Alert,
   Chip,
@@ -16,15 +16,15 @@ import {
 import { agentService, type Agent } from "@services/agentService";
 import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
 
+import AssetFileTable from "./AssetFileTable";
 import CameraConfiguration from "./CameraConfiguration";
 import { Row } from "./utils";
-import AssetFileTable from "./AssetFileTable";
-import { assetFileService } from "@services/assetFileService";
 
 type AgentAction = "edit" | "restart" | "delete";
 
 const AgentDetail = () => {
   const { agentId } = useParams();
+  const navigate = useNavigate();
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -113,7 +113,7 @@ const AgentDetail = () => {
   const handleAgentAction = (action: AgentAction) => {
     switch (action) {
       case "edit":
-        console.log("Edit agent", agent.id);
+        navigate(`/agents/${agent.id}/edit`);
         // TODO: navigate to edit page / open dialog
         break;
       case "restart":
