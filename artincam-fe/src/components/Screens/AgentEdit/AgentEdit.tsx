@@ -6,9 +6,11 @@ import {
   CircularProgress,
   Container,
   Divider,
+  FormControlLabel,
   Grid,
   Paper,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
@@ -519,6 +521,49 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                   <option value="h">h</option>
                   <option value="d">d</option>
                 </TextField>
+              </Grid>
+
+              {/* Transforms: vertical & horizontal flip */}
+              <Grid>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={form.config.camera.transforms.vertical_flip}
+                      onChange={(e) =>
+                        updateCamera((cam) => ({
+                          ...cam,
+                          transforms: {
+                            ...cam.transforms,
+                            vertical_flip: e.target.checked,
+                          },
+                        }))
+                      }
+                      color="primary"
+                    />
+                  }
+                  label="Vertical Flip"
+                />
+              </Grid>
+
+              <Grid>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={form.config.camera.transforms.horizontal_flip}
+                      onChange={(e) =>
+                        updateCamera((cam) => ({
+                          ...cam,
+                          transforms: {
+                            ...cam.transforms,
+                            horizontal_flip: e.target.checked,
+                          },
+                        }))
+                      }
+                      color="primary"
+                    />
+                  }
+                  label="Horizontal Flip"
+                />
               </Grid>
             </Grid>
           </Paper>

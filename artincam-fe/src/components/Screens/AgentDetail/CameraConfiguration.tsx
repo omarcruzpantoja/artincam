@@ -1,5 +1,5 @@
 import React from "react";
-import { Divider, Grid, Paper, Stack, Typography } from "@mui/material";
+import { Divider, Grid, Paper, Typography } from "@mui/material";
 
 import { Row } from "./utils";
 import type { Agent } from "@services/agentService";
@@ -38,7 +38,7 @@ const CameraConfiguration = ({
                   : "-";
               const bitrateLabel =
                 camera.bitrate !== undefined && camera.bitrate !== null
-                  ? `${camera.bitrate} kbps`
+                  ? `${camera.bitrate} bps`
                   : "-";
               const recordingTimeLabel =
                 camera.recording_time !== undefined
@@ -74,7 +74,7 @@ const CameraConfiguration = ({
                   .join(" • ") || "None";
 
               return (
-                <Grid container spacing={2}>
+                <Grid container spacing={4}>
                   {/* LEFT COLUMN */}
                   <Grid>
                     <Row label="Mode" value={camera.mode} />

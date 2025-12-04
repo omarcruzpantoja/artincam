@@ -9,9 +9,13 @@ import {
   Divider,
   Grid,
   Paper,
+  Tooltip,
   Stack,
   Typography,
+  IconButton,
 } from "@mui/material";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
 
 import { agentService, type Agent } from "@services/agentService";
 import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
@@ -29,6 +33,7 @@ const AgentDetail = () => {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!agentId) return;
@@ -148,9 +153,29 @@ const AgentDetail = () => {
             <Stack spacing={0.5}>
               <Typography variant="h4">{agent.name}</Typography>
               <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="body2" color="text.secondary">
-                  ID: {agent.id}
-                </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Typography variant="body2" color="text.secondary">
+                    ID: {agent.id}
+                  </Typography>
+
+                  <Tooltip title={copied ? "Copied!" : "Copy ID"}>
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        navigator.clipboard.writeText(agent.id);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1000);
+                      }}
+                    >
+                      {copied ? (
+                        <CheckIcon fontSize="inherit" color="success" />
+                      ) : (
+                        <ContentCopyIcon fontSize="inherit" />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+
                 <Chip
                   size="small"
                   label={status}
@@ -196,20 +221,6 @@ const AgentDetail = () => {
 
                 {agent.description && (
                   <Row label="Description" value={agent.description} />
-                )}
-
-                {agent.created_at && (
-                  <Row
-                    label="Created"
-                    value={new Date(agent.created_at).toLocaleString()}
-                  />
-                )}
-
-                {agent.updated_at && (
-                  <Row
-                    label="Updated"
-                    value={new Date(agent.updated_at).toLocaleString()}
-                  />
                 )}
               </Stack>
             </Paper>

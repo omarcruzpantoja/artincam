@@ -194,7 +194,8 @@ func (s *Server) patchAgentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusCreated)
+	sendConfigUpdateToAgent(s, agent.ID, configBytes)
+	render.Status(r, http.StatusOK)
 	render.JSON(w, r, CreateResponse(serializers.SerializeAgent(agent)))
 }
 
@@ -323,4 +324,25 @@ func validateConfig(agentType int64, configBytes []byte) error {
 		return schemas.Validate(schemas.ArtincamAgentConfigSchema, configBytes)
 	}
 	return nil
+}
+
+func sendConfigUpdateToAgent(s *Server, agentID string, c []byte) error {
+	conn, exists := s.Connections.Get(agentID)
+
+	if !exists {
+		return nil
+	}
+
+	config := &dto.ArtincamPiAgentConfig{}
+
+	// We can skip error handling here since the config was already validated
+	_ = json.Unmarshal(c, &config)
+
+	initMessage := dto.ConfigUpdateMessage{
+		Mode:   config.Camera.Mode,
+		Config: *config,
+		Type:   "config-update",
+	}
+
+	return conn.Conn.WriteJSON(initMessage)
 }
