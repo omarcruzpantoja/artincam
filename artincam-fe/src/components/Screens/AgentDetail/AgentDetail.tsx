@@ -17,8 +17,9 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 
-import { agentService, type Agent } from "@services/agentService";
 import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
+import { RtspPlayer } from "@components/RtspPlayer";
+import { agentService, type Agent } from "@services/agentService";
 
 import AssetFileTable from "./AssetFileTable";
 import CameraConfiguration from "./CameraConfiguration";
@@ -211,6 +212,11 @@ const AgentDetail = () => {
         {/* Main content */}
         <CameraConfiguration agent={agent} />
         <AssetFileTable agentId={agent.id} />
+        {agent.config.camera.mode == "rtsp_stream" && (
+          <RtspPlayer
+            rtspUrl={agent.config?.camera?.rtsp_stream?.address ?? ""}
+          />
+        )}
       </Stack>
     </Container>
   );
