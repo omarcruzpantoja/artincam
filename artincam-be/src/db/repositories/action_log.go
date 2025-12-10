@@ -26,14 +26,24 @@ func NewActionLogRepository(ctx context.Context, db qx.DBTX, opts ...ActionLogRe
 	return r
 }
 
-func (r *ActionLogRepository) GetAllActionLogs() ([]qx.ActionLog, error) {
-	als, err := qx.New(r.Db).GetAllActionLogs(r.Ctx)
+func (r *ActionLogRepository) GetAllActionLogs(params qx.GetAllActionLogsParams) ([]qx.ActionLog, error) {
+	als, err := qx.New(r.Db).GetAllActionLogs(r.Ctx, params)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return als, nil
+}
+
+func (r *ActionLogRepository) CountActionLogs(params qx.CountActionLogsParams) (int64, error) {
+	count, err := qx.New(r.Db).CountActionLogs(r.Ctx, params)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (r *ActionLogRepository) GetActionLogByID(id int64) (*qx.ActionLog, error) {

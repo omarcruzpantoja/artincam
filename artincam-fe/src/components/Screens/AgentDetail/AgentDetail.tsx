@@ -25,7 +25,7 @@ import AssetFileTable from "./AssetFileTable";
 import CameraConfiguration from "./CameraConfiguration";
 import { Row } from "./utils";
 
-type AgentAction = "edit" | "restart" | "delete";
+type AgentAction = "edit" | "delete";
 
 const AgentDetail = () => {
   const { agentId } = useParams();
@@ -114,7 +114,6 @@ const AgentDetail = () => {
 
   const actionItems: ActionItem<AgentAction>[] = [
     { value: "edit", label: "Edit agent" },
-    { value: "restart", label: "Restart agent" },
     {
       value: "delete",
       label: "Delete agent",
@@ -127,11 +126,6 @@ const AgentDetail = () => {
     switch (action) {
       case "edit":
         navigate(`/agents/${agent.id}/edit`);
-        // TODO: navigate to edit page / open dialog
-        break;
-      case "restart":
-        console.log("Restart agent", agent.id);
-        // TODO: call restart endpoint
         break;
       case "delete":
         console.log("Delete agent", agent.id);

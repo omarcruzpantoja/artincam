@@ -23,6 +23,8 @@ import {
 import { agentService, type Agent } from "@services/agentService";
 import AssetFileCumulativeChart from "./AssetFileCumulativeChart";
 import AssetFileDailyCountChart from "./AssetFileDailyCounterChart";
+import HealthLogActivity from "./HealthLogActivity";
+import HealthStatusChart from "./HealthStatusChart";
 
 const STATUS_COLORS = ["#4caf50", "#ff9800", "#f44336"]; // active, idle, offline
 
@@ -155,57 +157,20 @@ const Dashboard = () => {
         <Grid container spacing={2}>
           {/* Row 1 */}
           <Grid size={{ xs: 12, md: 6 }}>
+            <HealthLogActivity agentId={selectedAgentId || null} />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <HealthStatusChart agentId={selectedAgentId || null} />
+          </Grid>
+
+          {/* Row 2 */}
+          <Grid size={{ xs: 12, md: 6 }}>
             <AssetFileCumulativeChart agentId={selectedAgentId || null} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
             <AssetFileDailyCountChart agentId={selectedAgentId || null} />
-          </Grid>
-
-          {/* Row 2 */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Paper sx={{ p: 2, height: 300 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Status Breakdown
-              </Typography>
-              <ResponsiveContainer width="100%" height="85%">
-                <PieChart>
-                  <Pie
-                    data={statusBreakdown}
-                    dataKey="value"
-                    nameKey="name"
-                    outerRadius={90}
-                    label
-                  >
-                    {statusBreakdown.map((entry, index) => (
-                      <Cell
-                        key={entry.name}
-                        fill={STATUS_COLORS[index % STATUS_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-
-          {/* Placeholder for your 4th chart (keeps layout consistent) */}
-          <Grid>
-            <Paper
-              sx={{
-                p: 2,
-                height: 300,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                More analytics coming soon...
-              </Typography>
-            </Paper>
           </Grid>
         </Grid>
       )}

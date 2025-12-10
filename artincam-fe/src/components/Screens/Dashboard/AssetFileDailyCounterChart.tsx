@@ -151,8 +151,8 @@ const AssetFileDailyCountChart = ({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dailyData}>
               <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.6} />
-              <XAxis dataKey="date" />
-              <YAxis allowDecimals={false} />
+              <XAxis dataKey="date" fontSize={16} />
+              <YAxis allowDecimals={false} fontSize={16} />
               <Tooltip
                 content={CustomRenderTooltipAssetFiles}
                 isAnimationActive={false}

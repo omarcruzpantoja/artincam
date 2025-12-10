@@ -1,5 +1,16 @@
 -- name: GetAllActionLogs :many
-SELECT * FROM action_log;
+SELECT * FROM action_log 
+WHERE 
+    (? IS NULL OR agent_id = ?)
+  AND
+    (? IS NULL OR category = ?)
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?;
+
+-- name: CountActionLogs :one
+SELECT COUNT(*) AS count
+FROM action_log
+WHERE ? IS NULL OR agent_id = ?;
 
 -- name: GetActionLogByID :one
 SELECT * FROM action_log WHERE id = ? LIMIT 1;

@@ -9,6 +9,24 @@ import (
 	"context"
 )
 
+const CountActionLogs = `-- name: CountActionLogs :one
+SELECT COUNT(*) AS count
+FROM action_log
+WHERE ? IS NULL OR agent_id = ?
+`
+
+type CountActionLogsParams struct {
+	Column1 interface{} `json:"column_1"`
+	AgentID string      `json:"agent_id"`
+}
+
+func (q *Queries) CountActionLogs(ctx context.Context, arg CountActionLogsParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, CountActionLogs, arg.Column1, arg.AgentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const CreateActionLog = `-- name: CreateActionLog :one
 INSERT INTO action_log (agent_id, message, category, created_at, updated_at)
 VALUES (?, ?, ?,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -63,11 +81,33 @@ func (q *Queries) GetActionLogByID(ctx context.Context, id int64) (ActionLog, er
 }
 
 const GetAllActionLogs = `-- name: GetAllActionLogs :many
-SELECT id, agent_id, message, category, created_at, updated_at FROM action_log
+SELECT id, agent_id, message, category, created_at, updated_at FROM action_log 
+WHERE 
+    (? IS NULL OR agent_id = ?)
+  AND
+    (? IS NULL OR category = ?)
+ORDER BY created_at DESC
+LIMIT ? OFFSET ?
 `
 
-func (q *Queries) GetAllActionLogs(ctx context.Context) ([]ActionLog, error) {
-	rows, err := q.db.QueryContext(ctx, GetAllActionLogs)
+type GetAllActionLogsParams struct {
+	Column1  interface{} `json:"column_1"`
+	AgentID  string      `json:"agent_id"`
+	Column3  interface{} `json:"column_3"`
+	Category string      `json:"category"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
+}
+
+func (q *Queries) GetAllActionLogs(ctx context.Context, arg GetAllActionLogsParams) ([]ActionLog, error) {
+	rows, err := q.db.QueryContext(ctx, GetAllActionLogs,
+		arg.Column1,
+		arg.AgentID,
+		arg.Column3,
+		arg.Category,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

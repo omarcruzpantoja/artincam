@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CountActionLogs(ctx context.Context, arg CountActionLogsParams) (int64, error)
 	CountAssetFiles(ctx context.Context, arg CountAssetFilesParams) (int64, error)
 	CreateActionLog(ctx context.Context, arg CreateActionLogParams) (ActionLog, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error)
@@ -21,7 +22,7 @@ type Querier interface {
 	GetActionLogByID(ctx context.Context, id int64) (ActionLog, error)
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
 	GetAgentTypeByID(ctx context.Context, id int64) (AgentType, error)
-	GetAllActionLogs(ctx context.Context) ([]ActionLog, error)
+	GetAllActionLogs(ctx context.Context, arg GetAllActionLogsParams) ([]ActionLog, error)
 	GetAllAgentTypes(ctx context.Context) ([]AgentType, error)
 	GetAllAgents(ctx context.Context) ([]Agent, error)
 	GetAllAssetFiles(ctx context.Context, arg GetAllAssetFilesParams) ([]AssetFile, error)

@@ -6,12 +6,19 @@ import type {
 import { useTheme } from "@mui/material/styles";
 
 import { assetFileService, type AssetFile } from "@services/assetFileService";
-const PAGE_SIZE = 500;
+import { actionLogService, type ActionLog } from "@services/actionLogService";
+
+const ASSET_FILE_PAGE_SIZE = 500;
+const ACTION_LOG_PAGE_SIZE = 500;
+export const ACTIVE_COLOR = "#4caf50";
+export const OFFLINE_COLOR = "#f44336";
 
 export interface AssetFilePoint {
   date: string; // YYYY-MM-DD
   count: number;
 }
+
+// ---- ASSET FILES UTILS ----
 
 // Helper to fetch ALL asset files for an agent (paginated)
 export const fetchAllAssetFiles = async (
@@ -25,7 +32,7 @@ export const fetchAllAssetFiles = async (
   for (;;) {
     const res = await assetFileService.listByAgent({
       agentId,
-      limit: PAGE_SIZE,
+      limit: ASSET_FILE_PAGE_SIZE,
       offset,
       // if backend supports this:
       sortField: "timestamp",
@@ -49,11 +56,6 @@ export const fetchAllAssetFiles = async (
 
   return all;
 };
-
-export interface AssetFilePoint {
-  date: string;
-  count: number;
-}
 
 export const CustomRenderTooltipAssetFiles = ({
   active,
@@ -103,3 +105,38 @@ export const CustomRenderTooltipAssetFiles = ({
     </div>
   );
 };
+
+// ---- ACTION LOGS UTILS ----
+
+export async function fetchAllActionLogs(
+  agentId: string,
+  category: string
+): Promise<ActionLog[]> {
+  const all: ActionLog[] = [];
+  let offset = 0;
+  let totalCount: number | null = null;
+
+  for (;;) {
+    const res = await actionLogService.listByAgent(agentId, {
+      category,
+      limit: ACTION_LOG_PAGE_SIZE,
+      offset,
+    });
+
+    const batch = res.data ?? [];
+    all.push(...batch);
+
+    const metaTotal = res.meta?.count ?? batch.length;
+    if (totalCount === null) {
+      totalCount = metaTotal;
+    }
+
+    offset += batch.length;
+
+    if (batch.length === 0 || (totalCount && offset >= totalCount)) {
+      break;
+    }
+  }
+
+  return all;
+}

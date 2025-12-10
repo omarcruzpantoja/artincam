@@ -4,7 +4,7 @@ import {
   type RequestOptions,
 } from "./baseService";
 
-// ---- Types ----
+const ACTION_LOG_PATH = "/api/v1/action-logs";
 
 export interface ActionLog {
   id: number;
@@ -22,8 +22,6 @@ export interface ListActionLogsParams {
   offset?: number;
 }
 
-// ---- Service ----
-
 class ActionLogService extends BaseApiService {
   constructor() {
     super();
@@ -35,7 +33,7 @@ class ActionLogService extends BaseApiService {
   ): Promise<ApiResponse<ActionLog[]>> {
     const { agentId, category, limit, offset } = params;
 
-    return this.get<ActionLog[]>("/action-logs", {
+    return this.get<ActionLog[]>(ACTION_LOG_PATH, {
       ...options,
       query: {
         agent_id: agentId,
