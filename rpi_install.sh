@@ -79,4 +79,10 @@ cd artincam-be
 make install
 make build
 
+export GOOSE_DRIVER=sqlite3
+export GOOSE_DBSTRING=src/db/artincam-be.db
+export GOOSE_MIGRATION_DIR=src/db/migrations
+
+make migrate
+
 echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."

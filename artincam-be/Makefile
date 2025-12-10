@@ -31,7 +31,6 @@ build-arm:
 build-arm64:
 	@GOOS=linux GOARCH=arm64 go build -o bin/artincam src/main.go
 
-
 live-run: generate-queries
 	@air --build.cmd "swag init --dir src && go build -o bin/artincam src/main.go" \
 	     --build.bin "./bin/artincam" \

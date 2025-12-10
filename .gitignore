@@ -34,3 +34,4 @@ tmp
 coverage
 .env*
 docs
+artincam-be.db
