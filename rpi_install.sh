@@ -29,7 +29,7 @@ else
   wget -q "https://go.dev/dl/go${VERSION}.linux-${ARCH}.tar.gz" -O ./go.tar.gz
 
   echo "📂 Installing to $GOROOT..."
-  rm -rf "$GOROOT"
+  sudo rm -rf "$GOROOT"
   sudo tar -C "$INSTALL_DIR" -xzf ./go.tar.gz
   rm ./go.tar.gz
 
