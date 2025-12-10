@@ -57,6 +57,9 @@ migrate:
 	@goose up
 	@make -s dump-schema
 
+migrate-only:
+	@goose up
+
 migrate-to:
 	@goose up-to ${version}
 # 	@make -s dump-schema

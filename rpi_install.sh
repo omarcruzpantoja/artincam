@@ -90,7 +90,17 @@ echo "🛠️ Running DB migrations..."
 export GOOSE_DRIVER=sqlite3
 export GOOSE_DBSTRING=src/db/artincam-be.db
 export GOOSE_MIGRATION_DIR=src/db/migrations
+make migrate-only
 
-make migrate
+cd ../
+
+# ----- Set up agent script -----
+echo "🔧 Setting up agent script..."
+
+echo "📦 Installing uv tool..."
+
+curl -LsSf https://astral.sh/uv/0.9.17/install.sh | sh
+uv venv --system-site-packages
+uv sync --all-extras
 
 echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."

@@ -111,6 +111,7 @@ func (s *Server) createAgentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	agt.ID = agentParams.ID
 	agt.Name = agentParams.Name
 	agt.Description = agentParams.Description
 	agt.AgentTypeID = agentParams.AgentTypeID

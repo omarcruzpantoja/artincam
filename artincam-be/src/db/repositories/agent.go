@@ -49,7 +49,10 @@ func (r *AgentRepository) GetAgentByID(id string) (*qx.Agent, error) {
 }
 
 func (r *AgentRepository) CreateAgent(agent qx.CreateAgentParams) (*qx.Agent, error) {
-	agent.ID = uuid.New().String()
+	if agent.ID == "" {
+		agent.ID = uuid.New().String()
+	}
+
 	a, err := qx.New(r.Db).CreateAgent(r.Ctx, agent)
 
 	if err != nil {
