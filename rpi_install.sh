@@ -24,12 +24,12 @@ else
 
   # ----- DOWNLOAD & EXTRACT -----
   echo "📦 Downloading Go $VERSION for $ARCH..."
-  wget -q "https://go.dev/dl/go${VERSION}.linux-${ARCH}.tar.gz" -O /tmp/go.tar.gz
+  wget -q "https://go.dev/dl/go${VERSION}.linux-${ARCH}.tar.gz" -O ./go.tar.gz
 
   echo "📂 Installing to $GOROOT..."
   rm -rf "$GOROOT"
-  tar -C "$INSTALL_DIR" -xzf /tmp/go.tar.gz
-  rm /tmp/go.tar.gz
+  tar -C "$INSTALL_DIR" -xzf ./go.tar.gz
+  rm ./go.tar.gz
 
   echo "✅ Go $VERSION installed."
 fi
