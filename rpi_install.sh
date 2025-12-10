@@ -96,11 +96,24 @@ cd ../
 
 # ----- Set up agent script -----
 echo "🔧 Setting up agent script..."
+cd camera
 
 echo "📦 Installing uv tool..."
 
-curl -LsSf https://astral.sh/uv/0.9.17/install.sh | sh
-uv venv --system-site-packages
+if command -v uv >/dev/null 2>&1 && [ "$(uv --version)" = "uv 0.9.17" ]; then
+    echo "✔️ uv 0.9.17 already installed — skipping installation."
+else
+    echo "⬇️ Installing uv 0.9.17..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+
+if [ ! -d ".venv" ]; then
+    uv venv --system-site-packages
+else
+    echo "📦 .venv already exists — skipping creation"
+fi
+
 uv sync --all-extras
 
 echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."
