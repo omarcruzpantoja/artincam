@@ -30,7 +30,7 @@ else
 
   echo "📂 Installing to $GOROOT..."
   rm -rf "$GOROOT"
-  tar -C "$INSTALL_DIR" -xzf ./go.tar.gz
+  sudo tar -C "$INSTALL_DIR" -xzf ./go.tar.gz
   rm ./go.tar.gz
 
   echo "✅ Go $VERSION installed."
