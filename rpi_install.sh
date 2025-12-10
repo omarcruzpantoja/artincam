@@ -64,8 +64,12 @@ export PATH="$PATH:$GOPATH_BIN"
 # ----- VERIFY INSTALL -----
 if command -v go >/dev/null; then
     echo "✅ Installed: $(go version)"
+
     echo "📦 Installing swag CLI..."
     go install github.com/swaggo/swag/cmd/swag@latest
+
+    echo "📦 Installing goose CLI..."
+    go install -tags='no_clickhouse no_libsql no_mssql no_mysql no_vertica no_ydb' github.com/pressly/goose/v3/cmd/goose@latest
     echo "🎉 Go $VERSION installed successfully."
 else
     echo "❌ Go not found in PATH. Run: source $SHELL_RC"
@@ -73,12 +77,16 @@ else
 fi
 
 # ------ COMPILE BACKEND -----
-echo "🔧 Compiling backend..."
-
+echo "🔧 Preparing backend..."
 cd artincam-be
+
+echo "📦 Installing backend dependencies..."
 make install
+
+echo "🏗️ Building backend..."
 make build
 
+echo "🛠️ Running DB migrations..."
 export GOOSE_DRIVER=sqlite3
 export GOOSE_DBSTRING=src/db/artincam-be.db
 export GOOSE_MIGRATION_DIR=src/db/migrations
