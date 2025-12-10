@@ -9,18 +9,20 @@ case "$(basename "$SHELL")" in
   *)    echo "❌ Unsupported shell: $SHELL"; exit 1 ;;
 esac
 
+# ----- INSTALL GO -----
+# ----- CONFIG -----
+VERSION=1.25.3                   # Go version (check https://go.dev/dl/)
+ARCH=arm64                       # arm64 for 64-bit OS, armv6l for 32-bit OS
+INSTALL_DIR="/usr/local" # Install location
+GOROOT="$INSTALL_DIR/go"
+GOPATH="$INSTALL_DIR/gopath"
+
 # ----- CHECK EXISTING GO INSTALL -----
 if command -v go >/dev/null 2>&1; then
     INSTALLED_VER=$(go version | awk '{print $3}')
     echo "✅ Go is already installed: $INSTALLED_VER"
     echo "Skipping installation..."
 else
-  # ----- CONFIG -----
-  VERSION=1.25.3                   # Go version (check https://go.dev/dl/)
-  ARCH=arm64                       # arm64 for 64-bit OS, armv6l for 32-bit OS
-  INSTALL_DIR="/usr/local" # Install location
-  GOROOT="$INSTALL_DIR/go"
-  GOPATH="$INSTALL_DIR/gopath"
 
   # ----- DOWNLOAD & EXTRACT -----
   echo "📦 Downloading Go $VERSION for $ARCH..."
@@ -40,6 +42,7 @@ GO_PATH_LINE="export PATH=\$PATH:$INSTALL_DIR/go/bin"
 if ! grep -Fxq "$GO_PATH_LINE" "$SHELL_RC"; then
     echo "$GO_PATH_LINE" >> "$SHELL_RC"
     echo "🛠️ Added Go to PATH in $SHELL_RC"
+    export PATH=$PATH:$INSTALL_DIR/go/bin
 else
     echo "ℹ️ PATH entry already exists in $SHELL_RC"
 fi
@@ -57,3 +60,5 @@ else
     echo "❌ Go not found in PATH. Run: source $SHELL_RC"
     exit 1
 fi
+
+echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."
