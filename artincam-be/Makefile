@@ -18,6 +18,9 @@ run:
 	@swag init --dir src
 	@go run src/main.go
 
+install:
+	@go mod download
+
 build:
 	@swag init --dir src
 	@go build -o bin/artincam src/main.go

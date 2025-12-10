@@ -36,19 +36,30 @@ else
   echo "✅ Go $VERSION installed."
 fi
 
-# ----- ENSURE PATH ENTRY -----
+# ----- ENSURE PATH ENTRY FOR GOROOT -----
 GO_PATH_LINE="export PATH=\$PATH:$INSTALL_DIR/go/bin"
 
 if ! grep -Fxq "$GO_PATH_LINE" "$SHELL_RC"; then
     echo "$GO_PATH_LINE" >> "$SHELL_RC"
-    echo "🛠️ Added Go to PATH in $SHELL_RC"
-    export PATH=$PATH:$INSTALL_DIR/go/bin
-else
-    echo "ℹ️ PATH entry already exists in $SHELL_RC"
+    echo "🛠️ Added Go toolchain bin to PATH in $SHELL_RC"
 fi
 
-# ----- RELOAD ENVIRONMENT -----
-source "$SHELL_RC"
+# Make available to *this* script immediately
+export PATH="$PATH:$INSTALL_DIR/go/bin"
+
+
+# ----- ENSURE PATH ENTRY FOR GOPATH/bin -----
+GOPATH_BIN="$(go env GOPATH)/bin"
+GO_GOPATH_LINE="export PATH=\$PATH:$GOPATH_BIN"
+
+if ! grep -Fxq "$GO_GOPATH_LINE" "$SHELL_RC"; then
+    echo "$GO_GOPATH_LINE" >> "$SHELL_RC"
+    echo "🛠️ Added GOPATH bin to PATH in $SHELL_RC"
+fi
+
+# Make available to *this* script immediately
+export PATH="$PATH:$GOPATH_BIN"
+
 
 # ----- VERIFY INSTALL -----
 if command -v go >/dev/null; then
@@ -60,5 +71,12 @@ else
     echo "❌ Go not found in PATH. Run: source $SHELL_RC"
     exit 1
 fi
+
+# ------ COMPILE BACKEND -----
+echo "🔧 Compiling backend..."
+
+cd artincam-be
+make install
+make build
 
 echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."
