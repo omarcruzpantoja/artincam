@@ -117,3 +117,17 @@ fi
 uv sync --all-extras
 
 echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."
+
+# ----- SETUP FRTONTEND -----
+
+# Download and install fnm:
+if command -v fnm >/dev/null 2>&1; then
+    echo "✔️ fnm already installed — skipping installation."
+else
+    echo "⬇️ Installing fnm..."
+    curl -o- https://fnm.vercel.app/install | bash
+fi
+
+# Download and install Node.js:
+fnm install 24
+fnm default 24
