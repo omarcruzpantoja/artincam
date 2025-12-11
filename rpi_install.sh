@@ -127,6 +127,12 @@ else
     curl -o- https://fnm.vercel.app/install | bash
 fi
 
+FNM_PATH="/home/zacpi/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+    export PATH="$FNM_PATH:$PATH"
+    eval "`fmn env `"
+fi
+
 # Download and install Node.js:
 fnm install 24
 fnm default 24
