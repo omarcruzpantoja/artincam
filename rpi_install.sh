@@ -115,8 +115,7 @@ else
 fi
 
 uv sync --all-extras
-
-echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."
+cd ../
 
 # ----- SETUP FRTONTEND -----
 
@@ -131,3 +130,16 @@ fi
 # Download and install Node.js:
 fnm install 24
 fnm default 24
+
+cd artincam-frontend
+npm install
+npm run build
+
+cd ..
+
+# ----- SETUP NGINX -----
+sudo apt install -y nginx
+
+./rpi_update_fe_app.sh
+
+echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."

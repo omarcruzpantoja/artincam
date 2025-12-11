@@ -25,10 +25,11 @@ type ServerOption func(*Server)
 func NewServer(addr string, opts ...ServerOption) *Server {
 	r := chi.NewRouter()
 	feOrigin := tools.Getenv("FRONTEND_APP_ORIGIN", "http://localhost:5173", false)
+	feOrigin2 := tools.Getenv("FRONTEND_APP_ORIGIN", "http://localhost", false)
 
 	// ----- Set up CORS -----
 	handler := cors.New(cors.Options{
-		AllowedOrigins:   []string{feOrigin}, // TODO: fix the origin for the app
+		AllowedOrigins:   []string{feOrigin, feOrigin2}, // TODO: fix the origin for the app
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: false, // if sending cookies/auth headers

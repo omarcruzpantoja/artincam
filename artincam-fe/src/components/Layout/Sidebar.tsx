@@ -91,7 +91,14 @@ const Sidebar = (): React.JSX.Element => {
           borderColor: "divider",
         }}
       >
-        <Avatar sx={{ bgcolor: "primary.main", color: "#000" }}>AC</Avatar>
+        <Avatar sx={{ bgcolor: "#000", color: "#000" }}>
+          <img
+            src="/artincam-fav.svg"
+            width="50"
+            height="50"
+            style={{ display: "block" }}
+          />
+        </Avatar>
         <Box>
           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
             Artincam

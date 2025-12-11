@@ -12,21 +12,12 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import {
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
+
 import { agentService, type Agent } from "@services/agentService";
 import AssetFileCumulativeChart from "./AssetFileCumulativeChart";
 import AssetFileDailyCountChart from "./AssetFileDailyCounterChart";
 import HealthLogActivity from "./HealthLogActivity";
 import HealthStatusChart from "./HealthStatusChart";
-
-const STATUS_COLORS = ["#4caf50", "#ff9800", "#f44336"]; // active, idle, offline
 
 const Dashboard = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -69,15 +60,6 @@ const Dashboard = () => {
   const selectedAgent = useMemo(
     () => agents.find((a) => a.id === selectedAgentId) ?? null,
     [agents, selectedAgentId]
-  );
-
-  const statusBreakdown = useMemo(
-    () => [
-      { name: "Active", value: selectedAgentId ? 65 : 50 },
-      { name: "Idle", value: selectedAgentId ? 20 : 30 },
-      { name: "Offline", value: selectedAgentId ? 15 : 20 },
-    ],
-    [selectedAgentId]
   );
 
   return (
