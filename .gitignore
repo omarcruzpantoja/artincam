@@ -32,6 +32,6 @@ dist-ssr
 bin
 tmp
 coverage
-.env*
+*.env*
 docs
 artincam-be.db
