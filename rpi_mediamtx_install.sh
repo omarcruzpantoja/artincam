@@ -38,7 +38,7 @@ echo "🆕 Installing MediaMTX $MEDIAMTX_VERSION ..."
 # -----------------------------
 sudo mkdir -p "$INSTALL_DIR"
 
-TMP_TAR="/tmp/mediamtx.tar.gz"
+TMP_TAR="./mediamtx.tar.gz"
 echo "⬇️ Downloading MediaMTX..."
 curl -L "$DOWNLOAD_URL" -o "$TMP_TAR"
 
