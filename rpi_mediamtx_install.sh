@@ -7,7 +7,7 @@ set -e
 SERVICE_NAME="mediamtx"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 
-MEDIAMTX_VERSION="1.9.5"  # adjust if desired
+MEDIAMTX_VERSION="1.15.5"  # adjust if desired
 INSTALL_DIR="/opt/mediamtx"
 BIN_PATH="$INSTALL_DIR/mediamtx"
 
@@ -15,7 +15,6 @@ CONFIG_DIR="/etc/mediamtx"
 CONFIG_FILE="$CONFIG_DIR/mediamtx.yml"
 
 DOWNLOAD_URL="https://github.com/bluenviron/mediamtx/releases/download/v${MEDIAMTX_VERSION}/mediamtx_v${MEDIAMTX_VERSION}_linux_arm64.tar.gz"
-
 # -----------------------------
 # STOP IF SERVICE ALREADY RUNNING
 # -----------------------------
