@@ -456,8 +456,12 @@ class Camera:
                 self._set_config_update(config)
                 logger.info("[Camera] Configuration updated.")
                 logger.info("[Camera] Stopping camera to update configuration...")
+                self.picam.stop_encoder()
                 self.picam.stop()
-                self._sleep(2)  # give some time for camera to settle
+
+                while self.picam.started:
+                    time.sleep(0.1)
+
                 logger.info("[Camera] Applying new configuration...")
                 self.setup()
                 logger.info("[Camera] Restarting camera with new configuration...")

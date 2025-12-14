@@ -10,11 +10,13 @@ class Picamera2:
         self.width = None
         self.height = None
         self.framerate = None
+        self.started = False
 
         self.pre_callback = None
 
     def start(self):
         logger.debug("[PICAMERA2] start")
+        self.started = True
 
     def capture_file(self, filename: str):
         return
@@ -29,6 +31,7 @@ class Picamera2:
 
     def stop(self):
         logger.debug("[PICAMERA2] stop")
+        self.started = False
 
     def close(self):
         logger.debug("[PICAMERA2] close")
