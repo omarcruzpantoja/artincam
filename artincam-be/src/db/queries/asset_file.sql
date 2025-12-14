@@ -58,6 +58,27 @@ WHERE
 ORDER BY file_name DESC
 LIMIT ? OFFSET ?;
 
+-- name: GetAllAssetFilesFileSizeAsc :many
+SELECT *
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY file_size ASC
+LIMIT ? OFFSET ?;
+
+-- name: GetAllAssetFilesFileSizeDesc :many
+SELECT *
+FROM asset_file
+WHERE
+    ( ? IS NULL OR agent_id = ? )
+  AND
+    ( ? IS NULL OR camera_id = ? )
+ORDER BY file_size DESC
+LIMIT ? OFFSET ?;
+
+
 -- name: CountAssetFiles :one
 SELECT COUNT(*) AS count
 FROM asset_file

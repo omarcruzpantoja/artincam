@@ -35,6 +35,7 @@ func (r *AssetFileRepository) GetAllAssetFiles(
 		err error
 	)
 
+	// TODO: refactor this in the future to be less verbose and more dynamic
 	if sortField == "timestamp" && sortOrder == "desc" {
 		ats, err = qx.New(r.Db).GetAllAssetFilesTimestampDesc(r.Ctx, qx.GetAllAssetFilesTimestampDescParams{
 			AgentID:  params.AgentID,
@@ -73,6 +74,24 @@ func (r *AssetFileRepository) GetAllAssetFiles(
 		})
 	} else if sortField == "file_name" && sortOrder == "desc" {
 		ats, err = qx.New(r.Db).GetAllAssetFilesFileNameDesc(r.Ctx, qx.GetAllAssetFilesFileNameDescParams{
+			AgentID:  params.AgentID,
+			Column1:  params.Column1,
+			CameraID: params.CameraID,
+			Column3:  params.Column3,
+			Limit:    params.Limit,
+			Offset:   params.Offset,
+		})
+	} else if sortField == "file_size" && sortOrder == "asc" {
+		ats, err = qx.New(r.Db).GetAllAssetFilesFileSizeAsc(r.Ctx, qx.GetAllAssetFilesFileSizeAscParams{
+			AgentID:  params.AgentID,
+			Column1:  params.Column1,
+			CameraID: params.CameraID,
+			Column3:  params.Column3,
+			Limit:    params.Limit,
+			Offset:   params.Offset,
+		})
+	} else if sortField == "file_size" && sortOrder == "desc" {
+		ats, err = qx.New(r.Db).GetAllAssetFilesFileSizeDesc(r.Ctx, qx.GetAllAssetFilesFileSizeDescParams{
 			AgentID:  params.AgentID,
 			Column1:  params.Column1,
 			CameraID: params.CameraID,

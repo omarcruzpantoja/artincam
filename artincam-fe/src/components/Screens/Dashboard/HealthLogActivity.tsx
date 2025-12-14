@@ -120,7 +120,6 @@ const HealthLogActivity = ({
     const result: HealthDotPoint[] = [];
     // Sort days ascending
     const sortedDays = Array.from(bucketMap.keys()).sort();
-    console.log(Array.from(bucketMap.keys()));
 
     for (const dayLabel of sortedDays) {
       const bucket = bucketMap.get(dayLabel)!;

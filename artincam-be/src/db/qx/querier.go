@@ -28,6 +28,8 @@ type Querier interface {
 	GetAllAssetFiles(ctx context.Context, arg GetAllAssetFilesParams) ([]AssetFile, error)
 	GetAllAssetFilesFileNameAsc(ctx context.Context, arg GetAllAssetFilesFileNameAscParams) ([]AssetFile, error)
 	GetAllAssetFilesFileNameDesc(ctx context.Context, arg GetAllAssetFilesFileNameDescParams) ([]AssetFile, error)
+	GetAllAssetFilesFileSizeAsc(ctx context.Context, arg GetAllAssetFilesFileSizeAscParams) ([]AssetFile, error)
+	GetAllAssetFilesFileSizeDesc(ctx context.Context, arg GetAllAssetFilesFileSizeDescParams) ([]AssetFile, error)
 	GetAllAssetFilesTimestampDesc(ctx context.Context, arg GetAllAssetFilesTimestampDescParams) ([]AssetFile, error)
 	GetAllAssetFilesUniqueIdAsc(ctx context.Context, arg GetAllAssetFilesUniqueIdAscParams) ([]AssetFile, error)
 	GetAllAssetFilesUniqueIdDesc(ctx context.Context, arg GetAllAssetFilesUniqueIdDescParams) ([]AssetFile, error)
