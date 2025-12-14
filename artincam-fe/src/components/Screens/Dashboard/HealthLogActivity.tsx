@@ -1,13 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, type FC } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import {
   CartesianGrid,
+  Dot,
   ResponsiveContainer,
   Scatter,
   ScatterChart,
   XAxis,
   YAxis,
+  type DotProps,
 } from "recharts";
 import { type ActionLog } from "@services/actionLogService";
 import { ACTIVE_COLOR, fetchAllActionLogs } from "./utils";
@@ -77,6 +79,7 @@ const HealthLogActivity = ({
   // Build dot matrix: X = day, Y = time-of-day bucket
   const points: HealthDotPoint[] = useMemo(() => {
     if (!logs.length) return [];
+
     logs.reverse();
 
     // Map of date -> bucketIndex -> count
@@ -117,10 +120,12 @@ const HealthLogActivity = ({
     const result: HealthDotPoint[] = [];
     // Sort days ascending
     const sortedDays = Array.from(bucketMap.keys()).sort();
+    console.log(Array.from(bucketMap.keys()));
 
     for (const dayLabel of sortedDays) {
-      const buckets = bucketMap.get(dayLabel)!;
-      for (const [bucketIndex, count] of buckets.entries()) {
+      const bucket = bucketMap.get(dayLabel)!;
+
+      for (const [bucketIndex, count] of bucket.entries()) {
         if (count <= 0) continue;
 
         const bucketStartMinutes = bucketIndex * BUCKET_MINUTES; // start of bucket
@@ -137,7 +142,6 @@ const HealthLogActivity = ({
     return result;
   }, [logs]);
 
-  console.log(points);
   const loading = isLoading || isFetching;
   const hasDots = points.length > 0;
 
@@ -237,11 +241,7 @@ const HealthLogActivity = ({
                 tick={{ fontSize: 16 }}
               />
 
-              <Scatter
-                data={points}
-                fill={ACTIVE_COLOR}
-                // shape="circle"
-              />
+              <Scatter data={points} shape={<RenderDot />} />
             </ScatterChart>
           </ResponsiveContainer>
         </Box>
@@ -250,4 +250,9 @@ const HealthLogActivity = ({
   );
 };
 
+const RenderDot: FC<DotProps> = ({ cx, cy }) => {
+  return (
+    <Dot cx={cx} cy={cy} fill={ACTIVE_COLOR} r={2} shapeRendering={"square"} />
+  );
+};
 export default HealthLogActivity;

@@ -491,7 +491,8 @@ class Camera:
         while not self._stop.is_set():
             if self._status == StatusEnum.ACTIVE:
                 self._messages_to_backend.put(self._health_check_log_callback())
-            time.sleep(5)
+
+            self._interruptable_sleep(60)  # send health log every 60 seconds
 
     # ---- CAMERA CALLBACKS ----
     def _create_asset_file_callback(self, asset_file: AssetFile):

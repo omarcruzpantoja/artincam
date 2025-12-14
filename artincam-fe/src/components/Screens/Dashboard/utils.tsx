@@ -8,8 +8,8 @@ import { useTheme } from "@mui/material/styles";
 import { assetFileService, type AssetFile } from "@services/assetFileService";
 import { actionLogService, type ActionLog } from "@services/actionLogService";
 
-const ASSET_FILE_PAGE_SIZE = 500;
-const ACTION_LOG_PAGE_SIZE = 500;
+const ASSET_FILE_PAGE_SIZE = 2500;
+const ACTION_LOG_PAGE_SIZE = 2500;
 export const ACTIVE_COLOR = "#4caf50";
 export const OFFLINE_COLOR = "#f44336";
 
