@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import pathlib
@@ -8,22 +7,20 @@ import time
 from datetime import datetime, timezone
 from enum import StrEnum
 from queue import Queue
-from .constants import ARTINCAM_AGENT_ID
 
 import cv2
 import psutil
 
-
 from .backend_service import BackendService
-from .constants import AgentMessage
+from .constants import ARTINCAM_AGENT_ID, AgentMessage
 from .schemas import (
+    ActionLog,
     ArtincamPiAgentConfig,
     ArtincamPiCamera,
     AssetFile,
     AssetFileTypeEnum,
     ModeEnum,
     StatusEnum,
-    ActionLog,
 )
 
 # libcamera and pimcamera2 will already be installed in the raspberry pis
@@ -42,7 +39,7 @@ from .logger import logger
 
 DEFAULT_BITRATE = 8_388_608  # example: 8MB
 ROOT_DIRECTORY = pathlib.Path(__file__).resolve().parent
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 one_GB = 2**30
 
 
@@ -188,13 +185,14 @@ class Camera:
 
     def run(self):
         while self._camera_config is None and not self._stop.is_set():
-            logger.debug("[Camera] Waiting for initial configuration...")
+            logger.info("[Camera] Waiting for initial configuration...")
             self._interruptable_sleep(10)
 
         # initial camera setup
         self.setup()
         # initialize camera
         self.picam.start()
+        self._use_timestamp_overlay()
         self._sleep(2)  # let the camera start running properly
 
         while not self._stop.is_set():  # while stop event is not set, keep running
@@ -269,8 +267,8 @@ class Camera:
         self._current_time = time.strftime("%Y-%m-%d %X")
         self._messages_to_backend.put(self._create_asset_file_callback(asset_file))
         self.picam.capture_file(output_filepath)
-        # TODO: add function to get/update the asset file size
-        asset_file.file_size = 1
+        file_path = pathlib.Path(output_filepath)
+        asset_file.file_size = 0 if not file_path.exists() else file_path.stat().st_size
         self._messages_to_backend.put(self._update_asset_file_callback(asset_file))
         self.file_counter.increment_counter()
         logger.debug(f"Image taken, storing in ({output_filepath})\nImage Resting...({self._image_rest_time})")
@@ -292,11 +290,9 @@ class Camera:
         # once time is finished, stop recording
         self.picam.stop_encoder()
         self.file_counter.increment_counter()
-
-        # TODO: add function to get/update the asset file size
-        asset_file.file_size = 1
+        file_path = pathlib.Path(output_filepath)
+        asset_file.file_size = 0 if not file_path.exists() else file_path.stat().st_size
         self._messages_to_backend.put(self._update_asset_file_callback(asset_file))
-        # logger.debug(f"Recording Finished and stored ({output_file})\nCycle Resting...({self._cycle_rest_time})")
 
     def _capture_stream(self):
         rtsp_stream_output = PyavOutput(self._camera_config.rtsp_stream.address, format="rtsp")
@@ -305,12 +301,12 @@ class Camera:
 
         while not self._break_cycle_condition():
             self._current_time = time.strftime("%Y-%m-%d %X")
+            self._interruptable_sleep(1)
 
         self.picam.stop_encoder()
 
     # ----- VALIDATORS AND CONFIG -----
     def _set_config_update(self, config: ArtincamPiAgentConfig):
-        # self._config = json.loads(open(path, "r").read())
         camera_config: ArtincamPiCamera = config.camera
         self._camera_config = camera_config
         transforms = camera_config.transforms
@@ -396,24 +392,22 @@ class Camera:
 
         final_transfer_path.mkdir(parents=True, exist_ok=True)
 
-        # the timestamp format here aims to do: dd_mm_yyyy_hh_mm
-        # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20-02-2025-06-03-10
+        # the timestamp format here aims to do: YYYYMMDDHHmmSS
+        # Example: Say its Feb 20 2025, 6:03:10AM. The format would look like: 20250220060313
         current_time = datetime.now(timezone.utc)
-        timestamp = current_time.strftime("%d-%m-%Y-%H-%M-%S")
+        timestamp = current_time.strftime("%Y%m%d%H%M%S")
         unique_id = f"{str(self._pi_id).zfill(4)}-{str(self.file_counter.counter).zfill(10)}"
 
         # The complete filename however would look like:
         # 1_sj-pr-usa-20-02-2025-06-03-10_UUIDV6.mkv
         # Assuming _pi_id = 1, _location = sj-pr-usa
         file_stride = "jpg" if image else "mkv"
-        file_name = "{pi_id}_{location}_{timestamp}_{unique_id}.{file_stride}".format(
-            pi_id=self._pi_id,
-            location=self._location,
+        file_name = "{timestamp}_{unique_id}_{location}.{file_stride}".format(
             timestamp=timestamp,
             unique_id=unique_id,
+            location=self._location,
             file_stride=file_stride,
         )
-        # 2006-01-02T15:04:05Z07:00
         asset_file = AssetFile(
             agent_id=ARTINCAM_AGENT_ID,
             camera_id=str(self._pi_id),
@@ -460,8 +454,15 @@ class Camera:
                 self._status = StatusEnum.STOPPED
                 self._interrupt_sleep.set()
                 self._set_config_update(config)
+                logger.info("[Camera] Configuration updated.")
+                logger.info("[Camera] Stopping camera to update configuration...")
+                self.picam.stop()
+                self._sleep(2)  # give some time for camera to settle
+                logger.info("[Camera] Applying new configuration...")
+                self.setup()
+                logger.info("[Camera] Restarting camera with new configuration...")
+                self.picam.start()
                 self._interrupt_sleep.clear()
-                logger.debug("[Camera] Configuration updated.")
 
     # ---- thread loops ----
     def _camera_listener_loop(self):
@@ -491,7 +492,6 @@ class Camera:
     # ---- CAMERA CALLBACKS ----
     def _create_asset_file_callback(self, asset_file: AssetFile):
         def callback():
-            print(asset_file.agent_id, "--")
             response = self._backend_client.create_asset_file(asset_file)
 
             if response is None:
@@ -505,7 +505,7 @@ class Camera:
     def _update_asset_file_callback(self, asset_file: AssetFile):
         def callback():
             if asset_file.id is None:
-                logger.error("asset_file.id is required for update")
+                logger.error("[Camera] asset_file.id is required for update")
                 return
 
             self._backend_client.update_asset_file(asset_file)

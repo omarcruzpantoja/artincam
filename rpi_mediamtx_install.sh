@@ -86,7 +86,7 @@ rtspTransports: [tcp]
 # ---- Enable HLS for browser playback
 hls: true
 hlsAddress: :8888          # HLS HTTP server port
-hlsAllowOrigins: "*"        # or set to your frontend origin instead of "*"
+hlsAllowOrigins: ["*"]        # or set to your frontend origin instead of "*"
 
 # ---- Keep everything else disabled
 rtmp: false
