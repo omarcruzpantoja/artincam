@@ -1,5 +1,12 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, Avatar, IconButton } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Avatar,
+  IconButton,
+  useTheme,
+} from "@mui/material";
 import DarkMode from "@mui/icons-material/DarkMode";
 import LightMode from "@mui/icons-material/LightMode";
 
@@ -7,6 +14,8 @@ import { useThemeController } from "@components/Contexts/ThemeContext";
 
 const Header = (): React.JSX.Element => {
   const { themeName, toggleTheme } = useThemeController();
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   return (
     <AppBar
@@ -28,13 +37,22 @@ const Header = (): React.JSX.Element => {
         <IconButton>
           <Avatar
             sx={{
-              width: 32,
-              height: 32,
-              bgcolor: "primary.main",
-              color: "#000",
+              width: 40,
+              height: 40,
+              bgcolor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+              border: isDark
+                ? "1px solid rgba(255,255,255,0.10)"
+                : "1px solid rgba(0,0,0,0.08)",
             }}
+            variant="rounded"
           >
-            OC
+            <img
+              src="/artincam-fav.svg"
+              width="26"
+              height="26"
+              style={{ display: "block" }}
+              alt="Artincam"
+            />
           </Avatar>
         </IconButton>
       </Toolbar>
