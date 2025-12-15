@@ -46,12 +46,16 @@ func (s *Server) actionLogListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	actionLogs, err := repo.GetAllActionLogs(qx.GetAllActionLogsParams{
-		Column1:  null.StringFromPtr(filter.AgentID).NullString,
-		AgentID:  null.StringFromPtr(filter.AgentID).String,
-		Column3:  null.StringFromPtr(filter.Category).NullString,
-		Category: null.StringFromPtr(filter.Category).String,
-		Limit:    filter.Limit,
-		Offset:   filter.Offset,
+		AgentID:     null.StringFromPtr(filter.AgentID).String,
+		Column1:     null.StringFromPtr(filter.AgentID).NullString,
+		Category:    null.StringFromPtr(filter.Category).String,
+		Column3:     null.StringFromPtr(filter.Category).NullString,
+		CreatedAt:   null.TimeFromPtr(filter.StartDate).NullTime,
+		Column5:     null.TimeFromPtr(filter.StartDate).NullTime,
+		CreatedAt_2: null.TimeFromPtr(filter.EndDate).NullTime,
+		Column7:     null.TimeFromPtr(filter.StartDate).NullTime,
+		Limit:       filter.Limit,
+		Offset:      filter.Offset,
 	})
 
 	if err != nil {

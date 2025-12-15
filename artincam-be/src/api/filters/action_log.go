@@ -3,13 +3,16 @@ package filters
 import (
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type ActionLogFilter struct {
-	AgentID  *string `schema:"agent_id"`
-	Category *string `schema:"category"`
-	Limit    int64
-	Offset   int64
+	AgentID   *string    `schema:"agent_id"`
+	Category  *string    `schema:"category"`
+	StartDate *time.Time `schema:"start_date"`
+	EndDate   *time.Time `schema:"end_date"`
+	Limit     int64
+	Offset    int64
 }
 
 func (f *ActionLogFilter) Parse(q url.Values) error {
@@ -21,6 +24,22 @@ func (f *ActionLogFilter) Parse(q url.Values) error {
 
 	if v := q.Get("category"); v != "" {
 		f.Category = &v
+	}
+
+	if v := q.Get("start_date"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return err
+		}
+		f.StartDate = &t
+	}
+
+	if v := q.Get("end_date"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return err
+		}
+		f.EndDate = &t
 	}
 
 	if v := q.Get("limit"); v != "" {

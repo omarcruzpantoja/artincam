@@ -7,6 +7,7 @@ package qx
 
 import (
 	"context"
+	"database/sql"
 )
 
 const CountActionLogs = `-- name: CountActionLogs :one
@@ -86,17 +87,25 @@ WHERE
     (? IS NULL OR agent_id = ?)
   AND
     (? IS NULL OR category = ?)
+  AND 
+    ( ? IS NULL OR created_at >= ? )
+  AND
+    ( ? IS NULL OR created_at <= ? )
 ORDER BY created_at DESC
 LIMIT ? OFFSET ?
 `
 
 type GetAllActionLogsParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	Category string      `json:"category"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{}  `json:"column_1"`
+	AgentID     string       `json:"agent_id"`
+	Column3     interface{}  `json:"column_3"`
+	Category    string       `json:"category"`
+	Column5     interface{}  `json:"column_5"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	Column7     interface{}  `json:"column_7"`
+	CreatedAt_2 sql.NullTime `json:"created_at_2"`
+	Limit       int64        `json:"limit"`
+	Offset      int64        `json:"offset"`
 }
 
 func (q *Queries) GetAllActionLogs(ctx context.Context, arg GetAllActionLogsParams) ([]ActionLog, error) {
@@ -105,6 +114,10 @@ func (q *Queries) GetAllActionLogs(ctx context.Context, arg GetAllActionLogsPara
 		arg.AgentID,
 		arg.Column3,
 		arg.Category,
+		arg.Column5,
+		arg.CreatedAt,
+		arg.Column7,
+		arg.CreatedAt_2,
 		arg.Limit,
 		arg.Offset,
 	)

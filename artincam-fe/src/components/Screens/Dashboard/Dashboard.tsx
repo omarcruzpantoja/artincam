@@ -16,13 +16,24 @@ import {
 } from "@mui/material";
 
 import { agentService, type Agent } from "@services/agentService";
-import AssetFileCumulativeChart from "./AssetFileCumulativeChart";
 import HealthLogActivity from "./HealthLogActivity";
 import HealthStatusChart from "./HealthStatusChart";
 
 import { FilterProvider, useFilter } from "./contexts/FilterContext";
+import AssetFileDailyCountChart from "./AssetFileDailyCounterChart";
+import AssetFileHourlyCountChart from "./AssetFileHourlyCountChart";
 
 const LS_SELECTED_AGENT_KEY = "artincam:selectedAgentId";
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function ymdFromUTCDate(d: Date): string {
+  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
+    d.getUTCDate()
+  )}`;
+}
 
 function DashboardInner() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -33,13 +44,17 @@ function DashboardInner() {
     applied,
     draft,
     setAgentId,
-    setDraftStart,
-    setDraftEnd,
+    setDraftStartDate,
+    setDraftEndDate,
     apply,
     clearDraft,
   } = useFilter();
 
   const selectedAgentId = applied.agentId;
+
+  // ✅ UTC-safe values for <input type="date">
+  const startValue = draft.start ? ymdFromUTCDate(draft.start) : "";
+  const endValue = draft.end ? ymdFromUTCDate(draft.end) : "";
 
   // ---- Load agents from API ----
   useEffect(() => {
@@ -127,24 +142,13 @@ function DashboardInner() {
                 labelId="agent-select-label"
                 label="Agent"
                 value={selectedAgentId}
-                onChange={(e) => {
-                  const nextId = e.target.value as string;
-                  setAgentId(nextId);
-                }}
-                displayEmpty
-                renderValue={(value) => {
-                  if (!value) {
-                    return (
-                      <span style={{ color: "#888" }}>Choose an agent</span>
-                    );
-                  }
-                  const a = agents.find((ag) => ag.id === value);
-                  return a ? a.name : value;
-                }}
+                onChange={(e) => setAgentId(e.target.value as string)}
               >
-                <MenuItem value="">
-                  <em>None</em>
+                {/* ✅ Proper placeholder without overlap */}
+                <MenuItem value="" disabled>
+                  <em>Choose an agent</em>
                 </MenuItem>
+
                 {agents.map((agent) => (
                   <MenuItem key={agent.id} value={agent.id}>
                     {agent.name}
@@ -176,31 +180,19 @@ function DashboardInner() {
               alignItems={{ sm: "center" }}
             >
               <TextField
-                label="Start date"
+                label="Start date (UTC)"
                 type="date"
-                size="small"
-                value={
-                  draft.start ? draft.start.toISOString().slice(0, 10) : ""
-                }
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setDraftStart(v ? new Date(`${v}T00:00:00`) : null);
-                }}
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: { xs: "100%", sm: 220 } }}
+                value={startValue}
+                onChange={(e) => setDraftStartDate(e.target.value || null)}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
 
               <TextField
-                label="End date"
+                label="End date (UTC)"
                 type="date"
-                size="small"
-                value={draft.end ? draft.end.toISOString().slice(0, 10) : ""}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setDraftEnd(v ? new Date(`${v}T00:00:00`) : null);
-                }}
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: { xs: "100%", sm: 220 } }}
+                value={endValue}
+                onChange={(e) => setDraftEndDate(e.target.value || null)}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
 
               <Stack direction="row" spacing={1}>
@@ -220,16 +212,6 @@ function DashboardInner() {
                   Clear
                 </Button>
               </Stack>
-
-              <Stack justifyContent="center" sx={{ ml: { sm: "auto" } }}>
-                <Typography variant="caption" color="text.secondary">
-                  Applied:{" "}
-                  {applied.start
-                    ? applied.start.toISOString().slice(0, 10)
-                    : "—"}{" "}
-                  → {applied.end ? applied.end.toISOString().slice(0, 10) : "—"}
-                </Typography>
-              </Stack>
             </Stack>
           </Paper>
 
@@ -243,7 +225,11 @@ function DashboardInner() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <AssetFileCumulativeChart agentId={selectedAgentId || null} />
+              <AssetFileDailyCountChart agentId={selectedAgentId || null} />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <AssetFileHourlyCountChart agentId={selectedAgentId || null} />
             </Grid>
           </Grid>
         </>

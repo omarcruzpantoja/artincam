@@ -11,19 +11,45 @@ import {
   YAxis,
 } from "recharts";
 import { type AssetFile } from "@services/assetFileService";
+
 import {
   CustomRenderTooltipAssetFiles,
   fetchAllAssetFiles,
   type AssetFilePoint,
 } from "./utils";
+import { useFilter } from "./contexts/FilterContext";
 
 interface AssetFileDailyCountChartProps {
   agentId: string | null;
 }
 
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function dayKeyUTC(d: Date): string {
+  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
+    d.getUTCDate()
+  )}`;
+}
+
+function startOfUTCDay(d: Date): Date {
+  return new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+  );
+}
+
+function addUTCDays(d: Date, days: number): Date {
+  const x = new Date(d);
+  x.setUTCDate(x.getUTCDate() + days);
+  return x;
+}
+
 const AssetFileDailyCountChart = ({
   agentId,
 }: AssetFileDailyCountChartProps) => {
+  const { applied } = useFilter();
+
   // Early UI when no agent selected
   if (!agentId) {
     return (
@@ -50,16 +76,18 @@ const AssetFileDailyCountChart = ({
     error,
     isFetching,
   } = useQuery<AssetFile[], Error>({
-    queryKey: ["dashboard", "asset-files", agentId],
-    queryFn: () => fetchAllAssetFiles(agentId),
+    queryKey: ["dashboard", "asset-files", agentId, applied.start, applied.end],
+    queryFn: () =>
+      fetchAllAssetFiles(agentId, {
+        startDate: applied.start?.toISOString(),
+        endDate: applied.end?.toISOString(),
+      }),
     enabled: !!agentId,
     staleTime: 5 * 60 * 1000,
   });
 
-  // ---- Aggregate: total files per day (non-cumulative) ----
+  // ---- Aggregate: total files per day (non-cumulative), fill missing days with 0 ----
   const dailyData: AssetFilePoint[] = useMemo(() => {
-    if (!files.length) return [];
-
     const byDate: Record<string, number> = {};
 
     for (const f of files) {
@@ -67,31 +95,48 @@ const AssetFileDailyCountChart = ({
       const d = new Date(f.timestamp);
       if (Number.isNaN(d.getTime())) continue;
 
-      const dateKey = d.toISOString().slice(0, 10); // YYYY-MM-DD
+      const dateKey = dayKeyUTC(d); // ✅ UTC day key
       byDate[dateKey] = (byDate[dateKey] ?? 0) + 1;
     }
 
-    const sortedDates = Object.keys(byDate).sort();
+    // If we have an applied range, fill every day in that range (inclusive)
+    if (applied.start && applied.end) {
+      const rangeStart = startOfUTCDay(applied.start);
+      const rangeEnd = startOfUTCDay(applied.end);
 
+      // guard: if end < start, fall back to observed
+      if (rangeEnd.getTime() < rangeStart.getTime()) {
+        const sorted = Object.keys(byDate).sort();
+        return sorted.map((date) => ({ date, count: byDate[date] ?? 0 }));
+      }
+
+      const points: AssetFilePoint[] = [];
+      for (
+        let cur = new Date(rangeStart);
+        cur.getTime() <= rangeEnd.getTime();
+        cur = addUTCDays(cur, 1)
+      ) {
+        const key = dayKeyUTC(cur);
+        points.push({
+          date: key,
+          count: byDate[key] ?? 0, // ✅ default missing to 0
+        });
+      }
+      return points;
+    }
+
+    // No applied range -> just show observed days
+    const sortedDates = Object.keys(byDate).sort();
     return sortedDates.map((date) => ({
       date,
-      count: byDate[date],
+      count: byDate[date] ?? 0,
     }));
-  }, [files]);
+  }, [files, applied.start, applied.end]);
 
   const loading = isLoading || isFetching;
 
-  // ---- Render ----
-
   return (
-    <Paper
-      sx={{
-        p: 2,
-        height: 420,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <Paper sx={{ p: 2, height: 420, display: "flex", flexDirection: "column" }}>
       <Box
         sx={{
           mb: 1,
@@ -151,7 +196,12 @@ const AssetFileDailyCountChart = ({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dailyData}>
               <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.6} />
-              <XAxis dataKey="date" fontSize={16} />
+              <XAxis
+                dataKey="date"
+                fontSize={12}
+                interval="preserveStartEnd"
+                minTickGap={28}
+              />
               <YAxis allowDecimals={false} fontSize={16} />
               <Tooltip
                 content={CustomRenderTooltipAssetFiles}

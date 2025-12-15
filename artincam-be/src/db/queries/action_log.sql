@@ -4,6 +4,10 @@ WHERE
     (? IS NULL OR agent_id = ?)
   AND
     (? IS NULL OR category = ?)
+  AND 
+    ( ? IS NULL OR created_at >= ? )
+  AND
+    ( ? IS NULL OR created_at <= ? )
 ORDER BY created_at DESC
 LIMIT ? OFFSET ?;
 

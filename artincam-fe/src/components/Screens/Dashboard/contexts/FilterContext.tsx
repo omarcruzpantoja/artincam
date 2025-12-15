@@ -2,26 +2,26 @@ import React, { createContext, useContext, useMemo, useState } from "react";
 
 const LS_APPLIED_FILTER_KEY = "artincam:appliedFilter";
 
+type StoredAppliedFilter = {
+  agentId: string;
+  startDate: string | null; // "YYYY-MM-DD" interpreted as UTC date
+  endDate: string | null;   // "YYYY-MM-DD" interpreted as UTC date
+};
+
 export type AppliedFilter = {
   agentId: string;
-  start: Date | null;
-  end: Date | null;
+  start: Date | null; // UTC start-of-day
+  end: Date | null;   // UTC end-of-day
 };
 
 export type FilterContextValue = {
-  // what children should use
   applied: AppliedFilter;
-
-  // what user is editing
-  draft: {
-    start: Date | null;
-    end: Date | null;
-  };
+  draft: { start: Date | null; end: Date | null };
 
   setAgentId: (agentId: string) => void;
 
-  setDraftStart: (date: Date | null) => void;
-  setDraftEnd: (date: Date | null) => void;
+  setDraftStartDate: (yyyyMmDd: string | null) => void;
+  setDraftEndDate: (yyyyMmDd: string | null) => void;
 
   apply: () => void;
   clearDraft: () => void;
@@ -29,29 +29,33 @@ export type FilterContextValue = {
 
 const FilterContext = createContext<FilterContextValue | null>(null);
 
-function startOfDay(d: Date): Date {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
+// ---- UTC helpers ----
+
+function startOfDayUTCFromYMD(ymd: string): Date {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
 }
 
-function safeParseAppliedFilter(raw: string | null): AppliedFilter | null {
+function endOfDayUTCFromYMD(ymd: string): Date {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999));
+}
+
+function ymdFromUTCDate(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function safeParseStored(raw: string | null): StoredAppliedFilter | null {
   if (!raw) return null;
   try {
-    const obj = JSON.parse(raw) as {
-      agentId?: unknown;
-      start?: unknown;
-      end?: unknown;
-    };
-
-    const agentId = typeof obj.agentId === "string" ? obj.agentId : "";
-    const start = typeof obj.start === "string" ? new Date(obj.start) : null;
-    const end = typeof obj.end === "string" ? new Date(obj.end) : null;
-
+    const obj = JSON.parse(raw) as Partial<StoredAppliedFilter>;
     return {
-      agentId,
-      start: start && !isNaN(start.getTime()) ? start : null,
-      end: end && !isNaN(end.getTime()) ? end : null,
+      agentId: typeof obj.agentId === "string" ? obj.agentId : "",
+      startDate: typeof obj.startDate === "string" ? obj.startDate : null,
+      endDate: typeof obj.endDate === "string" ? obj.endDate : null,
     };
   } catch {
     return null;
@@ -61,53 +65,49 @@ function safeParseAppliedFilter(raw: string | null): AppliedFilter | null {
 export const FilterProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  // Restore last applied on initial mount
-  const restored = safeParseAppliedFilter(
-    localStorage.getItem(LS_APPLIED_FILTER_KEY)
-  );
+  const restored = safeParseStored(localStorage.getItem(LS_APPLIED_FILTER_KEY));
 
-  const [applied, setApplied] = useState<AppliedFilter>(
-    restored ?? { agentId: "", start: null, end: null }
-  );
+  const initialApplied: AppliedFilter = {
+    agentId: restored?.agentId ?? "",
+    start: restored?.startDate ? startOfDayUTCFromYMD(restored.startDate) : null,
+    end: restored?.endDate ? endOfDayUTCFromYMD(restored.endDate) : null,
+  };
 
-  // Draft should start as applied (so inputs match current applied state)
-  const [draftStart, setDraftStartState] = useState<Date | null>(
-    restored?.start ?? null
-  );
-  const [draftEnd, setDraftEndState] = useState<Date | null>(
-    restored?.end ?? null
-  );
+  const [applied, setApplied] = useState<AppliedFilter>(initialApplied);
+
+  // draft begins as applied (already UTC)
+  const [draftStart, setDraftStartState] = useState<Date | null>(initialApplied.start);
+  const [draftEnd, setDraftEndState] = useState<Date | null>(initialApplied.end);
 
   const value = useMemo<FilterContextValue>(
     () => ({
       applied,
       draft: { start: draftStart, end: draftEnd },
 
-      setAgentId: (agentId) => {
-        // changing agent should not automatically "apply" dates
-        // but it should update applied agentId so children know which agent is active
-        // (draft dates remain as-is until Apply is pressed)
-        setApplied((prev) => ({ ...prev, agentId }));
-      },
+      setAgentId: (agentId) => setApplied((prev) => ({ ...prev, agentId })),
 
-      setDraftStart: (d) => setDraftStartState(d ? startOfDay(d) : null),
-      setDraftEnd: (d) => setDraftEndState(d ? startOfDay(d) : null),
+      setDraftStartDate: (ymd) =>
+        setDraftStartState(ymd ? startOfDayUTCFromYMD(ymd) : null),
+
+      setDraftEndDate: (ymd) =>
+        setDraftEndState(ymd ? endOfDayUTCFromYMD(ymd) : null),
 
       apply: () => {
         const next: AppliedFilter = {
           agentId: applied.agentId,
-          start: draftStart ? startOfDay(draftStart) : null,
-          end: draftEnd ? startOfDay(draftEnd) : null,
+          start: draftStart,
+          end: draftEnd,
         };
+
         setApplied(next);
-        localStorage.setItem(
-          LS_APPLIED_FILTER_KEY,
-          JSON.stringify({
-            agentId: next.agentId,
-            start: next.start ? next.start.toISOString() : null,
-            end: next.end ? next.end.toISOString() : null,
-          })
-        );
+
+        const stored: StoredAppliedFilter = {
+          agentId: next.agentId,
+          startDate: next.start ? ymdFromUTCDate(next.start) : null,
+          endDate: next.end ? ymdFromUTCDate(next.end) : null,
+        };
+
+        localStorage.setItem(LS_APPLIED_FILTER_KEY, JSON.stringify(stored));
       },
 
       clearDraft: () => {

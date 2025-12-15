@@ -18,6 +18,8 @@ export interface ActionLog {
 export interface ListActionLogsParams {
   agentId?: string;
   category?: string;
+  startDate?: string;
+  endDate?: string;
   limit?: number;
   offset?: number;
 }
@@ -28,35 +30,33 @@ class ActionLogService extends BaseApiService {
   }
 
   async list(
-    params: ListActionLogsParams = {},
-    options: RequestOptions = {}
+    params: ListActionLogsParams = {}
   ): Promise<ApiResponse<ActionLog[]>> {
-    const { agentId, category, limit, offset } = params;
+    const { agentId, category, limit, offset, startDate, endDate } = params;
+
+    const query: RequestOptions["query"] = {
+      agent_id: agentId,
+      limit,
+      offset,
+    };
+
+    if (category) query.category = category;
+    if (startDate) query.start_date = startDate;
+    if (endDate) query.end_date = endDate;
 
     return this.get<ActionLog[]>(ACTION_LOG_PATH, {
-      ...options,
-      query: {
-        agent_id: agentId,
-        category,
-        limit,
-        offset,
-        ...(options.query ?? {}),
-      },
+      query: query,
     });
   }
 
   async listByAgent(
     agentId: string,
-    params: Omit<ListActionLogsParams, "agentId"> = {},
-    options: RequestOptions = {}
+    params: Omit<ListActionLogsParams, "agentId"> = {}
   ): Promise<ApiResponse<ActionLog[]>> {
-    return this.list(
-      {
-        agentId,
-        ...params,
-      },
-      options
-    );
+    return this.list({
+      agentId,
+      ...params,
+    });
   }
 }
 

@@ -4,6 +4,7 @@ import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import { type ActionLog } from "@services/actionLogService";
 import { ACTIVE_COLOR, fetchAllActionLogs, OFFLINE_COLOR } from "./utils";
+import { useFilter } from "./contexts/FilterContext";
 
 interface HealthStatusBreakdownChartProps {
   agentId: string | null;
@@ -18,9 +19,33 @@ const STATUS_COLORS = {
   offline: OFFLINE_COLOR,
 };
 
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function ymdUTC(d: Date): string {
+  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
+    d.getUTCDate()
+  )}`;
+}
+
+function startOfUTCDay(d: Date): Date {
+  return new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+  );
+}
+
+function addUTCDays(d: Date, days: number): Date {
+  const x = new Date(d);
+  x.setUTCDate(x.getUTCDate() + days);
+  return x;
+}
+
 const HealthStatusBreakdownChart = ({
   agentId,
 }: HealthStatusBreakdownChartProps) => {
+  const { applied } = useFilter();
+
   if (!agentId) {
     return (
       <Paper
@@ -46,8 +71,19 @@ const HealthStatusBreakdownChart = ({
     error,
     isFetching,
   } = useQuery<ActionLog[], Error>({
-    queryKey: ["dashboard", "action-logs", "health", agentId],
-    queryFn: () => fetchAllActionLogs(agentId, "health"),
+    queryKey: [
+      "dashboard",
+      "action-logs",
+      "health",
+      agentId,
+      applied.start,
+      applied.end,
+    ],
+    queryFn: () =>
+      fetchAllActionLogs(agentId, "health", {
+        startDate: applied.start?.toISOString(),
+        endDate: applied.end?.toISOString(),
+      }),
     enabled: !!agentId,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -55,10 +91,7 @@ const HealthStatusBreakdownChart = ({
   });
 
   const breakdown = useMemo(() => {
-    if (!logs.length) {
-      return { activePct: 0, offlinePct: 100, totalBuckets: 0 };
-    }
-
+    // ✅ Build bucket presence per day (UTC day + UTC minutes)
     const bucketMap = new Map<string, Set<number>>();
 
     for (const log of logs) {
@@ -67,23 +100,46 @@ const HealthStatusBreakdownChart = ({
       const t = new Date(log.created_at);
       if (Number.isNaN(t.getTime())) continue;
 
-      const yyyy = t.getFullYear();
-      const mm = String(t.getMonth() + 1).padStart(2, "0");
-      const dd = String(t.getDate()).padStart(2, "0");
-      const dayKey = `${yyyy}-${mm}-${dd}`;
+      const dayKey = ymdUTC(t);
 
-      const minutesOfDay = t.getHours() * 60 + t.getMinutes();
+      const minutesOfDay = t.getUTCHours() * 60 + t.getUTCMinutes();
       if (minutesOfDay < 0 || minutesOfDay >= MINUTES_PER_DAY) continue;
 
       const bucketIndex = Math.floor(minutesOfDay / BUCKET_MINUTES);
+      if (bucketIndex < 0 || bucketIndex >= BUCKETS_PER_DAY) continue;
 
-      if (!bucketMap.has(dayKey)) {
-        bucketMap.set(dayKey, new Set());
-      }
+      if (!bucketMap.has(dayKey)) bucketMap.set(dayKey, new Set());
       bucketMap.get(dayKey)!.add(bucketIndex);
     }
 
-    const dayCount = bucketMap.size;
+    // ✅ Determine how many days we should count in the denominator
+    // If the user applied a range: count EVERY day in that range.
+    // Otherwise: count only observed days.
+    let dayCount = 0;
+
+    if (applied.start && applied.end) {
+      const start = startOfUTCDay(applied.start);
+      const end = startOfUTCDay(applied.end);
+
+      if (end.getTime() >= start.getTime()) {
+        for (
+          let cur = new Date(start);
+          cur.getTime() <= end.getTime();
+          cur = addUTCDays(cur, 1)
+        ) {
+          dayCount += 1;
+          const dayKey = ymdUTC(cur);
+          // ensure "empty days" exist as offline days
+          if (!bucketMap.has(dayKey)) bucketMap.set(dayKey, new Set());
+        }
+      } else {
+        // weird range, fallback to observed
+        dayCount = bucketMap.size;
+      }
+    } else {
+      dayCount = bucketMap.size;
+    }
+
     if (dayCount === 0) {
       return { activePct: 0, offlinePct: 100, totalBuckets: 0 };
     }
@@ -102,7 +158,7 @@ const HealthStatusBreakdownChart = ({
       offlinePct: Number(offlinePct.toFixed(1)),
       totalBuckets: total,
     };
-  }, [logs]);
+  }, [logs, applied.start, applied.end]);
 
   const loading = isLoading || isFetching;
 

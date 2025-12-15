@@ -17,7 +17,7 @@ export interface AssetFilePoint {
   date: string; // YYYY-MM-DD
   count: number;
 }
-export interface FetchAssetFilesParams {
+export interface FetchByDateRangeParams {
   startDate?: string;
   endDate?: string;
 }
@@ -27,7 +27,7 @@ export interface FetchAssetFilesParams {
 // Helper to fetch ALL asset files for an agent (paginated)
 export const fetchAllAssetFiles = async (
   agentId: string,
-  { startDate, endDate }: FetchAssetFilesParams = {}
+  { startDate, endDate }: FetchByDateRangeParams = {}
 ): Promise<AssetFile[]> => {
   const all: AssetFile[] = [];
   let offset = 0;
@@ -117,7 +117,8 @@ export const CustomRenderTooltipAssetFiles = ({
 
 export async function fetchAllActionLogs(
   agentId: string,
-  category: string
+  category: string,
+  { startDate, endDate }: FetchByDateRangeParams = {}
 ): Promise<ActionLog[]> {
   const all: ActionLog[] = [];
   let offset = 0;
@@ -126,6 +127,8 @@ export async function fetchAllActionLogs(
   for (;;) {
     const res = await actionLogService.listByAgent(agentId, {
       category,
+      startDate,
+      endDate,
       limit: ACTION_LOG_PAGE_SIZE,
       offset,
     });
