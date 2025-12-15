@@ -184,8 +184,6 @@ const AgentDetail = () => {
                   </Tooltip>
                 </Stack>
               </Stack>
-              <Row label="Status" value={status} />
-              {location && <Row label="Location" value={location} />}
 
               {agent.description && (
                 <Row label="Description" value={agent.description} />
