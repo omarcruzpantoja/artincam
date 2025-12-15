@@ -3,10 +3,13 @@ package filters
 import (
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type AssetFileFilter struct {
-	AgentID   *string `schema:"agent_id"`
+	AgentID   *string    `schema:"agent_id"`
+	StartDate *time.Time `schema:"start_date"`
+	EndDate   *time.Time `schema:"end_date"`
 	Limit     int64
 	Offset    int64
 	SortField string
@@ -18,6 +21,22 @@ func (f *AssetFileFilter) Parse(q url.Values) error {
 
 	if v := q.Get("agent_id"); v != "" {
 		f.AgentID = &v
+	}
+
+	if v := q.Get("start_date"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return err
+		}
+		f.StartDate = &t
+	}
+
+	if v := q.Get("end_date"); v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return err
+		}
+		f.EndDate = &t
 	}
 
 	if v := q.Get("limit"); v != "" {

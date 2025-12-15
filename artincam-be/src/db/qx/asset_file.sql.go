@@ -100,17 +100,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY timestamp ASC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFiles(ctx context.Context, arg GetAllAssetFilesParams) ([]AssetFile, error) {
@@ -119,6 +127,10 @@ func (q *Queries) GetAllAssetFiles(ctx context.Context, arg GetAllAssetFilesPara
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -162,17 +174,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_name ASC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesFileNameAscParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesFileNameAsc(ctx context.Context, arg GetAllAssetFilesFileNameAscParams) ([]AssetFile, error) {
@@ -181,6 +201,10 @@ func (q *Queries) GetAllAssetFilesFileNameAsc(ctx context.Context, arg GetAllAss
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -224,17 +248,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_name DESC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesFileNameDescParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesFileNameDesc(ctx context.Context, arg GetAllAssetFilesFileNameDescParams) ([]AssetFile, error) {
@@ -243,6 +275,10 @@ func (q *Queries) GetAllAssetFilesFileNameDesc(ctx context.Context, arg GetAllAs
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -286,17 +322,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_size ASC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesFileSizeAscParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesFileSizeAsc(ctx context.Context, arg GetAllAssetFilesFileSizeAscParams) ([]AssetFile, error) {
@@ -305,6 +349,10 @@ func (q *Queries) GetAllAssetFilesFileSizeAsc(ctx context.Context, arg GetAllAss
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -348,17 +396,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_size DESC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesFileSizeDescParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesFileSizeDesc(ctx context.Context, arg GetAllAssetFilesFileSizeDescParams) ([]AssetFile, error) {
@@ -367,6 +423,10 @@ func (q *Queries) GetAllAssetFilesFileSizeDesc(ctx context.Context, arg GetAllAs
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -410,17 +470,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY timestamp DESC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesTimestampDescParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesTimestampDesc(ctx context.Context, arg GetAllAssetFilesTimestampDescParams) ([]AssetFile, error) {
@@ -429,6 +497,10 @@ func (q *Queries) GetAllAssetFilesTimestampDesc(ctx context.Context, arg GetAllA
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -472,17 +544,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY unique_id ASC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesUniqueIdAscParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesUniqueIdAsc(ctx context.Context, arg GetAllAssetFilesUniqueIdAscParams) ([]AssetFile, error) {
@@ -491,6 +571,10 @@ func (q *Queries) GetAllAssetFilesUniqueIdAsc(ctx context.Context, arg GetAllAss
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -534,17 +618,25 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY unique_id DESC
 LIMIT ? OFFSET ?
 `
 
 type GetAllAssetFilesUniqueIdDescParams struct {
-	Column1  interface{} `json:"column_1"`
-	AgentID  string      `json:"agent_id"`
-	Column3  interface{} `json:"column_3"`
-	CameraID string      `json:"camera_id"`
-	Limit    int64       `json:"limit"`
-	Offset   int64       `json:"offset"`
+	Column1     interface{} `json:"column_1"`
+	AgentID     string      `json:"agent_id"`
+	Column3     interface{} `json:"column_3"`
+	CameraID    string      `json:"camera_id"`
+	Column5     interface{} `json:"column_5"`
+	Timestamp   time.Time   `json:"timestamp"`
+	Column7     interface{} `json:"column_7"`
+	Timestamp_2 time.Time   `json:"timestamp_2"`
+	Limit       int64       `json:"limit"`
+	Offset      int64       `json:"offset"`
 }
 
 func (q *Queries) GetAllAssetFilesUniqueIdDesc(ctx context.Context, arg GetAllAssetFilesUniqueIdDescParams) ([]AssetFile, error) {
@@ -553,6 +645,10 @@ func (q *Queries) GetAllAssetFilesUniqueIdDesc(ctx context.Context, arg GetAllAs
 		arg.AgentID,
 		arg.Column3,
 		arg.CameraID,
+		arg.Column5,
+		arg.Timestamp,
+		arg.Column7,
+		arg.Timestamp_2,
 		arg.Limit,
 		arg.Offset,
 	)

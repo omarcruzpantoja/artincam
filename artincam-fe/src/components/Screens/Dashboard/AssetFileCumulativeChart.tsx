@@ -17,15 +17,21 @@ import {
   fetchAllAssetFiles,
   type AssetFilePoint,
 } from "./utils";
+import { useFilter } from "./contexts/FilterContext";
 
 interface AssetFileCumulativeChartProps {
   agentId: string | null;
+  startDate?: string; // ISO string YYYY-MM-DD
+  endDate?: string; // ISO string YYYY-MM-DD
 }
 
 const AssetFileCumulativeChart = ({
   agentId,
 }: AssetFileCumulativeChartProps) => {
   // Early UI when no agent selected
+
+  const { applied } = useFilter();
+
   if (!agentId) {
     return (
       <Paper
@@ -51,8 +57,12 @@ const AssetFileCumulativeChart = ({
     error,
     isFetching,
   } = useQuery<AssetFile[], Error>({
-    queryKey: ["dashboard", "asset-files", agentId],
-    queryFn: () => fetchAllAssetFiles(agentId),
+    queryKey: ["dashboard", "asset-files", agentId, applied.start, applied.end],
+    queryFn: () =>
+      fetchAllAssetFiles(agentId, {
+        startDate: applied.start?.toISOString(),
+        endDate: applied.end?.toISOString(),
+      }),
     enabled: !!agentId,
     staleTime: 5 * 60 * 1000,
   });

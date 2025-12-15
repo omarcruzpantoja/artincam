@@ -46,10 +46,14 @@ func (s *Server) assetFileListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	params := qx.GetAllAssetFilesParams{
-		Column1: null.StringFromPtr(filter.AgentID).NullString,
-		AgentID: null.StringFromPtr(filter.AgentID).String,
-		Limit:   filter.Limit,
-		Offset:  filter.Offset,
+		AgentID:     null.StringFromPtr(filter.AgentID).String,
+		Column1:     null.StringFromPtr(filter.AgentID).NullString,
+		Timestamp:   null.TimeFromPtr(filter.StartDate).Time,
+		Column5:     null.TimeFromPtr(filter.StartDate).NullTime,
+		Timestamp_2: null.TimeFromPtr(filter.EndDate).Time,
+		Column7:     null.TimeFromPtr(filter.EndDate).NullTime,
+		Limit:       filter.Limit,
+		Offset:      filter.Offset,
 	}
 	assetFiles, err := repo.GetAllAssetFiles(params, filter.SortField, filter.SortOrder)
 

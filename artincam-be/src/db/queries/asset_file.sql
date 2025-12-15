@@ -5,6 +5,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY timestamp ASC
 LIMIT ? OFFSET ?;
 
@@ -15,6 +19,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY timestamp DESC
 LIMIT ? OFFSET ?;
 
@@ -25,6 +33,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY unique_id ASC
 LIMIT ? OFFSET ?;
 
@@ -35,6 +47,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY unique_id DESC
 LIMIT ? OFFSET ?;
 
@@ -45,6 +61,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_name ASC
 LIMIT ? OFFSET ?;
 
@@ -55,6 +75,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_name DESC
 LIMIT ? OFFSET ?;
 
@@ -65,6 +89,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_size ASC
 LIMIT ? OFFSET ?;
 
@@ -75,6 +103,10 @@ WHERE
     ( ? IS NULL OR agent_id = ? )
   AND
     ( ? IS NULL OR camera_id = ? )
+  AND 
+    ( ? IS NULL OR timestamp >= ? )
+  AND
+    ( ? IS NULL OR timestamp <= ? )
 ORDER BY file_size DESC
 LIMIT ? OFFSET ?;
 

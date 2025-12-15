@@ -17,12 +17,17 @@ export interface AssetFilePoint {
   date: string; // YYYY-MM-DD
   count: number;
 }
+export interface FetchAssetFilesParams {
+  startDate?: string;
+  endDate?: string;
+}
 
 // ---- ASSET FILES UTILS ----
 
 // Helper to fetch ALL asset files for an agent (paginated)
 export const fetchAllAssetFiles = async (
-  agentId: string
+  agentId: string,
+  { startDate, endDate }: FetchAssetFilesParams = {}
 ): Promise<AssetFile[]> => {
   const all: AssetFile[] = [];
   let offset = 0;
@@ -37,6 +42,8 @@ export const fetchAllAssetFiles = async (
       // if backend supports this:
       sortField: "timestamp",
       sortOrder: "asc",
+      startDate,
+      endDate,
     });
 
     const batch = res.data ?? [];
