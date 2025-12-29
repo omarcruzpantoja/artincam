@@ -21,7 +21,6 @@ import HealthStatusChart from "./HealthStatusChart";
 
 import { FilterProvider, useFilter } from "./contexts/FilterContext";
 import AssetFileDailyCountChart from "./AssetFileDailyCounterChart";
-import AssetFileHourlyCountChart from "./AssetFileHourlyCountChart";
 
 const LS_SELECTED_AGENT_KEY = "artincam:selectedAgentId";
 
@@ -226,10 +225,6 @@ function DashboardInner() {
 
             <Grid size={{ xs: 12, md: 6 }}>
               <AssetFileDailyCountChart agentId={selectedAgentId || null} />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <AssetFileHourlyCountChart agentId={selectedAgentId || null} />
             </Grid>
           </Grid>
         </>

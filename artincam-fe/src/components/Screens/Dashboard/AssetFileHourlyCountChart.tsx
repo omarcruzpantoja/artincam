@@ -234,9 +234,7 @@ const AssetFileHourlyCountChart = ({
           alignItems: "center",
         }}
       >
-        <Typography variant="subtitle1">
-          Daily Mean Images (per hour)
-        </Typography>
+        <Typography variant="subtitle1">Mean images per hour</Typography>
       </Box>
 
       {loading && (
