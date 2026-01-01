@@ -82,4 +82,25 @@ set -euo pipefail
 export PATH="$HOME/.local/share/fnm:$HOME/.local/bin:$PATH"
 
 ROOT_DIR="${ROOT_DIR:-$(pwd)}"
-INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$RO
+INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$ROOT_DIR/install_scripts}"
+
+"$INSTALL_SCRIPTS/50-node-frontend.sh"
+"$INSTALL_SCRIPTS/90-deploy-frontend.sh"
+
+echo "✅ Frontend rebuilt + deployed"
+'
+
+# -----------------------------
+# Update ALL
+# -----------------------------
+write_exec "$BIN_DIR/update_all.sh" '#!/usr/bin/env bash
+set -euo pipefail
+
+/opt/artincam/bin/update_backend.sh
+/opt/artincam/bin/update_agent.sh
+/opt/artincam/bin/update_frontend.sh
+
+echo "✅ All Artincam components updated"
+'
+
+log "All update scripts installed successfully."
