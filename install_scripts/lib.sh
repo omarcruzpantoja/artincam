@@ -1,6 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ---- PATH bootstrap for non-interactive shells ----
+# Go (system)
+if [[ -x /usr/local/go/bin/go ]]; then
+  export PATH="/usr/local/go/bin:$PATH"
+fi
+
+# Go (user installs)
+if [[ -d "$HOME/go/bin" ]]; then
+  export PATH="$HOME/go/bin:$PATH"
+fi
+
+# uv default install path
+if [[ -d "$HOME/.local/bin" ]]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# fnm default install path
+if [[ -d "$HOME/.local/share/fnm" ]]; then
+  export PATH="$HOME/.local/share/fnm:$PATH"
+fi
+
+
 log()  { printf "✅ %s\n" "$*"; }
 warn() { printf "⚠️  %s\n" "$*" >&2; }
 die()  { printf "❌ %s\n" "$*" >&2; exit 1; }
