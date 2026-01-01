@@ -8,14 +8,27 @@ LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export ROOT_DIR
 
 # ---- PATH bootstrap for non-interactive shells ----
-# Go (system)
+# Always include /usr/local/bin (common place for globally installed tools)
+export PATH="/usr/local/bin:$PATH"
+
+# Go toolchain (system)
 if [[ -x /usr/local/go/bin/go ]]; then
   export PATH="/usr/local/go/bin:$PATH"
 fi
 
-# Go (user installs)
+# Go CLIs installed to GOPATH/bin for the *current* user
 if [[ -d "$HOME/go/bin" ]]; then
   export PATH="$HOME/go/bin:$PATH"
+fi
+
+# If running under sudo, also include the original user's GOPATH/bin.
+# This fixes cases where tools like `swag` were installed as the normal user,
+# but build scripts are run with sudo/root.
+if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+  SUDO_HOME="$(getent passwd "$SUDO_USER" | cut -d: -f6 || true)"
+  if [[ -n "${SUDO_HOME:-}" && -d "$SUDO_HOME/go/bin" ]]; then
+    export PATH="$SUDO_HOME/go/bin:$PATH"
+  fi
 fi
 
 # uv default install path
@@ -23,11 +36,26 @@ if [[ -d "$HOME/.local/bin" ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# If running under sudo, include original user's ~/.local/bin too
+if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+  SUDO_HOME="$(getent passwd "$SUDO_USER" | cut -d: -f6 || true)"
+  if [[ -n "${SUDO_HOME:-}" && -d "$SUDO_HOME/.local/bin" ]]; then
+    export PATH="$SUDO_HOME/.local/bin:$PATH"
+  fi
+fi
+
 # fnm default install path
 if [[ -d "$HOME/.local/share/fnm" ]]; then
   export PATH="$HOME/.local/share/fnm:$PATH"
 fi
 
+# If running under sudo, include original user's fnm too
+if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+  SUDO_HOME="$(getent passwd "$SUDO_USER" | cut -d: -f6 || true)"
+  if [[ -n "${SUDO_HOME:-}" && -d "$SUDO_HOME/.local/share/fnm" ]]; then
+    export PATH="$SUDO_HOME/.local/share/fnm:$PATH"
+  fi
+fi
 
 log()  { printf "✅ %s\n" "$*"; }
 warn() { printf "⚠️  %s\n" "$*" >&2; }
@@ -100,6 +128,5 @@ rsync_deploy() {
 
   need_cmd rsync
   ensure_dir "$dst"
-  # trailing slashes matter: copy contents
   sudo_if_needed rsync -a --delete "${src%/}/" "${dst%/}/"
 }
