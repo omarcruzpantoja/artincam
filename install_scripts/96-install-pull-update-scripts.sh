@@ -20,7 +20,7 @@ EOF
 write_exec "$BIN_DIR/pull_update_backend.sh" '#!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-/opt/artincam/repo}"
+REPO_DIR="${REPO_DIR:-/opt/artincam}"
 INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$REPO_DIR/install_scripts}"
 
 cd "$REPO_DIR"
