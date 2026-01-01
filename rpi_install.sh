@@ -146,6 +146,4 @@ cd ..
 # ----- SETUP NGINX -----
 sudo apt install -y nginx
 
-./rpi_update_fe_app.sh
-
 echo "Please restart your terminal or run 'source $SHELL_RC' to apply changes."
