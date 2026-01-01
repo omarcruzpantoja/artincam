@@ -17,8 +17,8 @@ esac
 TARBALL="go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
 URL="https://go.dev/dl/${TARBALL}"
 
-if have_cmd go; then
-  INSTALLED="$(go version | awk '{print $3}')"
+if [[ -x "/usr/local/go/bin/go" ]]; then
+  INSTALLED="$(/usr/local/go/bin/go version | awk '{print $3}')"
   if [[ "$INSTALLED" == "go${GO_VERSION}" ]]; then
     log "Go already installed: $INSTALLED"
   else
