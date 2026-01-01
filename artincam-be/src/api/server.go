@@ -7,7 +7,6 @@ import (
 	"github.com/rs/cors"
 
 	"artincam-be/src/db/qx"
-	"artincam-be/src/tools"
 	"artincam-be/src/tools/connectionmap"
 )
 
@@ -24,12 +23,10 @@ type ServerOption func(*Server)
 
 func NewServer(addr string, opts ...ServerOption) *Server {
 	r := chi.NewRouter()
-	feOrigin := tools.Getenv("FRONTEND_APP_ORIGIN", "http://localhost:5173", false)
-	feOrigin2 := tools.Getenv("FRONTEND_APP_ORIGIN", "http://localhost", false)
 
 	// ----- Set up CORS -----
 	handler := cors.New(cors.Options{
-		AllowedOrigins:   []string{feOrigin, feOrigin2}, // TODO: fix the origin for the app
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: false, // if sending cookies/auth headers
