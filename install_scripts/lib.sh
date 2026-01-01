@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ---- Make ROOT_DIR always defined (works in non-interactive shells) ----
+# Default ROOT_DIR to the parent directory of this install_scripts folder.
+LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${ROOT_DIR:=$(cd "$LIB_DIR/.." && pwd)}"
+export ROOT_DIR
+
 # ---- PATH bootstrap for non-interactive shells ----
 # Go (system)
 if [[ -x /usr/local/go/bin/go ]]; then
