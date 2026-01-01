@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 source "$(dirname "$0")/lib.sh"
 
+# Where update scripts live
 BIN_DIR="/opt/artincam/bin"
+
+log "Installing Artincam update scripts into $BIN_DIR"
 ensure_dir "$BIN_DIR"
 sudo_if_needed chmod 755 "$BIN_DIR"
 
-# Helper: write executable script
+# Helper to write executable scripts
 write_exec() {
   local path="$1"
   shift
@@ -15,19 +19,25 @@ write_exec() {
 $*
 EOF
   sudo_if_needed chmod 755 "$path"
-  log "Installed update script: $path"
+  log "Installed: $path"
 }
 
-# --- update_backend.sh ---
+# -----------------------------
+# Backend updater
+# -----------------------------
 write_exec "$BIN_DIR/update_backend.sh" '#!/usr/bin/env bash
 set -euo pipefail
+
+# Ensure Go + user tools available (non-interactive shell safe)
+export PATH="/usr/local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
 
 ROOT_DIR="${ROOT_DIR:-$(pwd)}"
 INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$ROOT_DIR/install_scripts}"
 
-bash "$INSTALL_SCRIPTS/30-backend.sh"
+# Build + deploy backend
+"$INSTALL_SCRIPTS/30-backend.sh"
 
-# Run migrations (uses env file if you want; otherwise set vars here)
+# Load backend env if present (for goose)
 BE_DIR="${ARTINCAM_BACKEND_DIR:-/opt/artincam/artincam-be}"
 if [[ -f "$BE_DIR/backend.env" ]]; then
   set -a
@@ -36,34 +46,40 @@ if [[ -f "$BE_DIR/backend.env" ]]; then
   set +a
 fi
 
-if command -v make >/dev/null 2>&1; then
-  (cd "$BE_DIR" && make migrate-only) || true
-fi
+# Run migrations
+( cd "$BE_DIR" && make migrate-only )
 
+# Restart service
 sudo systemctl restart artincam-be
-echo "✅ Backend updated + service restarted"
+
+echo "✅ Backend updated + migrated + restarted"
 '
 
-# --- update_agent.sh ---
+# -----------------------------
+# Camera agent updater
+# -----------------------------
 write_exec "$BIN_DIR/update_agent.sh" '#!/usr/bin/env bash
 set -euo pipefail
 
+export PATH="$HOME/.local/bin:$PATH"
+
 ROOT_DIR="${ROOT_DIR:-$(pwd)}"
 INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$ROOT_DIR/install_scripts}"
 
-bash "$INSTALL_SCRIPTS/40-python-agent.sh"
+"$INSTALL_SCRIPTS/40-python-agent.sh"
+
 sudo systemctl restart artincam-pi-agent
-echo "✅ Agent updated + service restarted"
+
+echo "✅ Camera agent updated + restarted"
 '
 
-# --- update_frontend.sh ---
+# -----------------------------
+# Frontend updater
+# -----------------------------
 write_exec "$BIN_DIR/update_frontend.sh" '#!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="${ROOT_DIR:-$(pwd)}"
-INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$ROOT_DIR/install_scripts}"
+export PATH="$HOME/.local/share/fnm:$HOME/.local/bin:$PATH"
 
-bash "$INSTALL_SCRIPTS/50-node-frontend.sh"
-bash "$INSTALL_SCRIPTS/90-deploy-frontend.sh"
-echo "✅ Frontend updated + nginx reloaded"
-'
+ROOT_DIR="${ROOT_DIR:-$(pwd)}"
+INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$RO
