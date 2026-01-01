@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+export PATH="/usr/local/go/bin:$HOME/go/bin:$PATH"
 source "$(dirname "$0")/lib.sh"
 
 need_cmd make
