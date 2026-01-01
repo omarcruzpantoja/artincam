@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  useTheme,
-} from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import DarkMode from "@mui/icons-material/DarkMode";
 import LightMode from "@mui/icons-material/LightMode";
 
@@ -13,7 +7,6 @@ import { useThemeController } from "@components/Contexts/ThemeContext";
 
 const Header = (): React.JSX.Element => {
   const { themeName, toggleTheme } = useThemeController();
-  const theme = useTheme();
 
   return (
     <AppBar

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Divider, Grid, Paper, Typography } from "@mui/material";
+import { Box, Grid, Paper, Typography } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import type { Agent } from "@services/agentService";
 

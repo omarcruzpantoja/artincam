@@ -8,7 +8,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Chip,
   Divider,
   useTheme,
 } from "@mui/material";

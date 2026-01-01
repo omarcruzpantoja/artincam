@@ -139,7 +139,7 @@ const HealthLogActivity = ({
   }, [applied.start, applied.end]);
 
   // Build dot matrix: X = day, Y = time-of-day bucket (UTC)
-  const { points, dayIndexMap, dayLabels } = useMemo(() => {
+  const { points, dayLabels } = useMemo(() => {
     // Stable list of days we want on the axis:
     // - if filter is set => all days in range
     // - else => only observed days from logs
