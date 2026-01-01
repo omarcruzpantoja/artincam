@@ -15,14 +15,24 @@ export interface RequestOptions extends RequestInit {
   query?: QueryParams;
 }
 
+export const getServerHost = () => {
+  // If opened from a real host/IP, use it.
+  // If opened from file:// or some weird context, fallback to localhost.
+  const host = window.location.hostname;
+  return host && host.length > 0 ? host : "127.0.0.1";
+};
+
 export class BaseApiService {
   protected readonly baseUrl: string;
 
   constructor(baseUrl?: string) {
-    this.baseUrl =
-      baseUrl ??
-      (import.meta.env.VITE_API_BASE_URL as string | undefined) ??
-      "http://localhost:8080";
+    function getServerHost() {
+      // If opened from a real host/IP, use it.
+      // If opened from file:// or some weird context, fallback to localhost.
+      const host = window.location.hostname;
+      return host && host.length > 0 ? host : "127.0.0.1";
+    }
+    this.baseUrl = baseUrl ?? `http://${getServerHost()}:8080`;
   }
 
   protected buildUrl(path: string, query?: QueryParams): string {

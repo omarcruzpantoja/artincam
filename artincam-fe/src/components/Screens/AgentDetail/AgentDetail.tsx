@@ -20,6 +20,7 @@ import CheckIcon from "@mui/icons-material/Check";
 
 import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
 import { RtspPlayer } from "@components/RtspPlayer";
+import { getServerHost } from "@services/baseService";
 import { agentService, type Agent } from "@services/agentService";
 
 import AssetFileTable from "./AssetFileTable";
@@ -33,6 +34,11 @@ function statusMeta(status: string) {
   if (status === "STOPPED")
     return { label: "Offline", color: "default" as const };
   return { label: "Failure", color: "warning" as const };
+}
+
+function replaceLocalhost(url: string) {
+  const host = getServerHost();
+  return url.replace(/localhost/g, host);
 }
 
 const AgentDetail = () => {
@@ -335,7 +341,9 @@ const AgentDetail = () => {
           </Box>
           <Box sx={{ p: 2.5 }}>
             <RtspPlayer
-              rtspUrl={agent.config?.camera?.rtsp_stream?.address ?? ""}
+              rtspUrl={replaceLocalhost(
+                agent.config?.camera?.rtsp_stream?.address ?? ""
+              )}
             />
           </Box>
         </Paper>
