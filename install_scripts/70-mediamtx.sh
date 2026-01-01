@@ -21,9 +21,20 @@ esac
 
 DOWNLOAD_URL="https://github.com/bluenviron/mediamtx/releases/download/v${MEDIAMTX_VERSION}/mediamtx_v${MEDIAMTX_VERSION}_${DL_ARCH}.tar.gz"
 
-if systemd_unit_exists "$SERVICE_NAME"; then
-  log "MediaMTX service already installed. Skipping binary/config install."
+# Consider installed if unit file AND binary exist
+if [[ -x "$BIN_PATH" && -f "$SERVICE_FILE" ]]; then
+  log "MediaMTX already installed (binary + unit exist). Skipping install."
   exit 0
+fi
+
+# If unit exists but binary missing, warn and continue install to repair it
+if [[ -f "$SERVICE_FILE" && ! -x "$BIN_PATH" ]]; then
+  warn "MediaMTX unit exists but binary missing at $BIN_PATH. Repairing install..."
+fi
+
+# If binary exists but unit missing, warn and continue to repair unit
+if [[ -x "$BIN_PATH" && ! -f "$SERVICE_FILE" ]]; then
+  warn "MediaMTX binary exists but unit missing at $SERVICE_FILE. Repairing service..."
 fi
 
 log "Installing MediaMTX v${MEDIAMTX_VERSION}..."
