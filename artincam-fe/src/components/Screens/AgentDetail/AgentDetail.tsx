@@ -20,7 +20,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckIcon from "@mui/icons-material/Check";
 
 import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
-import { RtspPlayer } from "@components/RtspPlayer";
 import { getServerHost } from "@services/baseService";
 import { agentService, type Agent } from "@services/agentService";
 
@@ -351,7 +350,7 @@ const AgentDetail = () => {
                           Location
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          {agent.config?.camera?.location}
+                          {location}
                         </Typography>
                       </Box>
                     ) : (
@@ -373,7 +372,7 @@ const AgentDetail = () => {
                           Mode
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          {agent.config?.camera?.mode}
+                          {mode}
                         </Typography>
                       </Box>
                     ) : (
