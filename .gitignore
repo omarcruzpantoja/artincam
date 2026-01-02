@@ -35,3 +35,4 @@ coverage
 *.env*
 docs
 artincam-be.db
+assets

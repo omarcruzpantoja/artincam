@@ -9,6 +9,7 @@ import {
   Container,
   Divider,
   Paper,
+  Grid,
   Tooltip,
   Stack,
   Typography,
@@ -24,6 +25,7 @@ import { getServerHost } from "@services/baseService";
 import { agentService, type Agent } from "@services/agentService";
 
 import AssetFileTable from "./AssetFileTable";
+import AgentPreviewPanel from "./AgentPreviewPanel";
 import CameraConfiguration from "./CameraConfiguration";
 
 type AgentAction = "edit" | "delete";
@@ -150,204 +152,248 @@ const AgentDetail = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-      {/* --- Console Header Panel --- */}
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 2,
-          border: `1px solid ${border}`,
-          bgcolor: panelBg,
-          overflow: "hidden",
-        }}
-      >
-        {/* Top meta bar */}
-        <Box
-          sx={{
-            px: 2.5,
-            py: 1.5,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            borderBottom: `1px solid ${alpha(
-              theme.palette.divider,
-              isDark ? 0.22 : 0.6
-            )}`,
-            background: isDark
-              ? `linear-gradient(90deg, ${alpha(
-                  accent,
-                  0.12
-                )} 0%, transparent 55%)`
-              : `linear-gradient(90deg, ${alpha(
-                  accent,
-                  0.1
-                )} 0%, transparent 65%)`,
-          }}
-        >
-          <Box
+      {/* First row: 2 columns */}
+      <Grid container spacing={2.5} alignItems="stretch">
+        {/* LEFT column: Preview */}
+        <Grid>
+          <AgentPreviewPanel
+            mode={agent.config.camera.mode}
+            status={agent.config.camera.status}
+            rtspUrl={replaceLocalhost(
+              agent.config?.camera?.rtsp_stream?.address ?? ""
+            )}
+            // dummyImageUrl optional
+          />
+        </Grid>
+
+        {/* RIGHT column: header panel */}
+        <Grid>
+          {/* --- Console Header Panel --- */}
+          <Paper
+            elevation={0}
             sx={{
-              width: 9,
-              height: 9,
-              borderRadius: 999,
-              bgcolor: accent,
-              boxShadow: isDark ? `0 0 14px ${alpha(accent, 0.3)}` : "none",
+              borderRadius: 2,
+              border: `1px solid ${border}`,
+              bgcolor: panelBg,
+              overflow: "hidden",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
             }}
-          />
-
-          <Chip
-            size="small"
-            label={meta.label}
-            color={meta.color}
-            sx={{ height: 24, "& .MuiChip-label": { fontWeight: 800 } }}
-          />
-
-          <Divider
-            orientation="vertical"
-            flexItem
-            sx={{
-              mx: 1,
-              borderColor: alpha(theme.palette.divider, isDark ? 0.25 : 0.55),
-            }}
-          />
-
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 900, lineHeight: 1.1 }}
-              noWrap
+          >
+            {/* Top meta bar */}
+            <Box
+              sx={{
+                px: 2.5,
+                py: 1.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                borderBottom: `1px solid ${alpha(
+                  theme.palette.divider,
+                  isDark ? 0.22 : 0.6
+                )}`,
+                background: isDark
+                  ? `linear-gradient(90deg, ${alpha(
+                      accent,
+                      0.12
+                    )} 0%, transparent 55%)`
+                  : `linear-gradient(90deg, ${alpha(
+                      accent,
+                      0.1
+                    )} 0%, transparent 65%)`,
+              }}
             >
-              {agent.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" noWrap>
-              {location} • {mode}
-            </Typography>
-          </Box>
-
-          <ActionsMenu<AgentAction>
-            items={actionItems}
-            onAction={handleAgentAction}
-            ariaLabel="Agent actions"
-            menuId={`agent-${agent.id}-actions-menu`}
-          />
-        </Box>
-
-        {/* Header body */}
-        <Box sx={{ px: 2.5, py: 2 }}>
-          <Stack spacing={1.25}>
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              flexWrap="wrap"
-              useFlexGap
-            >
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ letterSpacing: 0.4, textTransform: "uppercase" }}
-              >
-                Agent ID
-              </Typography>
-
-              <Typography
-                variant="body2"
+              <Box
                 sx={{
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  width: 9,
+                  height: 9,
+                  borderRadius: 999,
+                  bgcolor: accent,
+                  boxShadow: isDark ? `0 0 14px ${alpha(accent, 0.3)}` : "none",
                 }}
-              >
-                {agent.id}
-              </Typography>
+              />
 
-              <Tooltip title={copied ? "Copied!" : "Copy ID"}>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    navigator.clipboard.writeText(agent.id);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 1000);
-                  }}
-                  sx={{
-                    borderRadius: 1.5,
-                    border: `1px solid ${alpha(
-                      theme.palette.divider,
-                      isDark ? 0.22 : 0.55
-                    )}`,
-                    bgcolor: alpha(
-                      theme.palette.text.primary,
-                      isDark ? 0.06 : 0.04
-                    ),
-                    "&:hover": {
-                      bgcolor: alpha(
-                        theme.palette.text.primary,
-                        isDark ? 0.1 : 0.06
-                      ),
-                    },
-                  }}
-                >
-                  {copied ? (
-                    <CheckIcon fontSize="inherit" color="success" />
-                  ) : (
-                    <ContentCopyIcon fontSize="inherit" />
-                  )}
-                </IconButton>
-              </Tooltip>
-            </Stack>
+              <Chip
+                size="small"
+                label={meta.label}
+                color={meta.color}
+                sx={{ height: 24, "& .MuiChip-label": { fontWeight: 800 } }}
+              />
 
-            {agent.description ? (
-              <Box>
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  mx: 1,
+                  borderColor: alpha(
+                    theme.palette.divider,
+                    isDark ? 0.25 : 0.55
+                  ),
+                }}
+              />
+
+              <Box sx={{ minWidth: 0, flex: 1 }}>
                 <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ letterSpacing: 0.4, textTransform: "uppercase" }}
+                  variant="h5"
+                  sx={{ fontWeight: 900, lineHeight: 1.1 }}
+                  noWrap
                 >
-                  Description
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  {agent.description}
+                  {agent.name}
                 </Typography>
               </Box>
-            ) : null}
-          </Stack>
-        </Box>
-      </Paper>
 
-      {/* Main panels */}
+              <ActionsMenu<AgentAction>
+                items={actionItems}
+                onAction={handleAgentAction}
+                ariaLabel="Agent actions"
+                menuId={`agent-${agent.id}-actions-menu`}
+              />
+            </Box>
+
+            {/* Header body */}
+            <Box sx={{ px: 2.5, py: 2, flex: 1 }}>
+              <Stack spacing={1.25}>
+                <Box sx={{ px: 2.5, py: 2, flex: 1 }}>
+                  <Stack spacing={1.25}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ letterSpacing: 0.4, textTransform: "uppercase" }}
+                      >
+                        Agent ID
+                      </Typography>
+
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily:
+                            "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                        }}
+                      >
+                        {agent.id}
+                      </Typography>
+
+                      <Tooltip title={copied ? "Copied!" : "Copy ID"}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            navigator.clipboard.writeText(agent.id);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 1000);
+                          }}
+                          sx={{
+                            borderRadius: 1.5,
+                            border: `1px solid ${alpha(
+                              theme.palette.divider,
+                              isDark ? 0.22 : 0.55
+                            )}`,
+                            bgcolor: alpha(
+                              theme.palette.text.primary,
+                              isDark ? 0.06 : 0.04
+                            ),
+                            "&:hover": {
+                              bgcolor: alpha(
+                                theme.palette.text.primary,
+                                isDark ? 0.1 : 0.06
+                              ),
+                            },
+                          }}
+                        >
+                          {copied ? (
+                            <CheckIcon fontSize="inherit" color="success" />
+                          ) : (
+                            <ContentCopyIcon fontSize="inherit" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+
+                    {agent.description ? (
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            letterSpacing: 0.4,
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Description
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          {agent.description}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No description.
+                      </Typography>
+                    )}
+
+                    {agent.description ? (
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            letterSpacing: 0.4,
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Location
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          {agent.config?.camera?.location}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No location configured.
+                      </Typography>
+                    )}
+
+                    {agent.description ? (
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            letterSpacing: 0.4,
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Mode
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          {agent.config?.camera?.mode}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No mode configured.
+                      </Typography>
+                    )}
+                  </Stack>
+                </Box>
+              </Stack>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Rest of the page */}
       <CameraConfiguration agent={agent} />
       <AssetFileTable agentId={agent.id} />
 
-      {agent.config.camera.mode === "rtsp_stream" && (
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 2,
-            border: `1px solid ${border}`,
-            bgcolor: panelBg,
-            overflow: "hidden",
-          }}
-        >
-          <Box
-            sx={{
-              px: 2.5,
-              py: 1.5,
-              borderBottom: `1px solid ${alpha(
-                theme.palette.divider,
-                isDark ? 0.22 : 0.6
-              )}`,
-            }}
-          >
-            <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-              Live Stream
-            </Typography>
-          </Box>
-          <Box sx={{ p: 2.5 }}>
-            <RtspPlayer
-              rtspUrl={replaceLocalhost(
-                agent.config?.camera?.rtsp_stream?.address ?? ""
-              )}
-            />
-          </Box>
-        </Paper>
-      )}
+      {/* Remove the old Live Stream panel since preview now owns it */}
     </Box>
   );
 };

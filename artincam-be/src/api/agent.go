@@ -49,7 +49,7 @@ func (s *Server) agentListHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusCreated)
+	render.Status(r, http.StatusOK)
 	render.JSON(w, r, CreateResponse(serializers.SerializeAgents(agents)))
 }
 
@@ -71,7 +71,7 @@ func (s *Server) agentDetailHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusCreated)
+	render.Status(r, http.StatusOK)
 	render.JSON(w, r, CreateResponse(serializers.SerializeAgent(agent)))
 }
 
