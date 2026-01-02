@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -191,6 +192,7 @@ func (s *Server) patchAgentHandler(w http.ResponseWriter, r *http.Request) {
 	agent, err = repo.PatchAgent(agt)
 	if err != nil {
 		render.Status(r, http.StatusInternalServerError)
+		log.Printf("error patching agent: %v\n", err)
 		render.JSON(w, r, CreateErrorResponse("Failed to update agent."))
 		return
 	}
