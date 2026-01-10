@@ -288,6 +288,7 @@ const AgentPreviewPanel = ({
       attemptEnterRtsp();
       return;
     }
+    cachedAssetIdRef.current = null; // reset image cache when returning to image tab
     setTab(next);
   };
 
@@ -450,7 +451,7 @@ const AgentPreviewPanel = ({
       <Stack spacing={fullscreenMode ? 0 : 2}>
         {frame(
           <Box sx={{ width: "100%", height: "100%" }}>
-            <RtspPlayer rtspUrl={rtspUrl!} />
+            <RtspPlayer rtspUrl={rtspUrl!} isFullscreen={isFullscreen} />
           </Box>
         )}
 
@@ -539,20 +540,17 @@ const AgentPreviewPanel = ({
         <Box
           ref={fsRef}
           sx={{
-            p: 2.5,
-            flex: 1,
-            minHeight: 0,
             ...(isFullscreen
               ? {
+                  width: "100vw",
+                  height: "100vh",
                   p: 2,
-                  width: "100%",
-                  height: "100%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   bgcolor: "background.default",
                 }
-              : {}),
+              : { p: 2.5, flex: 1, minHeight: 0 }),
           }}
         >
           <Content fullscreenMode={isFullscreen} />
