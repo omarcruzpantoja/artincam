@@ -4,6 +4,9 @@
   "properties": {
     "camera": {
       "$ref": "#/definitions/Camera"
+    },
+    "agent_dir": {
+      "type": "string"
     }
   },
   "definitions": {
@@ -135,5 +138,5 @@
       "required": ["height", "width"]
     }
   },
-  "required": ["camera"]
+  "required": ["camera", "agent_dir"]
 }

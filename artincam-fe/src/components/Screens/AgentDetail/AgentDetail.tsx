@@ -156,12 +156,12 @@ const AgentDetail = () => {
         {/* LEFT column: Preview */}
         <Grid>
           <AgentPreviewPanel
+            agentId={agent.id}
             mode={agent.config.camera.mode}
             status={agent.config.camera.status}
             rtspUrl={replaceLocalhost(
               agent.config?.camera?.rtsp_stream?.address ?? ""
             )}
-            // dummyImageUrl optional
           />
         </Grid>
 

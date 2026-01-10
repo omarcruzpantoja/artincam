@@ -25,8 +25,6 @@ func (s *Server) agentRouter() http.Handler {
 	r.Patch("/{id}", s.patchAgentHandler)
 	r.Delete("/{id}", s.deleteAgentHandler)
 	r.Post("/{id}/ws-message", s.agentWsMessage)
-	// r.Get("/", TempAgentListHandler(s))
-	// r.Post("/{id}/action", AgentCommandHandler(s))
 
 	return r
 }

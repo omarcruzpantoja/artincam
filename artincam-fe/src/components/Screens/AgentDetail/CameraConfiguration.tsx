@@ -127,6 +127,7 @@ const CameraConfiguration = ({
                   <KV label="Location" value={camera.location} />
                   <KV label="Pi ID" value={String(camera.pi_id)} />
                   <KV label="Output dir" value={camera.output_dir} />
+                  <KV label="Agent dir" value={agent.config.agent_dir} />
                   <KV label="Resolution" value={resolutionLabel} />
                   <KV label="Framerate" value={framerateLabel} />
                 </Grid>

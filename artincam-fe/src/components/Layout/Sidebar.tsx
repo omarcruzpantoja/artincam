@@ -15,6 +15,8 @@ import { NavLink } from "react-router-dom";
 import Dashboard from "@mui/icons-material/Dashboard";
 import Videocam from "@mui/icons-material/Videocam";
 
+import SidebarFooter from "./LayoutSidebar";
+
 type NavItem = {
   label: string;
   path: string;
@@ -168,19 +170,7 @@ const Sidebar = (): React.JSX.Element => {
         </List>
       </Box>
 
-      {/* ---- BOTTOM (optional) ---- */}
-      {/* <Box sx={{ p: 1.5 }}>
-        <Box
-          sx={{
-            borderRadius: 2,
-            p: 1.25,
-            bgcolor: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)",
-            border: isDark
-              ? "1px solid rgba(255,255,255,0.06)"
-              : "1px solid rgba(0,0,0,0.06)",
-          }}
-        ></Box>
-      </Box> */}
+      <SidebarFooter />
     </Box>
   );
 };

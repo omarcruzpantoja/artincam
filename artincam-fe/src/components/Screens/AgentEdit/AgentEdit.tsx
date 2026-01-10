@@ -72,6 +72,7 @@ const defaultCreateValues: WriteAgentPayload = {
       image_rest_time: 10,
       image_rest_time_unit: "s",
     },
+    agent_dir: "/opt/artincam/camera/artincam",
   },
 };
 
@@ -155,6 +156,17 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
         ...prev.config,
         camera: updater(prev.config.camera),
       },
+    }));
+  };
+
+  const updateAgentConfig = (
+    updater: (
+      config: WriteAgentPayload["config"]
+    ) => WriteAgentPayload["config"]
+  ): void => {
+    setForm((prev) => ({
+      ...prev,
+      config: updater(prev.config),
     }));
   };
 
@@ -409,6 +421,21 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                     updateCamera((cam) => ({
                       ...cam,
                       output_dir: e.target.value,
+                    }))
+                  }
+                  fullWidth
+                  margin="normal"
+                />
+              </Grid>
+
+              <Grid>
+                <TextField
+                  label="Agent Directory"
+                  value={form.config.agent_dir}
+                  onChange={(e) =>
+                    updateAgentConfig((config) => ({
+                      ...config,
+                      agent_dir: e.target.value,
                     }))
                   }
                   fullWidth

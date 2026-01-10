@@ -42,7 +42,8 @@ type ConfigUpdateMessage struct {
 
 // ----- Artincam Pi Agent Config -----
 type ArtincamPiAgentConfig struct {
-	Camera Camera `json:"camera"`
+	Camera   Camera `json:"camera"`
+	AgentDir string `json:"agent_dir"`
 }
 
 type Camera struct {

@@ -97,6 +97,8 @@ export class BaseApiService {
       responseData = await response.json();
     } else if (contentType.startsWith("text/")) {
       responseData = await response.text();
+    } else if (contentType.startsWith("image/jpeg")) {
+      responseData = await response.blob();
     }
 
     if (!response.ok) {
@@ -116,6 +118,13 @@ export class BaseApiService {
     options?: RequestOptions
   ): Promise<ApiResponse<T>> {
     return this.request<ApiResponse<T>>("GET", path, undefined, options);
+  }
+
+  protected getBlob<Blob>(
+    path: string,
+    options?: RequestOptions
+  ): Promise<Blob> {
+    return this.request<Blob>("GET", path, undefined, options);
   }
 
   protected post<T = unknown, TBody = unknown>(

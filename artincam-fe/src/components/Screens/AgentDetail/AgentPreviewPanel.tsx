@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   alpha,
   Alert,
   Box,
   Button,
-  Dialog,
   IconButton,
   Paper,
   Snackbar,
@@ -14,34 +13,42 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import ImageIcon from "@mui/icons-material/Image";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 import { RtspPlayer } from "@components/RtspPlayer";
+import { assetFileService } from "@services/assetFileService";
 
 type PreviewTab = "image" | "rtsp";
 
 type Props = {
+  agentId: string;
   mode: string;
   rtspUrl?: string;
-  dummyImageUrl?: string;
   status?: string; // must be "active" to load RTSP
+
+  pollMs?: number;
 };
 
-const DEFAULT_DUMMY = "https://picsum.photos/seed/artincam/1200/700";
-const IMAGE_HEIGHT = 420;
+const DEFAULT_POLL_MS = 5000;
+
+// Locked size in normal mode (prevents layout jumping)
+const WELL_WIDTH = 420;
+const WELL_HEIGHT = 420;
 
 const PreviewFrame = ({
   children,
-  onFullscreen,
+  onToggleFullscreen,
   canFullscreen,
+  fullscreenMode,
 }: {
   children: React.ReactNode;
-  onFullscreen: () => void;
+  onToggleFullscreen: () => void;
   canFullscreen: boolean;
+  fullscreenMode: boolean;
 }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -49,8 +56,9 @@ const PreviewFrame = ({
   return (
     <Box
       sx={{
-        height: IMAGE_HEIGHT,
         borderRadius: 2,
+        width: fullscreenMode ? "100%" : WELL_WIDTH,
+        height: fullscreenMode ? "100%" : WELL_HEIGHT,
         overflow: "hidden",
         position: "relative",
         border: `1px solid ${alpha(
@@ -65,7 +73,7 @@ const PreviewFrame = ({
           size="small"
           onClick={(e) => {
             e.stopPropagation();
-            onFullscreen();
+            onToggleFullscreen();
           }}
           sx={{
             position: "absolute",
@@ -79,31 +87,49 @@ const PreviewFrame = ({
             backdropFilter: "blur(8px)",
             "&:hover": { bgcolor: alpha("#000", isDark ? 0.65 : 0.5) },
           }}
-          aria-label="Fullscreen"
+          aria-label={fullscreenMode ? "Exit fullscreen" : "Enter fullscreen"}
         >
-          <FullscreenIcon fontSize="inherit" />
+          {fullscreenMode ? (
+            <FullscreenExitIcon fontSize="inherit" />
+          ) : (
+            <FullscreenIcon fontSize="inherit" />
+          )}
         </IconButton>
       )}
+
       {children}
     </Box>
   );
 };
 
 const AgentPreviewPanel = ({
+  agentId,
   mode,
   rtspUrl,
-  dummyImageUrl = DEFAULT_DUMMY,
   status,
+  pollMs = DEFAULT_POLL_MS,
 }: Props) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
   const [tab, setTab] = useState<PreviewTab>("image");
   const [armed, setArmed] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
 
-  // NEW: show message ONLY when user attempts RTSP
+  // Real fullscreen state (Fullscreen API)
+  const fsRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Show message ONLY when user attempts RTSP while blocked
   const [rtspBlockedMsg, setRtspBlockedMsg] = useState<string | null>(null);
+
+  // ---- Latest image state (polled + cached) ----
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [imgLoading, setImgLoading] = useState(false);
+  const [imgError, setImgError] = useState<string | null>(null);
+
+  // Cache by asset file id (simple)
+  const cachedAssetIdRef = useRef<number | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
   const modeSupportsRtsp = mode === "rtsp_stream";
   const isActive = (status ?? "").toLowerCase() === "active";
@@ -119,16 +145,129 @@ const AgentPreviewPanel = ({
     return "";
   }, [modeSupportsRtsp, isActive, status]);
 
+  // Keep state in sync with browser fullscreen (Esc will trigger this)
+  useEffect(() => {
+    const onFsChange = () =>
+      setIsFullscreen(document.fullscreenElement != null);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  const enterFullscreen = async () => {
+    const el = fsRef.current;
+    if (!el) return;
+    try {
+      await el.requestFullscreen();
+    } catch (e) {
+      console.warn("requestFullscreen failed", e);
+    }
+  };
+
+  const exitFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+    } catch (e) {
+      console.warn("exitFullscreen failed", e);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) void exitFullscreen();
+    else void enterFullscreen();
+  };
+
   // Hard reset when RTSP becomes disallowed
   useEffect(() => {
     if (!canRtsp) {
       setArmed(false);
       setTab("image");
-      setFullscreen(false);
+      if (document.fullscreenElement) void exitFullscreen();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRtsp]);
 
-  // One computed state drives rendering
+  // If user switches away from RTSP tab, stop player
+  useEffect(() => {
+    if (tab !== "rtsp") setArmed(false);
+  }, [tab]);
+
+  // ---- Poll latest image (only while on image tab) ----
+  useEffect(() => {
+    if (!agentId) return;
+
+    let cancelled = false;
+    let timer: number | null = null;
+
+    const cleanupBlobUrl = () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
+
+    const fetchLatest = async () => {
+      // Only poll while viewing image tab (prevents unnecessary work)
+      if (tab !== "image") return;
+
+      try {
+        setImgError(null);
+
+        const res = await assetFileService.listByAgent({
+          agentId,
+          limit: 1,
+          offset: 0,
+          sortField: "timestamp",
+          sortOrder: "desc",
+        });
+
+        if (cancelled) return;
+
+        const latest = res.data?.[0] ?? null;
+
+        if (!latest) {
+          // no images yet
+          cachedAssetIdRef.current = null;
+          cleanupBlobUrl();
+          setImgUrl(null);
+          return;
+        }
+
+        // same id as cache => no change
+        if (cachedAssetIdRef.current === latest.id) return;
+
+        // new image => fetch bytes
+        setImgLoading(true);
+
+        const blob = await assetFileService.getContentBlob(latest.id);
+        if (cancelled) return;
+
+        // Replace blob URL
+        cleanupBlobUrl();
+        const nextUrl = URL.createObjectURL(blob);
+
+        blobUrlRef.current = nextUrl;
+        cachedAssetIdRef.current = latest.id;
+        setImgUrl(nextUrl);
+      } catch (e) {
+        if (cancelled) return;
+        setImgError(e instanceof Error ? e.message : "Failed to load preview.");
+        // keep last cached image if any
+      } finally {
+        if (!cancelled) setImgLoading(false);
+      }
+    };
+
+    fetchLatest();
+    timer = window.setInterval(() => void fetchLatest(), pollMs);
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearInterval(timer);
+      cleanupBlobUrl();
+    };
+  }, [agentId, pollMs, tab]);
+
+  // One computed state drives RTSP rendering
   const rtspState = useMemo(() => {
     if (!canRtsp) return "blocked" as const;
     if (!hasUrl) return "missing_url" as const;
@@ -150,13 +289,18 @@ const AgentPreviewPanel = ({
       return;
     }
     setTab(next);
-    setArmed(false);
   };
 
   const Content = ({ fullscreenMode }: { fullscreenMode: boolean }) => {
+    const imageFit = fullscreenMode ? "contain" : "cover";
+
     if (tab === "image") {
       return (
-        <PreviewFrame canFullscreen onFullscreen={() => setFullscreen(true)}>
+        <PreviewFrame
+          canFullscreen
+          fullscreenMode={fullscreenMode}
+          onToggleFullscreen={toggleFullscreen}
+        >
           <Box
             role="button"
             tabIndex={0}
@@ -167,22 +311,66 @@ const AgentPreviewPanel = ({
             sx={{
               width: "100%",
               height: "100%",
-              cursor: canRtsp ? "pointer" : "not-allowed",
+              cursor: canRtsp ? "pointer" : "default",
               outline: "none",
               position: "relative",
             }}
           >
-            <Box
-              component="img"
-              src={dummyImageUrl}
-              alt="Agent preview"
-              sx={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
-            />
+            {/* Image */}
+            {imgUrl ? (
+              <Box
+                component="img"
+                src={imgUrl}
+                alt="Latest agent capture"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: imageFit,
+                  display: "block",
+                  bgcolor: "black",
+                }}
+              />
+            ) : (
+              <Stack
+                alignItems="center"
+                justifyContent="center"
+                sx={{ width: "100%", height: "100%", p: 2 }}
+              >
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  align="center"
+                >
+                  {imgError
+                    ? "Preview unavailable."
+                    : imgLoading
+                    ? "Loading latest image..."
+                    : "No images available yet."}
+                </Typography>
+              </Stack>
+            )}
+
+            {/* Top-left updating chip */}
+            {imgLoading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  left: 12,
+                  top: 12,
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 999,
+                  bgcolor: alpha("#000", isDark ? 0.55 : 0.45),
+                  color: "#fff",
+                  border: `1px solid ${alpha("#fff", 0.12)}`,
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                  Updating…
+                </Typography>
+              </Box>
+            )}
           </Box>
         </PreviewFrame>
       );
@@ -192,7 +380,8 @@ const AgentPreviewPanel = ({
     const frame = (node: React.ReactNode, canFullscreenBtn = true) => (
       <PreviewFrame
         canFullscreen={canFullscreenBtn}
-        onFullscreen={() => setFullscreen(true)}
+        fullscreenMode={fullscreenMode}
+        onToggleFullscreen={toggleFullscreen}
       >
         {node}
       </PreviewFrame>
@@ -337,7 +526,6 @@ const AgentPreviewPanel = ({
               iconPosition="start"
               label="Image"
             />
-            {/* IMPORTANT: not disabled so we can show attempt feedback */}
             <Tab
               value="rtsp"
               icon={<VideocamIcon fontSize="small" />}
@@ -347,51 +535,30 @@ const AgentPreviewPanel = ({
           </Tabs>
         </Box>
 
-        <Box sx={{ p: 2.5, flex: 1, minHeight: 0 }}>
-          <Content fullscreenMode={false} />
+        {/* Fullscreen wrapper (Fullscreen API root) */}
+        <Box
+          ref={fsRef}
+          sx={{
+            p: 2.5,
+            flex: 1,
+            minHeight: 0,
+            ...(isFullscreen
+              ? {
+                  p: 2,
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "background.default",
+                }
+              : {}),
+          }}
+        >
+          <Content fullscreenMode={isFullscreen} />
         </Box>
       </Paper>
 
-      <Dialog fullScreen open={fullscreen} onClose={() => setFullscreen(false)}>
-        <Box
-          sx={{
-            height: "100%",
-            bgcolor: "background.default",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Box
-            sx={{
-              px: 2,
-              py: 1.25,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderBottom: `1px solid ${alpha(
-                theme.palette.divider,
-                isDark ? 0.22 : 0.6
-              )}`,
-            }}
-          >
-            <Typography sx={{ fontWeight: 900 }}>
-              {tab === "image" ? "Image Preview" : "RTSP Preview"}
-            </Typography>
-            <IconButton
-              onClick={() => setFullscreen(false)}
-              aria-label="Close fullscreen"
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-
-          <Box sx={{ p: 2, flex: 1, minHeight: 0 }}>
-            <Content fullscreenMode />
-          </Box>
-        </Box>
-      </Dialog>
-
-      {/* Feedback ONLY when user attempts RTSP while blocked */}
       <Snackbar
         open={!!rtspBlockedMsg}
         autoHideDuration={4000}

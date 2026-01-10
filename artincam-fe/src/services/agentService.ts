@@ -47,6 +47,7 @@ export interface CameraConfig {
 
 export interface ArtincamPiAgentConfig {
   camera: CameraConfig;
+  agent_dir: string;
 }
 
 export interface Agent {

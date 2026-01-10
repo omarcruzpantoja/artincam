@@ -19,13 +19,15 @@ export interface AssetFile {
   created_at: string;
   updated_at: string;
 }
+
 export type SortOrder = "asc" | "desc";
+
 export interface ListAssetFilesParams {
   agentId: string;
   limit?: number;
   offset?: number;
-  sortField?: string; // e.g. "timestamp", "file_name"
-  sortOrder?: SortOrder; // "asc" | "desc"
+  sortField?: string;
+  sortOrder?: SortOrder;
   startDate?: string;
   endDate?: string;
 }
@@ -54,6 +56,14 @@ export class AssetFileService extends BaseApiService {
     if (endDate) options.end_date = endDate;
 
     return this.get<AssetFile[]>(ASSET_FILE_PATH, { query: options });
+  }
+
+  async getContentBlob(assetFileId: number): Promise<Blob> {
+    const res = await this.getBlob<Blob>(
+      `${ASSET_FILE_PATH}/${assetFileId}/content`
+    );
+
+    return res;
   }
 }
 

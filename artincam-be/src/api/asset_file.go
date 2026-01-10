@@ -1,8 +1,12 @@
 package api
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -18,6 +22,7 @@ import (
 func (s *Server) assetFileRouter() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/", s.assetFileListHandler)
+	r.Get("/{id}/content", s.GetAgentContent)
 	r.Post("/", s.createAssetFileHandler)
 	r.Patch("/{id}", s.PatchAssetFileHandler)
 
@@ -79,7 +84,7 @@ func (s *Server) assetFileListHandler(w http.ResponseWriter, r *http.Request) {
 		Count: assetFileCount,
 	}
 
-	render.Status(r, http.StatusCreated)
+	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response)
 }
 
@@ -166,4 +171,68 @@ func (s *Server) PatchAssetFileHandler(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, CreateResponse(serializers.SerializeAssetFile(af)))
+}
+
+// AgentSnapshot godoc
+// @Summary      Get asset file content
+// @Description  Get asset file content
+// @Tags         asset-file
+// @Accept       json
+// @Produce      image/jpeg
+// @Param        id   path      int64  true  "Asset File ID"
+// @Success      200 {file}  jpeg
+// @Router       /api/v1/asset-files/{id}/content [get]
+func (s *Server) GetAgentContent(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, CreateErrorResponse("Invalid asset file ID."))
+		return
+	}
+
+	af, err := repositories.NewAssetFileRepository(r.Context(), s.DbConn).GetAssetFileByID(id)
+
+	// Resolve latest content path for agent
+	if err != nil {
+		http.Error(w, "Asset file not found.", http.StatusNotFound)
+		return
+	}
+
+	agent, err := repositories.NewAgentRepository(r.Context(), s.DbConn).GetAgentByID(af.AgentID)
+
+	if err != nil {
+		http.Error(w, "Agent not found.", http.StatusNotFound)
+		return
+	}
+
+	config := &dto.ArtincamPiAgentConfig{}
+	err = json.Unmarshal([]byte(agent.Config), &config)
+
+	if err != nil {
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, CreateErrorResponse("Failed to parse agent config."))
+		return
+	}
+
+	fileName := config.AgentDir + "/" + config.Camera.OutputDir + "/" + af.FileName
+	file, err := os.Open(fileName)
+
+	if err != nil {
+		http.Error(w, "Asset file content not found.", http.StatusNotFound)
+		return
+	}
+
+	defer file.Close()
+
+	// If the file is a video, set the appropriate content type
+	if !strings.HasSuffix(af.FileName, ".jpg") {
+		render.Status(r, http.StatusUnprocessableEntity)
+		render.JSON(w, r, CreateErrorResponse("Asset file type is not supported for content retrieval."))
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Cache-Control", "no-store")
+	io.Copy(w, file)
 }
