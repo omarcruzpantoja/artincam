@@ -26,10 +26,11 @@ func NewServer(addr string, opts ...ServerOption) *Server {
 
 	// ----- Set up CORS -----
 	handler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Authorization", "Content-Type"},
-		AllowCredentials: false, // if sending cookies/auth headers
+		AllowOriginFunc: func(origin string) bool {
+			return true // allow everything
+		},
+		AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}).Handler(r)
 
 	s := &Server{
