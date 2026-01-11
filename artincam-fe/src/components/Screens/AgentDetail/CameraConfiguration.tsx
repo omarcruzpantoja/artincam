@@ -17,13 +17,13 @@ interface CameraConfigurationProps {
   defaultExpanded?: boolean;
 }
 
-function LaveValue({
+const LaveValue = ({
   label,
   value,
 }: {
   label: string;
   value: React.ReactNode;
-}) {
+}) => {
   return (
     <Box
       sx={{
@@ -54,7 +54,7 @@ function LaveValue({
       </Typography>
     </Box>
   );
-}
+};
 
 const CameraConfiguration = ({
   agent,

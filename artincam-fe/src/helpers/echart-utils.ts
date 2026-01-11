@@ -48,7 +48,7 @@ export const tooltipFormatterList = (
     </div>`;
 };
 
-export function getColor(colorVar: string) {
+export const getColor = (colorVar: string) => {
   const isVar = colorVar.startsWith("var(") && colorVar.endsWith(")");
   if (!isVar) return colorVar;
 
@@ -56,4 +56,4 @@ export function getColor(colorVar: string) {
   const computedStyle = getComputedStyle(document.documentElement);
 
   return computedStyle.getPropertyValue(variableName).trim() || colorVar;
-}
+};

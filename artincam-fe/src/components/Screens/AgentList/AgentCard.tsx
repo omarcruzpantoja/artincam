@@ -9,13 +9,13 @@ interface AgentCardProps {
   agent: Agent;
 }
 
-function statusMeta(status: AgentStatus) {
+const statusMeta = (status: AgentStatus) => {
   if (status === "ACTIVE")
     return { label: "Active", color: "success" as const };
   if (status === "STOPPED")
     return { label: "Offline", color: "default" as const };
   return { label: "Failure", color: "warning" as const };
-}
+};
 
 export const AgentCard = ({ agent }: AgentCardProps) => {
   const camera = agent.config.camera;

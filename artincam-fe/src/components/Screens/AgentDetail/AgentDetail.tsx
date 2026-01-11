@@ -9,7 +9,6 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
 
 import { getServerHost } from "@services/baseService";
 import { agentService, type Agent } from "@services/agentService";
@@ -22,23 +21,20 @@ import type { ActionItem } from "@components/Common/ActionsMenu";
 
 type AgentAction = "edit" | "delete";
 
-function statusMeta(status: string) {
+const statusMeta = (status: string) => {
   if (status === "ACTIVE")
     return { label: "Active", color: "success" as const };
   if (status === "STOPPED")
     return { label: "Offline", color: "default" as const };
   return { label: "Failure", color: "warning" as const };
-}
+};
 
-function replaceLocalhost(url: string) {
+const replaceLocalhost = (url: string) => {
   const host = getServerHost();
   return url.replace(/localhost/g, host);
-}
+};
 
 const AgentDetail = () => {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-
   const { agentId } = useParams();
   const navigate = useNavigate();
 
@@ -124,20 +120,8 @@ const AgentDetail = () => {
   }
 
   const status = agent.config?.camera?.status ?? "unknown";
-  const location = agent.config?.camera?.location ?? "(none)";
   const mode = agent.config?.camera?.mode ?? "(unknown)";
   const meta = statusMeta(status);
-
-  const accent =
-    status === "ACTIVE"
-      ? theme.palette.success.main
-      : status === "STOPPED"
-        ? alpha(theme.palette.text.primary, 0.35)
-        : theme.palette.warning.main;
-
-  // If you still want the “Aurora glass” surfaces, keep these and pass down.
-  const panelBg = alpha(theme.palette.background.paper, isDark ? 0.42 : 0.78);
-  const border = alpha(theme.palette.divider, isDark ? 0.25 : 0.65);
 
   return (
     <Box

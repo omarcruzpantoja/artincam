@@ -45,7 +45,7 @@ type AgentHeaderPanelProps<TAction extends string> = {
   ariaLabel?: string;
 };
 
-function Label({ children }: { children: React.ReactNode }) {
+const Label = ({ children }: { children: React.ReactNode }) => {
   return (
     <Typography
       variant="caption"
@@ -55,9 +55,9 @@ function Label({ children }: { children: React.ReactNode }) {
       {children}
     </Typography>
   );
-}
+};
 
-function MonoValue({ children }: { children: React.ReactNode }) {
+const MonoValue = ({ children }: { children: React.ReactNode }) => {
   return (
     <Typography
       variant="body2"
@@ -74,9 +74,9 @@ function MonoValue({ children }: { children: React.ReactNode }) {
       {children}
     </Typography>
   );
-}
+};
 
-export default function AgentHeaderPanel<TAction extends string>({
+const AgentHeaderPanel = <TAction extends string>({
   agent,
   modeText,
   meta,
@@ -84,7 +84,7 @@ export default function AgentHeaderPanel<TAction extends string>({
   onAction,
   menuId,
   ariaLabel = "Agent actions",
-}: AgentHeaderPanelProps<TAction>) {
+}: AgentHeaderPanelProps<TAction>) => {
   const [copied, setCopied] = useState(false);
 
   const copyId = async () => {
@@ -231,4 +231,6 @@ export default function AgentHeaderPanel<TAction extends string>({
       </CardContent>
     </Card>
   );
-}
+};
+
+export default AgentHeaderPanel;

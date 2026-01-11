@@ -7,17 +7,19 @@ type Props = CardProps & {
   contentSx?: Record<string, any>;
 };
 
-export default function SectionCard({
+const SectionCard = ({
   title,
   action,
   children,
   contentSx,
   ...cardProps
-}: Props) {
+}: Props) => {
   return (
     <Card variant="outlined" {...cardProps}>
       {title ? <CardHeader title={title} action={action} /> : null}
       <CardContent sx={contentSx}>{children}</CardContent>
     </Card>
   );
-}
+};
+
+export default SectionCard;

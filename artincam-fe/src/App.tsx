@@ -16,7 +16,7 @@ import "./App.css";
 
 const queryClient = new QueryClient();
 
-function App(): React.JSX.Element {
+const App = (): React.JSX.Element => {
   return (
     <SettingsProvider>
       <ThemeProvider>
@@ -47,6 +47,6 @@ function App(): React.JSX.Element {
       </ThemeProvider>
     </SettingsProvider>
   );
-}
+};
 
 export default App;

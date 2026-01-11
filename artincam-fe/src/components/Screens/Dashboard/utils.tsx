@@ -115,11 +115,11 @@ export const CustomRenderTooltipAssetFiles = ({
 
 // ---- ACTION LOGS UTILS ----
 
-export async function fetchAllActionLogs(
+export const fetchAllActionLogs = async (
   agentId: string,
   category: string,
   { startDate, endDate }: FetchByDateRangeParams = {}
-): Promise<ActionLog[]> {
+): Promise<ActionLog[]> => {
   const all: ActionLog[] = [];
   let offset = 0;
   let totalCount: number | null = null;
@@ -149,4 +149,4 @@ export async function fetchAllActionLogs(
   }
 
   return all;
-}
+};

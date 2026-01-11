@@ -25,7 +25,7 @@ interface AssetFilesGridProps {
   agentId: string;
 }
 
-function formatBytes(bytes: number | null | undefined): string {
+const formatBytes = (bytes: number | null | undefined): string => {
   if (bytes == null || Number.isNaN(bytes)) return "-";
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -37,9 +37,9 @@ function formatBytes(bytes: number | null | undefined): string {
   const value = bytes / Math.pow(k, i);
   const decimals = i === 0 ? 0 : value < 10 ? 2 : value < 100 ? 1 : 0;
   return `${value.toFixed(decimals)} ${units[i]}`;
-}
+};
 
-function formatTimestamp(ts: unknown): string {
+const formatTimestamp = (ts: unknown): string => {
   if (ts == null) return "-";
 
   // If your API returns ISO strings, this will work.
@@ -57,7 +57,7 @@ function formatTimestamp(ts: unknown): string {
     minute: "2-digit",
     second: "2-digit",
   });
-}
+};
 
 const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   const [rows, setRows] = useState<AssetFile[]>([]);

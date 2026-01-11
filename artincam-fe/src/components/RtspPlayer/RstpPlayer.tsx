@@ -6,7 +6,7 @@ interface RtspPlayerProps {
   isFullscreen?: boolean;
 }
 
-function rtspToHls(rtspUrl: string, hlsPort: number = 8888): string | null {
+const rtspToHls = (rtspUrl: string, hlsPort: number = 8888): string | null => {
   try {
     const url = new URL(rtspUrl);
     if (url.protocol !== "rtsp:") throw new Error("Invalid RTSP URL");
@@ -18,7 +18,7 @@ function rtspToHls(rtspUrl: string, hlsPort: number = 8888): string | null {
     console.error("Failed to convert RTSP → HLS:", err);
     return null;
   }
-}
+};
 
 const RtspPlayer = ({ rtspUrl, isFullscreen = false }: RtspPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
