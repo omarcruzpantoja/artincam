@@ -1,10 +1,4 @@
-import {
-  CssBaseline,
-  Box,
-  Drawer,
-  drawerClasses,
-  Toolbar,
-} from "@mui/material";
+import { Box, Drawer, drawerClasses, Toolbar } from "@mui/material";
 import { Outlet } from "react-router-dom";
 
 import { useSettingsContext } from "@providers/SettingsProvider";
@@ -28,8 +22,6 @@ const Layout = () => {
   };
   return (
     <>
-      <CssBaseline />
-
       <Box>
         <Box sx={{ display: "flex", zIndex: 1, position: "relative" }}>
           <Header />

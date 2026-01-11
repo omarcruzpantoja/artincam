@@ -1,9 +1,11 @@
 import React from "react";
 
-import { AgentCard } from "./AgentCard";
+import { Box, Stack } from "@mui/material";
 import { agentService, type Agent } from "@services/agentService";
+import { AgentCard } from "./AgentCard";
+import PageHeader from "@components/common/PageHeader";
 
-const AgentDetail = (): React.JSX.Element => {
+const AgentList = (): React.JSX.Element => {
   const [agents, setAgents] = React.useState([] as Agent[]);
 
   React.useEffect(() => {
@@ -16,12 +18,30 @@ const AgentDetail = (): React.JSX.Element => {
   }, []);
 
   return (
-    <>
-      {agents.map((agent) => (
-        <AgentCard key={agent.id} agent={agent} />
-      ))}
-    </>
+    <Stack direction="column" height={1}>
+      <PageHeader
+        title="Agents"
+        breadcrumb={[
+          { label: "Home", url: "/" },
+          { label: "Agents", active: true },
+        ]}
+      />
+      {/* /Box should only take 80 width */}
+      <Box
+        sx={{
+          p: "10%",
+          pt: 3,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {agents.map((agent) => (
+          <AgentCard key={agent.id} agent={agent} />
+        ))}
+      </Box>
+    </Stack>
   );
 };
 
-export default AgentDetail;
+export default AgentList;

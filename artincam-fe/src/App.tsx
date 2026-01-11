@@ -1,6 +1,5 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { CssBaseline } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Layout } from "@components/Layout";
@@ -23,7 +22,6 @@ function App(): React.JSX.Element {
       <ThemeProvider>
         <BreakpointsProvider>
           <QueryClientProvider client={queryClient}>
-            <CssBaseline />
             <Routes>
               {/* Layout wraps all “app” routes */}
               <Route path="/" element={<Layout />}>
