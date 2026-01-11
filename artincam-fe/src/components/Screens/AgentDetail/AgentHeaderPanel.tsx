@@ -1,4 +1,3 @@
-// src/components/Agents/AgentHeaderPanel.tsx
 import {
   alpha,
   Box,
@@ -19,7 +18,14 @@ import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
 
 export type StatusChipMeta = {
   label: string;
-  color: "default" | "primary" | "secondary" | "success" | "warning" | "error" | "info";
+  color:
+    | "default"
+    | "primary"
+    | "secondary"
+    | "success"
+    | "warning"
+    | "error"
+    | "info";
 };
 
 type AgentHeaderPanelProps<TAction extends string> = {
@@ -141,7 +147,11 @@ export default function AgentHeaderPanel<TAction extends string>({
         />
 
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 900, lineHeight: 1.1 }} noWrap>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 900, lineHeight: 1.1 }}
+            noWrap
+          >
             {agent.name}
           </Typography>
           <Typography variant="body2" color="text.secondary" noWrap>
@@ -160,7 +170,13 @@ export default function AgentHeaderPanel<TAction extends string>({
       {/* Header body */}
       <Box sx={{ px: 2.5, py: 2, flex: 1 }}>
         <Stack spacing={1.25}>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            flexWrap="wrap"
+            useFlexGap
+          >
             <Typography
               variant="caption"
               color="text.secondary"
@@ -190,9 +206,15 @@ export default function AgentHeaderPanel<TAction extends string>({
                 sx={{
                   borderRadius: 1.5,
                   border: `1px solid ${alpha(theme.palette.divider, isDark ? 0.22 : 0.55)}`,
-                  bgcolor: alpha(theme.palette.text.primary, isDark ? 0.06 : 0.04),
+                  bgcolor: alpha(
+                    theme.palette.text.primary,
+                    isDark ? 0.06 : 0.04
+                  ),
                   "&:hover": {
-                    bgcolor: alpha(theme.palette.text.primary, isDark ? 0.1 : 0.06),
+                    bgcolor: alpha(
+                      theme.palette.text.primary,
+                      isDark ? 0.1 : 0.06
+                    ),
                   },
                 }}
               >

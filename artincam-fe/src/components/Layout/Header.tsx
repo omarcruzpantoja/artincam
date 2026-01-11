@@ -1,29 +1,49 @@
 import React from "react";
-import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
-import DarkMode from "@mui/icons-material/DarkMode";
-import LightMode from "@mui/icons-material/LightMode";
-
-import { useThemeController } from "@components/Contexts/ThemeContext";
+import IconifyIcon from "@components/base/IconifyIcon";
+import { useSettingsContext } from "@providers/SettingsProvider";
+import { AppBar, Box, Button, Toolbar, paperClasses } from "@mui/material";
 
 const Header = (): React.JSX.Element => {
-  const { themeName, toggleTheme } = useThemeController();
+  const {
+    config: { drawerWidth },
+    handleDrawerToggle,
+  } = useSettingsContext();
 
   return (
     <AppBar
-      position="static"
-      elevation={1}
-      color="transparent"
+      position="fixed"
       sx={{
-        backdropFilter: "blur(10px)",
-        borderBottom: 1,
+        width: { md: `calc(100% - ${drawerWidth}px)` },
+        ml: { md: `${drawerWidth}px` },
+        borderBottom: `1px solid`,
         borderColor: "divider",
+        [`&.${paperClasses.root}`]: {
+          outline: "none",
+        },
       }}
     >
-      <Toolbar sx={{ minHeight: 56 }}>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}></Typography>
-        <IconButton onClick={toggleTheme}>
-          {themeName === "dark" ? <LightMode /> : <DarkMode />}
-        </IconButton>
+      <Toolbar variant="appbar" sx={{ px: { xs: 3, md: 5 } }}>
+        <Box
+          sx={{
+            display: { xs: "flex", md: "none" },
+            alignItems: "center",
+            gap: 1,
+            pr: 2,
+          }}
+        >
+          <Button
+            color="neutral"
+            variant="soft"
+            shape="circle"
+            aria-label="open drawer"
+            onClick={handleDrawerToggle}
+          >
+            <IconifyIcon
+              icon="material-symbols:menu-rounded"
+              sx={{ fontSize: 20 }}
+            />
+          </Button>
+        </Box>
       </Toolbar>
     </AppBar>
   );

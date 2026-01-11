@@ -1,4 +1,3 @@
-// src/components/Screens/AgentDetailScreen.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -143,8 +142,8 @@ const AgentDetail = () => {
     status === "ACTIVE"
       ? theme.palette.success.main
       : status === "STOPPED"
-      ? alpha(theme.palette.text.primary, 0.35)
-      : theme.palette.warning.main;
+        ? alpha(theme.palette.text.primary, 0.35)
+        : theme.palette.warning.main;
 
   const panelBg = alpha(theme.palette.background.paper, isDark ? 0.42 : 0.78);
   const border = alpha(theme.palette.divider, isDark ? 0.25 : 0.65);

@@ -345,8 +345,8 @@ const AgentPreviewPanel = ({
                   {imgError
                     ? "Preview unavailable."
                     : imgLoading
-                    ? "Loading latest image..."
-                    : "No images available yet."}
+                      ? "Loading latest image..."
+                      : "No images available yet."}
                 </Typography>
               </Stack>
             )}
