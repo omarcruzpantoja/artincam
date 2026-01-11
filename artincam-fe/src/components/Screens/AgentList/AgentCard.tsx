@@ -48,8 +48,13 @@ export const AgentCard = ({ agent }: AgentCardProps) => {
             <Link
               component={RouterLink}
               to={`/agents/${agent.id}`}
-              underline="hover"
-              sx={{ color: "text.primary" }}
+              underline="none"
+              sx={{
+                color: "primary.main",
+                "&:hover": {
+                  textDecoration: "underline",
+                },
+              }}
             >
               {agent.name}
             </Link>
