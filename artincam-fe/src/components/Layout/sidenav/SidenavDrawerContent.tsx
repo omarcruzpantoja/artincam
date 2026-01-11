@@ -2,7 +2,6 @@ import { useMemo, type HTMLAttributeAnchorTarget } from "react";
 import {
   Avatar,
   Box,
-  Divider,
   IconButton,
   List,
   Toolbar,
@@ -13,6 +12,7 @@ import { useSettingsContext } from "@providers/SettingsProvider";
 import NavItem from "./NavItem";
 import SidenavSimpleBar from "./SidenavSimpleBar";
 import IconifyIcon from "@components/base/IconifyIcon";
+import SidenavFooter from "./SidenavFooter";
 
 interface SidenavDrawerContentProps {
   variant?: "permanent" | "temporary";
@@ -41,7 +41,7 @@ export interface MenuItem {
   items: SubMenuItem[];
 }
 
-const sitemap: MenuItem[] = [
+const routes: MenuItem[] = [
   {
     id: "pages",
     icon: "material-symbols:view-quilt-outline",
@@ -125,18 +125,20 @@ const SidenavDrawerContent = ({
                 alt="Artincam"
               />
             </Avatar>
-            <Box sx={{ minWidth: 0 }}>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 700, lineHeight: 1.1 }}
-                noWrap
-              >
-                Artincam
-              </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
-                Control Center
-              </Typography>
-            </Box>
+            {expanded && (
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 700, lineHeight: 1.1 }}
+                  noWrap
+                >
+                  Artincam
+                </Typography>
+                <Typography variant="caption" color="text.secondary" noWrap>
+                  Control Center
+                </Typography>
+              </Box>
+            )}
           </Box>
           <IconButton
             sx={{ mt: 1, display: { md: "none" } }}
@@ -168,16 +170,11 @@ const SidenavDrawerContent = ({
             ]}
           >
             <div>
-              {sitemap.map((menu) => (
-                <Box key={menu.id}>
-                  {menu.subheader === "Docs" && !sidenavCollapsed && (
-                    <>
-                      <Divider sx={{ mb: 4 }} />
-                    </>
-                  )}
+              {routes.map((r) => (
+                <Box key={r.id}>
                   <List
                     dense
-                    key={menu.id}
+                    key={r.id}
                     sx={{
                       mb: 3,
                       pb: 0,
@@ -186,19 +183,17 @@ const SidenavDrawerContent = ({
                       gap: "2px",
                     }}
                   >
-                    {menu.items.map((item) => (
+                    {r.items.map((item) => (
                       <NavItem key={item.pathName} item={item} level={0} />
                     ))}
                   </List>
                 </Box>
               ))}
             </div>
-            {/* {!sidenavCollapsed && (
-              <PromoCard img={promo} imgStyles={{ maxWidth: 136 }} />
-            )} */}
           </Box>
         </SidenavSimpleBar>
       </Box>
+      <SidenavFooter />
     </>
   );
 };

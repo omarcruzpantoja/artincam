@@ -1,30 +1,22 @@
-import { Box, Divider, Typography, useTheme } from "@mui/material";
+import { Box, Divider, Typography } from "@mui/material";
 import { getServerHost } from "@services/baseService";
 
-type SidebarFooterProps = {
-  /** Optional override (useful for tests / storybook) */
+type SidenavFooterProps = {
   version?: string;
 };
 
-const SidebarFooter = ({ version }: SidebarFooterProps): React.JSX.Element => {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-
+const SidenavFooter = ({ version }: SidenavFooterProps): React.JSX.Element => {
   const appVersion = version ?? import.meta.env.VITE_APP_VERSION ?? "dev";
   const hostname = getServerHost();
 
   return (
     <>
-      <Divider
-        sx={{
-          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
-        }}
-      />
+      <Divider />
 
       <Box
         sx={{
           px: 2,
-          py: 1.5,
+          py: 1,
           display: "flex",
           flexDirection: "column",
           gap: 0.5,
@@ -73,4 +65,4 @@ const SidebarFooter = ({ version }: SidebarFooterProps): React.JSX.Element => {
   );
 };
 
-export default SidebarFooter;
+export default SidenavFooter;

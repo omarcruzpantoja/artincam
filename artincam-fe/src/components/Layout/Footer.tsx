@@ -7,7 +7,7 @@ const Footer = (): React.JSX.Element => {
       component="footer"
       sx={{
         textAlign: "center",
-        py: 1.4,
+        py: 1.65,
         borderTop: 1,
         borderColor: "divider",
         bgcolor: "background.paper",
