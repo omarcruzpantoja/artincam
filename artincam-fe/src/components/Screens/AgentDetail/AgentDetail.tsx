@@ -3,28 +3,22 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
-  Chip,
   CircularProgress,
   Container,
-  Divider,
-  Paper,
   Grid,
-  Tooltip,
   Stack,
   Typography,
-  IconButton,
 } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CheckIcon from "@mui/icons-material/Check";
 
-import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
 import { getServerHost } from "@services/baseService";
 import { agentService, type Agent } from "@services/agentService";
 
 import AssetFileTable from "./AssetFileTable";
 import AgentPreviewPanel from "./AgentPreviewPanel";
 import CameraConfiguration from "./CameraConfiguration";
+import AgentHeaderPanel from "./AgentHeaderPanel"; // your extracted component
+import type { ActionItem } from "@components/Common/ActionsMenu";
 
 type AgentAction = "edit" | "delete";
 
@@ -51,7 +45,6 @@ const AgentDetail = () => {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!agentId) return;
@@ -62,9 +55,7 @@ const AgentDetail = () => {
       try {
         setLoading(true);
         setError(null);
-
         const response = await agentService.getAgent(agentId);
-
         if (!cancelled) setAgent(response.data);
       } catch (err) {
         if (!cancelled) {
@@ -135,7 +126,6 @@ const AgentDetail = () => {
   const status = agent.config?.camera?.status ?? "unknown";
   const location = agent.config?.camera?.location ?? "(none)";
   const mode = agent.config?.camera?.mode ?? "(unknown)";
-
   const meta = statusMeta(status);
 
   const accent =
@@ -145,253 +135,61 @@ const AgentDetail = () => {
         ? alpha(theme.palette.text.primary, 0.35)
         : theme.palette.warning.main;
 
+  // If you still want the “Aurora glass” surfaces, keep these and pass down.
   const panelBg = alpha(theme.palette.background.paper, isDark ? 0.42 : 0.78);
   const border = alpha(theme.palette.divider, isDark ? 0.25 : 0.65);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-      {/* First row: 2 columns */}
-      <Grid container spacing={2.5} alignItems="stretch">
-        {/* LEFT column: Preview */}
-        <Grid>
-          <AgentPreviewPanel
-            agentId={agent.id}
-            mode={agent.config.camera.mode}
-            status={agent.config.camera.status}
-            rtspUrl={replaceLocalhost(
-              agent.config?.camera?.rtsp_stream?.address ?? ""
-            )}
-          />
-        </Grid>
+    <Box
+      sx={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 2.5,
+        py: 2.5,
+        px: { xs: 2, md: 3 },
+      }}
+    >
+      {/* Row 1: Preview + Details */}
+      <Box sx={{ width: "100%" }}>
+        <Grid container spacing={2.5} alignItems="stretch">
+          <Grid size={{ xs: 12, lg: 5 }}>
+            <AgentPreviewPanel
+              agentId={agent.id}
+              mode={agent.config.camera.mode}
+              status={agent.config.camera.status}
+              rtspUrl={replaceLocalhost(
+                agent.config?.camera?.rtsp_stream?.address ?? ""
+              )}
+            />
+          </Grid>
 
-        {/* RIGHT column: header panel */}
-        <Grid>
-          {/* --- Console Header Panel --- */}
-          <Paper
-            elevation={0}
-            sx={{
-              borderRadius: 2,
-              border: `1px solid ${border}`,
-              bgcolor: panelBg,
-              overflow: "hidden",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {/* Top meta bar */}
-            <Box
-              sx={{
-                px: 2.5,
-                py: 1.5,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                borderBottom: `1px solid ${alpha(
-                  theme.palette.divider,
-                  isDark ? 0.22 : 0.6
-                )}`,
-                background: isDark
-                  ? `linear-gradient(90deg, ${alpha(
-                      accent,
-                      0.12
-                    )} 0%, transparent 55%)`
-                  : `linear-gradient(90deg, ${alpha(
-                      accent,
-                      0.1
-                    )} 0%, transparent 65%)`,
+          <Grid size={{ xs: 12, lg: 7 }}>
+            <AgentHeaderPanel<AgentAction>
+              agent={{
+                id: agent.id,
+                name: agent.name,
+                description: agent.description,
               }}
-            >
-              <Box
-                sx={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: 999,
-                  bgcolor: accent,
-                  boxShadow: isDark ? `0 0 14px ${alpha(accent, 0.3)}` : "none",
-                }}
-              />
-
-              <Chip
-                size="small"
-                label={meta.label}
-                color={meta.color}
-                sx={{ height: 24, "& .MuiChip-label": { fontWeight: 800 } }}
-              />
-
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{
-                  mx: 1,
-                  borderColor: alpha(
-                    theme.palette.divider,
-                    isDark ? 0.25 : 0.55
-                  ),
-                }}
-              />
-
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 900, lineHeight: 1.1 }}
-                  noWrap
-                >
-                  {agent.name}
-                </Typography>
-              </Box>
-
-              <ActionsMenu<AgentAction>
-                items={actionItems}
-                onAction={handleAgentAction}
-                ariaLabel="Agent actions"
-                menuId={`agent-${agent.id}-actions-menu`}
-              />
-            </Box>
-
-            {/* Header body */}
-            <Box sx={{ px: 2.5, py: 2, flex: 1 }}>
-              <Stack spacing={1.25}>
-                <Box sx={{ px: 2.5, py: 2, flex: 1 }}>
-                  <Stack spacing={1.25}>
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      flexWrap="wrap"
-                      useFlexGap
-                    >
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ letterSpacing: 0.4, textTransform: "uppercase" }}
-                      >
-                        Agent ID
-                      </Typography>
-
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontFamily:
-                            "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                        }}
-                      >
-                        {agent.id}
-                      </Typography>
-
-                      <Tooltip title={copied ? "Copied!" : "Copy ID"}>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            navigator.clipboard.writeText(agent.id);
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 1000);
-                          }}
-                          sx={{
-                            borderRadius: 1.5,
-                            border: `1px solid ${alpha(
-                              theme.palette.divider,
-                              isDark ? 0.22 : 0.55
-                            )}`,
-                            bgcolor: alpha(
-                              theme.palette.text.primary,
-                              isDark ? 0.06 : 0.04
-                            ),
-                            "&:hover": {
-                              bgcolor: alpha(
-                                theme.palette.text.primary,
-                                isDark ? 0.1 : 0.06
-                              ),
-                            },
-                          }}
-                        >
-                          {copied ? (
-                            <CheckIcon fontSize="inherit" color="success" />
-                          ) : (
-                            <ContentCopyIcon fontSize="inherit" />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
-
-                    {agent.description ? (
-                      <Box>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            letterSpacing: 0.4,
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Description
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          {agent.description}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No description.
-                      </Typography>
-                    )}
-
-                    {agent.description ? (
-                      <Box>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            letterSpacing: 0.4,
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Location
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          {location}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No location configured.
-                      </Typography>
-                    )}
-
-                    {agent.description ? (
-                      <Box>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            letterSpacing: 0.4,
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          Mode
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
-                          {mode}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No mode configured.
-                      </Typography>
-                    )}
-                  </Stack>
-                </Box>
-              </Stack>
-            </Box>
-          </Paper>
+              modeText={mode}
+              meta={meta}
+              actionItems={actionItems}
+              onAction={handleAgentAction}
+              menuId={`agent-${agent.id}-actions-menu`}
+            />
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
 
-      {/* Rest of the page */}
-      <CameraConfiguration agent={agent} />
-      <AssetFileTable agentId={agent.id} />
+      {/* Row 2: Configuration (full width) */}
+      <Box sx={{ width: "100%" }}>
+        <CameraConfiguration agent={agent} />
+      </Box>
 
-      {/* Remove the old Live Stream panel since preview now owns it */}
+      {/* Row 3: Tables (full width) */}
+      <Box sx={{ width: "100%" }}>
+        <AssetFileTable agentId={agent.id} />
+      </Box>
     </Box>
   );
 };

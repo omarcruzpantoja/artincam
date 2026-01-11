@@ -26,7 +26,7 @@ export const AgentCard = ({ agent }: AgentCardProps) => {
     (agent as any).description || camera.location || "No description provided.";
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: 2 }}>
+    <Card variant="outlined" background={1} sx={{ borderRadius: 2 }}>
       <CardContent sx={{ p: 2 }}>
         {/* Row 1: Title + Status */}
         <Box

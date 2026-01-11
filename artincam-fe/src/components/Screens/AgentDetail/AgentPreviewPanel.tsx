@@ -12,6 +12,10 @@ import {
   Tabs,
   Typography,
   useTheme,
+  Card,
+  CardHeader,
+  Divider,
+  CardContent,
 } from "@mui/material";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
@@ -36,7 +40,6 @@ type Props = {
 const DEFAULT_POLL_MS = 5000;
 
 // Locked size in normal mode (prevents layout jumping)
-const WELL_WIDTH = 420;
 const WELL_HEIGHT = 420;
 
 const PreviewFrame = ({
@@ -57,7 +60,7 @@ const PreviewFrame = ({
     <Box
       sx={{
         borderRadius: 2,
-        width: fullscreenMode ? "100%" : WELL_WIDTH,
+        width: "100%",
         height: fullscreenMode ? "100%" : WELL_HEIGHT,
         overflow: "hidden",
         position: "relative",
@@ -474,88 +477,102 @@ const AgentPreviewPanel = ({
 
   return (
     <>
-      <Paper
-        elevation={0}
+      <Card
+        variant="outlined"
         sx={{
           borderRadius: 2,
-          border: `1px solid ${alpha(
-            theme.palette.divider,
-            isDark ? 0.25 : 0.65
-          )}`,
-          bgcolor: alpha(theme.palette.background.paper, isDark ? 0.42 : 0.78),
           overflow: "hidden",
           height: "100%",
           display: "flex",
           flexDirection: "column",
         }}
       >
-        <Box
+        <CardHeader
+          title={
+            <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+              Preview
+            </Typography>
+          }
+          action={
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTabSafe(v)}
+              sx={{
+                minHeight: 0,
+                "& .MuiTab-root": {
+                  minHeight: 0,
+                  py: 0.75,
+                  px: 1.25,
+                  fontWeight: 800,
+                  textTransform: "none",
+                },
+                "& .MuiTabs-indicator": {
+                  height: 3,
+                },
+              }}
+            >
+              <Tab
+                value="image"
+                icon={<ImageIcon fontSize="small" />}
+                iconPosition="start"
+                label="Image"
+              />
+              <Tab
+                value="rtsp"
+                icon={<VideocamIcon fontSize="small" />}
+                iconPosition="start"
+                label="RTSP"
+              />
+            </Tabs>
+          }
           sx={{
             px: 2.5,
             py: 1.5,
-            borderBottom: `1px solid ${alpha(
-              theme.palette.divider,
-              isDark ? 0.22 : 0.6
-            )}`,
+            "& .MuiCardHeader-action": { alignSelf: "center", m: 0 },
+            "& .MuiCardHeader-content": { minWidth: 0 },
+          }}
+        />
+
+        <Divider />
+
+        {/* Content */}
+        <CardContent
+          sx={{
+            p: 2.5,
+            pt: 2.25,
+            flex: 1,
+            minHeight: 0,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
           }}
         >
-          <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-            Preview
-          </Typography>
-
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTabSafe(v)}
+          {/* Fullscreen wrapper (Fullscreen API root) */}
+          <Box
+            ref={fsRef}
             sx={{
+              flex: 1,
+              minWidth: 0,
               minHeight: 0,
-              "& .MuiTab-root": {
-                minHeight: 0,
-                py: 0.75,
-                px: 1.25,
-                fontWeight: 800,
-                textTransform: "none",
-              },
+              ...(isFullscreen
+                ? {
+                    width: "100vw",
+                    height: "100vh",
+                    p: 2,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "background.default",
+                  }
+                : {
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "flex-start",
+                  }),
             }}
           >
-            <Tab
-              value="image"
-              icon={<ImageIcon fontSize="small" />}
-              iconPosition="start"
-              label="Image"
-            />
-            <Tab
-              value="rtsp"
-              icon={<VideocamIcon fontSize="small" />}
-              iconPosition="start"
-              label="RTSP Preview"
-            />
-          </Tabs>
-        </Box>
-
-        {/* Fullscreen wrapper (Fullscreen API root) */}
-        <Box
-          ref={fsRef}
-          sx={{
-            ...(isFullscreen
-              ? {
-                  width: "100vw",
-                  height: "100vh",
-                  p: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "background.default",
-                }
-              : { p: 2.5, flex: 1, minHeight: 0 }),
-          }}
-        >
-          <Content fullscreenMode={isFullscreen} />
-        </Box>
-      </Paper>
+            <Content fullscreenMode={isFullscreen} />
+          </Box>
+        </CardContent>
+      </Card>
 
       <Snackbar
         open={!!rtspBlockedMsg}
