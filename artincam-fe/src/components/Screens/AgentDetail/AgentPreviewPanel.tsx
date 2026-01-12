@@ -395,7 +395,12 @@ const AgentPreviewPanel = ({
         <Stack
           alignItems="center"
           justifyContent="center"
-          sx={{ height: "100%", p: 2 }}
+          sx={{
+            height: "100%",
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
           <Typography variant="body2" color="text.secondary" align="center">
             {rtspDisabledReason || "RTSP preview is unavailable."}
@@ -410,7 +415,12 @@ const AgentPreviewPanel = ({
         <Stack
           alignItems="center"
           justifyContent="center"
-          sx={{ height: "100%", p: 2 }}
+          sx={{
+            height: "100%",
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
           <Typography variant="body2" color="text.secondary" align="center">
             RTSP URL is not configured for this agent.
@@ -426,7 +436,12 @@ const AgentPreviewPanel = ({
           alignItems="center"
           justifyContent="center"
           spacing={1.25}
-          sx={{ height: "100%", p: 2 }}
+          sx={{
+            height: "100%",
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
           <Typography
             variant={fullscreenMode ? "h6" : "subtitle1"}
@@ -450,9 +465,19 @@ const AgentPreviewPanel = ({
 
     // playing (ONLY mount player here)
     return (
-      <Stack spacing={fullscreenMode ? 0 : 2}>
+      <Stack
+        spacing={fullscreenMode ? 0 : 2}
+        sx={{ display: "flex", flexDirection: "column", width: "100%" }}
+      >
         {frame(
-          <Box sx={{ width: "100%", height: "100%" }}>
+          <Box
+            sx={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <RtspPlayer rtspUrl={rtspUrl!} isFullscreen={isFullscreen} />
           </Box>
         )}
