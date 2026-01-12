@@ -11,6 +11,7 @@ import {
   Divider,
   FormControlLabel,
   Grid,
+  MenuItem,
   Stack,
   Switch,
   TextField,
@@ -362,12 +363,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                         }))
                       }
                       fullWidth
-                      slotProps={nativeSelectSlotProps}
                     >
-                      <option value="image">image</option>
-                      <option value="video">video</option>
-                      <option value="image/video">image/video</option>
-                      <option value="rtsp_stream">rtsp_stream</option>
+                      <MenuItem value="image">image</MenuItem>
+                      <MenuItem value="video">video</MenuItem>
+                      <MenuItem value="image/video">image/video</MenuItem>
+                      <MenuItem value="rtsp_stream">rtsp_stream</MenuItem>
                     </TextField>
 
                     <TextField
@@ -381,12 +381,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                         }))
                       }
                       fullWidth
-                      slotProps={nativeSelectSlotProps}
                     >
-                      <option value=""></option>
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="STOPPED">STOPPED</option>
-                      <option value="FAILURE">FAILURE</option>
+                      <MenuItem value=""></MenuItem>
+                      <MenuItem value="ACTIVE">ACTIVE</MenuItem>
+                      <MenuItem value="STOPPED">STOPPED</MenuItem>
+                      <MenuItem value="FAILURE">FAILURE</MenuItem>
                     </TextField>
 
                     <TextField
@@ -492,12 +491,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                             image_capture_time_unit: e.target.value as TimeUnit,
                           }))
                         }
-                        slotProps={nativeSelectSlotProps}
                       >
-                        <option value="s">s</option>
-                        <option value="m">m</option>
-                        <option value="h">h</option>
-                        <option value="d">d</option>
+                        <MenuItem value="s">s</MenuItem>
+                        <MenuItem value="m">m</MenuItem>
+                        <MenuItem value="h">h</MenuItem>
+                        <MenuItem value="d">d</MenuItem>
                       </TextField>
                     </Box>
 
@@ -541,12 +539,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                           }))
                         }
                         fullWidth
-                        slotProps={nativeSelectSlotProps}
                       >
-                        <option value="s">s</option>
-                        <option value="m">m</option>
-                        <option value="h">h</option>
-                        <option value="d">d</option>
+                        <MenuItem value="s">s</MenuItem>
+                        <MenuItem value="m">m</MenuItem>
+                        <MenuItem value="h">h</MenuItem>
+                        <MenuItem value="d">d</MenuItem>
                       </TextField>
                     </Box>
                   </FormGrid>
@@ -598,12 +595,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                           }))
                         }
                         fullWidth
-                        slotProps={nativeSelectSlotProps}
                       >
-                        <option value="s">s</option>
-                        <option value="m">m</option>
-                        <option value="h">h</option>
-                        <option value="d">d</option>
+                        <MenuItem value="s">s</MenuItem>
+                        <MenuItem value="m">m</MenuItem>
+                        <MenuItem value="h">h</MenuItem>
+                        <MenuItem value="d">d</MenuItem>
                       </TextField>
                     </Box>
 
@@ -647,12 +643,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
                           }))
                         }
                         fullWidth
-                        slotProps={nativeSelectSlotProps}
                       >
-                        <option value="s">s</option>
-                        <option value="m">m</option>
-                        <option value="h">h</option>
-                        <option value="d">d</option>
+                        <MenuItem value="s">s</MenuItem>
+                        <MenuItem value="m">m</MenuItem>
+                        <MenuItem value="h">h</MenuItem>
+                        <MenuItem value="d">d</MenuItem>
                       </TextField>
                     </Box>
                     <TextField
