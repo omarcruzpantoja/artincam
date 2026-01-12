@@ -6,7 +6,6 @@ import {
 import { type Components } from "@mui/material/styles";
 import { cssVarRgba } from "@lib/utils";
 import IconifyIcon from "@components/base/IconifyIcon";
-import DataGridPagination from "@components/pagination/DataGridPagination";
 
 const DataGrid: Components<Omit<Theme, "components">>["MuiDataGrid"] = {
   defaultProps: {
@@ -24,7 +23,6 @@ const DataGrid: Components<Omit<Theme, "components">>["MuiDataGrid"] = {
           sx={{ transform: "rotateX(180deg)" }}
         />
       ),
-      basePagination: DataGridPagination,
     },
     slotProps: {
       filterPanel: {

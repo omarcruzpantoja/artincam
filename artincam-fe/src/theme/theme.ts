@@ -20,7 +20,6 @@ import List, {
   ListItemText,
 } from "./components/List";
 import { MenuItem } from "./components/Menu";
-import Pagination, { PaginationItem } from "./components/Pagination";
 import Paper from "./components/Paper";
 import Popover from "./components/Popover";
 import Popper from "./components/Popper";
@@ -31,7 +30,6 @@ import { SnackbarContent } from "./components/Snackbar";
 import Stack from "./components/Stack";
 import Switch from "./components/Switch";
 import { Tab, Tabs } from "./components/Tab";
-import TablePagination from "./components/TablePagination";
 import ToggleButton, { ToggleButtonGroup } from "./components/ToggleButton";
 import Toolbar from "./components/Toolbar";
 import Tooltip from "./components/Tooltip";
@@ -89,9 +87,6 @@ export const themeOverrides = {
     MuiStack: Stack,
     MuiCheckbox: Checkbox,
     MuiRadio: Radio,
-    MuiPagination: Pagination,
-    MuiPaginationItem: PaginationItem,
-    MuiTablePagination: TablePagination,
     MuiChip: Chip,
     MuiSwitch: Switch,
     MuiList: List,
