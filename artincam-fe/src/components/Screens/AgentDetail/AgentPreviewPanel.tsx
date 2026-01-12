@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   IconButton,
-  Paper,
   Snackbar,
   Stack,
   Tab,

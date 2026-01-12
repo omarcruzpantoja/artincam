@@ -93,7 +93,11 @@ const NavItem = ({ item, level }: NavItemProps) => {
           onMouseEnter={sidenavCollapsed ? handleMouseEnter : undefined}
           onMouseLeave={sidenavCollapsed ? handleClose : undefined}
           aria-expanded={openPopperMenu}
-          selected={pathname === item.path}
+          selected={
+            item.path === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.path)
+          }
           sx={[
             (theme) => ({
               p: theme.spacing("3.5px", 2),

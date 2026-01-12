@@ -122,7 +122,6 @@ const AgentHeaderPanel = <TAction extends string>({
             {agent.name}
           </Typography>
         }
-        // Best practice: status directly under title (state is primary context)
         subheader={
           <Box sx={{ mt: 0.75 }}>
             <Chip

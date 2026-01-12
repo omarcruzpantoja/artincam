@@ -18,6 +18,7 @@ import AgentPreviewPanel from "./AgentPreviewPanel";
 import CameraConfiguration from "./CameraConfiguration";
 import AgentHeaderPanel from "./AgentHeaderPanel"; // your extracted component
 import type { ActionItem } from "@components/Common/ActionsMenu";
+import PageHeader from "@components/common/PageHeader";
 
 type AgentAction = "edit" | "delete";
 
@@ -124,57 +125,67 @@ const AgentDetail = () => {
   const meta = statusMeta(status);
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: 2.5,
-        py: 2.5,
-        px: { xs: 2, md: 3 },
-      }}
-    >
-      {/* Row 1: Preview + Details */}
-      <Box sx={{ width: "100%" }}>
-        <Grid container spacing={2.5} alignItems="stretch">
-          <Grid size={{ xs: 12, lg: 5 }}>
-            <AgentPreviewPanel
-              agentId={agent.id}
-              mode={agent.config.camera.mode}
-              status={agent.config.camera.status}
-              rtspUrl={replaceLocalhost(
-                agent.config?.camera?.rtsp_stream?.address ?? ""
-              )}
-            />
+    <>
+      <PageHeader
+        title=""
+        breadcrumb={[
+          { label: "Home", url: "/" },
+          { label: "Agents", url: "/agents" },
+          { label: agent.name, active: true },
+        ]}
+      />
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+          py: 2.5,
+          px: { xs: 2, md: 3 },
+        }}
+      >
+        {/* Row 1: Preview + Details */}
+        <Box sx={{ width: "100%" }}>
+          <Grid container spacing={2.5} alignItems="stretch">
+            <Grid size={{ xs: 12, lg: 5 }}>
+              <AgentPreviewPanel
+                agentId={agent.id}
+                mode={agent.config.camera.mode}
+                status={agent.config.camera.status}
+                rtspUrl={replaceLocalhost(
+                  agent.config?.camera?.rtsp_stream?.address ?? ""
+                )}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, lg: 7 }}>
+              <AgentHeaderPanel<AgentAction>
+                agent={{
+                  id: agent.id,
+                  name: agent.name,
+                  description: agent.description,
+                }}
+                modeText={mode}
+                meta={meta}
+                actionItems={actionItems}
+                onAction={handleAgentAction}
+                menuId={`agent-${agent.id}-actions-menu`}
+              />
+            </Grid>
           </Grid>
+        </Box>
 
-          <Grid size={{ xs: 12, lg: 7 }}>
-            <AgentHeaderPanel<AgentAction>
-              agent={{
-                id: agent.id,
-                name: agent.name,
-                description: agent.description,
-              }}
-              modeText={mode}
-              meta={meta}
-              actionItems={actionItems}
-              onAction={handleAgentAction}
-              menuId={`agent-${agent.id}-actions-menu`}
-            />
-          </Grid>
-        </Grid>
-      </Box>
+        {/* Row 2: Configuration (full width) */}
+        <Box sx={{ width: "100%" }}>
+          <CameraConfiguration agent={agent} />
+        </Box>
 
-      {/* Row 2: Configuration (full width) */}
-      <Box sx={{ width: "100%" }}>
-        <CameraConfiguration agent={agent} />
+        {/* Row 3: Tables (full width) */}
+        <Box sx={{ width: "100%" }}>
+          <AssetFileTable agentId={agent.id} />
+        </Box>
       </Box>
-
-      {/* Row 3: Tables (full width) */}
-      <Box sx={{ width: "100%" }}>
-        <AssetFileTable agentId={agent.id} />
-      </Box>
-    </Box>
+    </>
   );
 };
 

@@ -23,7 +23,7 @@ export interface SubMenuItem {
   pathName: string;
   key?: string;
   selectionPrefix?: string;
-  path?: string;
+  path: string;
   target?: HTMLAttributeAnchorTarget;
   active?: boolean;
   icon?: string;
