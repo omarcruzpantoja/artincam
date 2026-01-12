@@ -67,8 +67,13 @@ const CameraConfiguration = ({
     : "No configuration";
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+    <Card
+      background={1}
+      variant="outlined"
+      sx={{ borderRadius: 2, overflow: "hidden" }}
+    >
       <Accordion
+        background={1}
         disableGutters
         defaultExpanded={defaultExpanded}
         sx={{

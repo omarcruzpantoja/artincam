@@ -106,8 +106,6 @@ const FormGrid = ({ children }: { children: React.ReactNode }) => (
   </Box>
 );
 
-const nativeSelectSlotProps = { select: { native: true } } as const;
-
 const AgentEdit = ({ mode }: AgentEditPageProps) => {
   const isEdit = mode === "edit";
   const { agentId } = useParams();
@@ -249,7 +247,11 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
         </Box>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+          <Card
+            background={1}
+            variant="outlined"
+            sx={{ borderRadius: 2, overflow: "hidden" }}
+          >
             <CardHeader
               title={
                 <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
@@ -319,6 +321,7 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
 
         <Grid size={{ xs: 12, md: 8 }}>
           <Card
+            background={1}
             variant="outlined"
             sx={{
               borderRadius: 2,

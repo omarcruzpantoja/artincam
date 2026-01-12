@@ -1,10 +1,3 @@
-import { type TooltipContentProps } from "recharts";
-import type {
-  NameType,
-  ValueType,
-} from "recharts/types/component/DefaultTooltipContent";
-import { useTheme } from "@mui/material/styles";
-
 import { assetFileService, type AssetFile } from "@services/assetFileService";
 import { actionLogService, type ActionLog } from "@services/actionLogService";
 
@@ -62,55 +55,6 @@ export const fetchAllAssetFiles = async (
   }
 
   return all;
-};
-
-export const CustomRenderTooltipAssetFiles = ({
-  active,
-  payload,
-  label,
-}: TooltipContentProps<ValueType, NameType>) => {
-  if (!active || !payload || payload.length === 0) return null;
-
-  const theme = useTheme();
-  const point = payload[0].payload as AssetFilePoint;
-
-  // --- INVERTED THEME BEHAVIOR ---
-  const bg =
-    theme.palette.mode === "light"
-      ? "rgba(0, 0, 0, 0.85)"
-      : "rgba(255, 255, 255, 0.95)";
-
-  const textColor = theme.palette.mode === "light" ? "#fff" : "#000";
-
-  const borderColor =
-    theme.palette.mode === "light"
-      ? "rgba(255,255,255,0.25)"
-      : "rgba(0,0,0,0.2)";
-
-  return (
-    <div
-      style={{
-        background: bg,
-        color: textColor,
-        padding: "10px 12px",
-        borderRadius: 8,
-        fontSize: 12,
-        border: `1px solid ${borderColor}`,
-        boxShadow:
-          theme.palette.mode === "dark"
-            ? "0 0 6px rgba(0,0,0,0.15)"
-            : "0 0 8px rgba(0,0,0,0.6)",
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>
-        {new Date(label as string).toLocaleDateString()}
-      </div>
-
-      <div>
-        Count: <strong>{point.count}</strong>
-      </div>
-    </div>
-  );
 };
 
 // ---- ACTION LOGS UTILS ----

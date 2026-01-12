@@ -13,6 +13,7 @@ import {
   Stack,
   Typography,
   TextField,
+  Card,
 } from "@mui/material";
 
 import { agentService, type Agent } from "@services/agentService";
@@ -20,7 +21,7 @@ import HealthLogActivity from "./HealthLogActivity";
 import HealthStatusChart from "./HealthStatusChart";
 
 import { FilterProvider, useFilter } from "./contexts/FilterContext";
-import AssetFileDailyCountChart from "./AssetFileDailyCounterChart";
+import AssetFileImagesPerDay from "./AssetFileImagesPerDay";
 
 const LS_SELECTED_AGENT_KEY = "artincam:selectedAgentId";
 
@@ -172,7 +173,7 @@ function DashboardInner() {
       {/* If agent selected, show filter controls + charts */}
       {selectedAgent && (
         <>
-          <Paper sx={{ p: 2, mb: 2 }}>
+          <Card sx={{ p: 2, mb: 2 }}>
             <Stack
               direction={{ xs: "column", sm: "row" }}
               spacing={2}
@@ -212,7 +213,7 @@ function DashboardInner() {
                 </Button>
               </Stack>
             </Stack>
-          </Paper>
+          </Card>
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -224,7 +225,7 @@ function DashboardInner() {
             </Grid>
 
             <Grid size={{ xs: 12, md: 6 }}>
-              <AssetFileDailyCountChart agentId={selectedAgentId || null} />
+              <AssetFileImagesPerDay agentId={selectedAgentId || null} />
             </Grid>
           </Grid>
         </>

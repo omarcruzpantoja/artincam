@@ -1,23 +1,36 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
+import * as echarts from "echarts/core";
+import { LineChart } from "echarts/charts";
 import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import {
+  Alert,
+  Box,
+  Card,
+  CardHeader,
+  CircularProgress,
+  Divider,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { type AssetFile } from "@services/assetFileService";
 
-import {
-  CustomRenderTooltipAssetFiles,
-  fetchAllAssetFiles,
-  type AssetFilePoint,
-} from "./utils";
+import { fetchAllAssetFiles, type AssetFilePoint } from "./utils";
 import { useFilter } from "./contexts/FilterContext";
+import ReactEchart from "@components/base/ReactEchart";
+
+echarts.use([
+  LineChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  CanvasRenderer,
+]);
 
 interface AssetFileDailyCountChartProps {
   agentId: string | null;
@@ -136,18 +149,17 @@ const AssetFileDailyCountChart = ({
   const loading = isLoading || isFetching;
 
   return (
-    <Paper sx={{ p: 2, height: 420, display: "flex", flexDirection: "column" }}>
-      <Box
-        sx={{
-          mb: 1,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="subtitle1">Total Images Per Day</Typography>
-      </Box>
-
+    <Card
+      sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}
+    >
+      <CardHeader
+        title={
+          <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+            Total images per day
+          </Typography>
+        }
+      />
+      <Divider sx={{ my: 1 }} />
       {loading && (
         <Box
           sx={{
@@ -193,32 +205,60 @@ const AssetFileDailyCountChart = ({
 
       {!loading && !isError && dailyData.length > 0 && (
         <Box sx={{ flex: 1, minHeight: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dailyData}>
-              <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.6} />
-              <XAxis
-                dataKey="date"
-                fontSize={12}
-                interval="preserveStartEnd"
-                minTickGap={28}
-              />
-              <YAxis allowDecimals={false} fontSize={16} />
-              <Tooltip
-                content={CustomRenderTooltipAssetFiles}
-                isAnimationActive={false}
-              />
-              <Line
-                type="linear"
-                dataKey="count"
-                stroke="#1976d2"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <ReactEchart
+            echarts={echarts}
+            option={{
+              grid: { left: 44, right: 16, top: 12, bottom: 36 },
+              xAxis: {
+                type: "category",
+                data: dailyData.map((d) => d.date),
+                axisLabel: {
+                  fontSize: 12,
+                  hideOverlap: true,
+                },
+                axisTick: { alignWithLabel: true },
+              },
+              yAxis: {
+                type: "value",
+                minInterval: 1,
+                axisLabel: { fontSize: 16 },
+                splitLine: {
+                  show: true,
+                  lineStyle: {
+                    type: "dashed",
+                    opacity: 0.6,
+                  },
+                },
+              },
+              tooltip: {
+                trigger: "axis",
+                formatter: (params: any) => {
+                  const p = Array.isArray(params) ? params[0] : params;
+                  const date = p.axisValue;
+                  const count = p.data;
+                  return `${date}<br/>Count: <b>${count}</b>`;
+                },
+              },
+              series: [
+                {
+                  name: "count",
+                  type: "line",
+                  data: dailyData.map((d) => d.count),
+                  smooth: false, // type="linear"
+                  symbol: "none", // dot={false}
+                  lineStyle: {
+                    width: 2,
+                    color: "#1976d2", // replace with theme if you want
+                  },
+                },
+              ],
+              animation: false, // matches isAnimationActive={false}
+            }}
+            sx={{ width: "100%", height: "100%" }}
+          />
         </Box>
       )}
-    </Paper>
+    </Card>
   );
 };
 

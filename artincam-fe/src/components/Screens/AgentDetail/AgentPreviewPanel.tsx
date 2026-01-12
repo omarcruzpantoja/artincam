@@ -477,6 +477,7 @@ const AgentPreviewPanel = ({
   return (
     <>
       <Card
+        background={1}
         variant="outlined"
         sx={{
           borderRadius: 2,

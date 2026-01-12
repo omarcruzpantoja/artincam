@@ -1,10 +1,35 @@
 import { useMemo } from "react";
+import * as echarts from "echarts/core";
+import { PieChart } from "echarts/charts";
+import {
+  TooltipComponent,
+  LegendComponent,
+  TitleComponent,
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import ReactEchart from "@components/base/ReactEchart";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import {
+  Alert,
+  Box,
+  Card,
+  CardHeader,
+  CircularProgress,
+  Divider,
+  Paper,
+  Typography,
+} from "@mui/material";
 import { type ActionLog } from "@services/actionLogService";
 import { ACTIVE_COLOR, fetchAllActionLogs, OFFLINE_COLOR } from "./utils";
 import { useFilter } from "./contexts/FilterContext";
+
+echarts.use([
+  PieChart,
+  TooltipComponent,
+  LegendComponent,
+  TitleComponent,
+  CanvasRenderer,
+]);
 
 interface HealthStatusBreakdownChartProps {
   agentId: string | null;
@@ -162,28 +187,66 @@ const HealthStatusBreakdownChart = ({
 
   const loading = isLoading || isFetching;
 
-  const data =
-    breakdown.totalBuckets === 0
-      ? []
-      : [
-          { name: "Active", value: breakdown.activePct },
-          { name: "Offline", value: breakdown.offlinePct },
-        ];
+  const option = useMemo(() => {
+    if (breakdown.totalBuckets === 0) return null;
+
+    return {
+      animation: false,
+      tooltip: {
+        trigger: "item",
+        formatter: (p: any) => {
+          const name = p?.name ?? "";
+          const value = p?.value ?? 0;
+          return `${name}: <b>${value}%</b>`;
+        },
+      },
+      legend: {
+        show: true,
+        orient: "horizontal",
+        bottom: 0,
+        textStyle: {
+          fontSize: 12,
+        },
+      },
+      series: [
+        {
+          name: "Status",
+          type: "pie",
+          radius: ["45%", "72%"], // donut-ish like a modern dashboard
+          center: ["50%", "45%"],
+          avoidLabelOverlap: true,
+          label: {
+            show: true,
+            formatter: (p: any) => `${p.name}: ${p.value}%`,
+          },
+          labelLine: {
+            show: true,
+          },
+          data: [
+            {
+              name: "Active",
+              value: breakdown.activePct,
+              itemStyle: { color: STATUS_COLORS.active },
+            },
+            {
+              name: "Offline",
+              value: breakdown.offlinePct,
+              itemStyle: { color: STATUS_COLORS.offline },
+            },
+          ],
+        },
+      ],
+    };
+  }, [breakdown.totalBuckets, breakdown.activePct, breakdown.offlinePct]);
 
   return (
-    <Paper
+    <Card
       sx={{ p: 2, height: "100%", display: "flex", flexDirection: "column" }}
     >
-      <Box
-        sx={{
-          mb: 1,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="subtitle1">Status Breakdown</Typography>
-      </Box>
+      <CardHeader
+        title={<Typography variant="subtitle1">Status Breakdown</Typography>}
+      />
+      <Divider />
 
       {loading && (
         <Box
@@ -228,26 +291,16 @@ const HealthStatusBreakdownChart = ({
         </Box>
       )}
 
-      {!loading && !isError && breakdown.totalBuckets > 0 && (
+      {!loading && !isError && breakdown.totalBuckets > 0 && option && (
         <Box sx={{ flex: 1, minHeight: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={90}
-                label={({ name, value }) => `${name}: ${value}%`}
-              >
-                <Cell key="active" fill={STATUS_COLORS.active} />
-                <Cell key="offline" fill={STATUS_COLORS.offline} />
-              </Pie>
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          <ReactEchart
+            echarts={echarts}
+            option={option}
+            sx={{ width: "100%", height: "100%" }}
+          />
         </Box>
       )}
-    </Paper>
+    </Card>
   );
 };
 

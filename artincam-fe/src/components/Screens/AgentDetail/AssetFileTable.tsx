@@ -167,6 +167,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
 
   return (
     <Card
+      background={1}
       variant="outlined"
       sx={{
         borderRadius: 2,

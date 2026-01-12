@@ -103,6 +103,7 @@ const AgentHeaderPanel = <TAction extends string>({
 
   return (
     <Card
+      background={1}
       variant="outlined"
       sx={{
         borderRadius: 2,

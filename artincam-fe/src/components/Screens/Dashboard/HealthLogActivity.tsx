@@ -1,19 +1,35 @@
 import { useMemo, type FC } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Box, CircularProgress, Paper, Typography } from "@mui/material";
 import {
-  CartesianGrid,
-  Dot,
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  XAxis,
-  YAxis,
-  type DotProps,
-} from "recharts";
+  Alert,
+  Box,
+  Card,
+  CircularProgress,
+  Paper,
+  Typography,
+} from "@mui/material";
 import { type ActionLog } from "@services/actionLogService";
 import { ACTIVE_COLOR, fetchAllActionLogs } from "./utils";
 import { useFilter } from "./contexts/FilterContext";
+
+// ✅ ECharts
+import * as echarts from "echarts/core";
+import { ScatterChart } from "echarts/charts";
+import {
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+} from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+import ReactEchart from "@components/base/ReactEchart";
+
+echarts.use([
+  ScatterChart,
+  GridComponent,
+  TooltipComponent,
+  LegendComponent,
+  CanvasRenderer,
+]);
 
 interface ActionLogHealthDotsMatrixChartProps {
   agentId: string | null;
@@ -63,15 +79,9 @@ const formatMinutesToTime = (minutes: number): string => {
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 };
 
-const RenderDot: FC<DotProps> = ({ cx, cy }) => {
-  return (
-    <Dot cx={cx} cy={cy} fill={ACTIVE_COLOR} r={2} shapeRendering={"square"} />
-  );
-};
-
-const HealthLogActivity = ({
+const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
   agentId,
-}: ActionLogHealthDotsMatrixChartProps) => {
+}) => {
   const { applied } = useFilter();
 
   // If no agent selected, show placeholder
@@ -205,7 +215,6 @@ const HealthLogActivity = ({
 
     return {
       points: result,
-      dayIndexMap: indexMap,
       dayLabels: days,
     };
   }, [logs, daysInRange]);
@@ -216,16 +225,79 @@ const HealthLogActivity = ({
   const hasDays = dayLabels.length > 0;
   const hasDots = points.length > 0;
 
-  const timeTicks = useMemo(
-    () => Array.from({ length: 25 }, (_, i) => i * 60),
-    []
-  );
+  const option = useMemo(() => {
+    // ECharts scatter points as [x, y, count, dayLabel, timeLabel]
+    const data = points.map((p) => [
+      p.dayIndex,
+      p.minutesOfDay,
+      p.count,
+      p.dayLabel,
+      p.timeLabel,
+    ]);
+
+    return {
+      animation: false,
+      grid: { left: 56, right: 16, top: 10, bottom: 42 },
+      tooltip: {
+        trigger: "item",
+        formatter: (params: any) => {
+          const v = params?.value;
+          if (!v || !Array.isArray(v)) return "";
+          const count = v[2];
+          const dayLabel = v[3];
+          const timeLabel = v[4];
+          return `${dayLabel}<br/>${timeLabel} UTC<br/>Count: <b>${count}</b>`;
+        },
+      },
+      xAxis: {
+        type: "value",
+        min: 0,
+        max: Math.max(0, dayLabels.length - 1),
+        interval: 1,
+        axisLabel: {
+          fontSize: 12,
+          formatter: (value: number) => dayLabels[value] ?? "Invalid",
+          hideOverlap: true,
+        },
+        splitLine: {
+          show: true,
+          lineStyle: { type: "dashed", opacity: 0.6 },
+        },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: "value",
+        min: 0,
+        max: MINUTES_PER_DAY,
+        // If you want EXACT tick positions like Recharts:
+        axisLabel: {
+          fontSize: 14,
+          formatter: (value: number) => formatMinutesToTime(value),
+        },
+        axisTick: { show: false },
+        splitLine: {
+          show: true,
+          lineStyle: { type: "dashed", opacity: 0.6 },
+        },
+      },
+      series: [
+        {
+          type: "scatter",
+          data,
+          symbol: "rect",
+          symbolSize: 4, // ~ r=2 square
+          itemStyle: { color: ACTIVE_COLOR },
+          emphasis: { scale: false },
+        },
+      ],
+    };
+  }, [points, dayLabels]);
 
   return (
-    <Paper
+    <Card
       sx={{
         p: 2,
-        height: 420,
+        height: "100%",
         display: "flex",
         flexDirection: "column",
       }}
@@ -303,36 +375,14 @@ const HealthLogActivity = ({
 
       {!loading && !isError && hasDays && (
         <Box sx={{ flex: 1, minHeight: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart>
-              <CartesianGrid strokeDasharray="5 5" strokeOpacity={0.6} />
-              <XAxis
-                name="Day"
-                type="number"
-                dataKey="dayIndex"
-                ticks={dayLabels.map((_, i) => i)}
-                tickFormatter={(value) => dayLabels[value] ?? "Invalid"}
-                tick={{ fontSize: 16 }}
-                domain={[0, Math.max(0, dayLabels.length - 1)]}
-              />
-
-              <YAxis
-                type="number"
-                dataKey="minutesOfDay"
-                name="Time"
-                domain={[0, MINUTES_PER_DAY]}
-                ticks={timeTicks}
-                tickFormatter={formatMinutesToTime}
-                tick={{ fontSize: 16 }}
-              />
-
-              {/* Even if points is empty, Scatter can render fine */}
-              <Scatter data={points} shape={<RenderDot />} />
-            </ScatterChart>
-          </ResponsiveContainer>
+          <ReactEchart
+            echarts={echarts}
+            option={option}
+            sx={{ width: "100%", height: "100%" }}
+          />
         </Box>
       )}
-    </Paper>
+    </Card>
   );
 };
 
