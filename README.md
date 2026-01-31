@@ -15,18 +15,15 @@
         - [Example #1](#example-1)
         - [Example #2](#example-2)
     - [File Naming Format](#file-naming-format)
-    - [Running the Camera (as a script and not a service)](#running-the-camera-as-a-script-and-not-a-service)
       - [Notes](#notes)
   - [Transfering files from output directory to usb stick](#transfering-files-from-output-directory-to-usb-stick)
-  - [Artincam service commmands](#artincam-service-commmands)
-    - [Preview camera](#preview-camera)
 
 
 ## Overview
 
 Artincam is a Raspberry Pi camera project designed to automate the capture of images and videos using the Raspberry Pi Camera Module, powered by the `picamera2` library. The project provides a flexible and configurable pipeline that supports multiple recording modes including image-only, video-only, and a hybrid image/video cycle. It is designed with field deployments in mind, where minimal user interaction is preferred, and all operations can be controlled via configuration files and system services.
 
-The camera system is highly customizable, allowing you to set parameters such as resolution, framerate, bitrate, duration, number of images per cycle, and capture intervals. Configuration is managed via JSON files and editable through built-in support tools.
+The camera system is highly customizable, allowing you to set parameters such as resolution, framerate, bitrate, duration, number of images per cycle, and capture intervals. Configuration is managed via a web page which camera agents pull data from.
 
 Artincam is also service-enabled through `systemd`, meaning it can be started, stopped, or monitored like any standard Linux service. This ensures robustness and auto-restart capabilities when deployed long-term.
 
@@ -70,60 +67,66 @@ Whether you're setting this up on a fresh Raspberry Pi or updating an existing d
    git clone https://github.com/omarcruzpantoja/artincam.git
    cd artincam
 
-5. Run all the commands in [`init_pi.sh`](./init_pi.sh)
-   * Make sure all commands succeed
-
-6. Change camera configuration of the raspberry pi
-   ```shell
-   cd /opt/artincam/camera
-   uv run support/edit_config.py
+5. Run the following commands for initial setup:
+   ```bash
+   chmod +x install.sh
+   ./install --all
    ```
+
+6. After all installation is successful visit `localhost` in your browser.
+   1. You can access the app from another computer within the network. To do so we need the local IP Address of the raspberry pi.
+   2. Use the command `ifconfig` in the terminal. Find the section with `wlan0`, the IP address will be next to the `inet`. Often times the expected value will be in the form `192.168.0.X`, more than usual it is NOT _192.168.0.255_ OR _192.168.0.1_.
+      
+      ```
+      wlan0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.98  netmask 255.255.255.0  broadcast 192.168.0.255
+      ```
 
 ## Camera Configuration Parameters
 
 ### General Settings
-| Parameter         | Description |
-|------------------|-------------|
-| `mode`             | Determines the operation mode: `image`, `video`, `image/video`, or `rtsp_stream`. |
-| `output_dir`       | Directory where captured images and videos are stored. |
-| `location`         | Describes the camera's physical location. (Only lowercase letters, numbers, and hyphens allowed) |
-| `pi_id`            | Unique identifier for the Raspberry Pi. (Integer from 0 to 9999) |
+| Parameter    | Description                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| `mode`       | Determines the operation mode: `image`, `video`, `image/video`, or `rtsp_stream`.                |
+| `output_dir` | Directory where captured images and videos are stored.                                           |
+| `location`   | Describes the camera's physical location. (Only lowercase letters, numbers, and hyphens allowed) |
+| `pi_id`      | Unique identifier for the Raspberry Pi. (Integer from 0 to 9999)                                 |
 
 ### Image Capture Settings
-| Parameter                 | Description |
-|--------------------------|-------------|
-| `image_capture_time`     | Total duration to keep capturing images for each cycle. |
-| `image_capture_time_unit`| Unit of time for `image_capture_time` (`s`, `m`, `h`, `d`). |
-| `image_rest_time`        | Time to wait between consecutive image captures. |
-| `image_rest_time_unit`   | Unit of time for `image_rest_time` (`s`, `m`, `h`, `d`). |
+| Parameter                 | Description                                                 |
+| ------------------------- | ----------------------------------------------------------- |
+| `image_capture_time`      | Total duration to keep capturing images for each cycle.     |
+| `image_capture_time_unit` | Unit of time for `image_capture_time` (`s`, `m`, `h`, `d`). |
+| `image_rest_time`         | Time to wait between consecutive image captures.            |
+| `image_rest_time_unit`    | Unit of time for `image_rest_time` (`s`, `m`, `h`, `d`).    |
 
 ### Video Capture Settings
-| Parameter                | Description |
-|--------------------------|-------------|
-| `recording_time`         | Duration of each video. |
-| `recording_time_unit`    | Unit of time for `recording_time` (`s`, `m`, `h`, `d`). |
-| `framerate`              | Number of frames per second. Default is 24. |
-| `cycle_rest_time`        | Time delay before starting the next cycle. |
-| `cycle_rest_time_unit`   | Unit of time for `cycle_rest_time` (`s`, `m`, `h`, `d`). |
-| `bitrate`                | Video compression quality. Higher values increase quality and file size. Recommended: `8388608` (8MB). |
+| Parameter              | Description                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `recording_time`       | Duration of each video.                                                                                |
+| `recording_time_unit`  | Unit of time for `recording_time` (`s`, `m`, `h`, `d`).                                                |
+| `framerate`            | Number of frames per second. Default is 24.                                                            |
+| `cycle_rest_time`      | Time delay before starting the next cycle.                                                             |
+| `cycle_rest_time_unit` | Unit of time for `cycle_rest_time` (`s`, `m`, `h`, `d`).                                               |
+| `bitrate`              | Video compression quality. Higher values increase quality and file size. Recommended: `8388608` (8MB). |
 
 ### Resolution Settings
-| Parameter            | Description |
-|----------------------|-------------|
-| `resolution.width`   | Image/video width in pixels (Default: `1640`). |
-| `resolution.height`  | Image/video height in pixels (Default: `1232`). |
+| Parameter           | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| `resolution.width`  | Image/video width in pixels (Default: `1640`).  |
+| `resolution.height` | Image/video height in pixels (Default: `1232`). |
 
-> ⚠️ **Note**: A resolution of `1920x1080` is not recommended as it limits the Field of View (FoV).
+> ⚠️ **Note**: A resolution of `1920x1080` is not recommended as it may limit the Field of View (FoV).
 
 ### RTSP Stream Settings
-| Parameter              | Description |
-|------------------------|-------------|
-| `rtsp_stream.address`  | Optional RTSP stream address. Used only if `mode` is `rtsp_stream`. |
+| Parameter             | Description                                                          |
+| --------------------- | -------------------------------------------------------------------- |
+| `rtsp_stream.address` | Optional RTSP stream address. Required when `mode` is `rtsp_stream`. |
 
 ### Transform Settings
-| Parameter                   | Description |
-|-----------------------------|-------------|
-| `transforms.vertical_flip`   | Boolean to vertically flip the image/video. |
+| Parameter                    | Description                                   |
+| ---------------------------- | --------------------------------------------- |
+| `transforms.vertical_flip`   | Boolean to vertically flip the image/video.   |
 | `transforms.horizontal_flip` | Boolean to horizontally flip the image/video. |
 
 ### What is a "cycle"?
@@ -148,13 +151,13 @@ In image/video mode, the concept of "cycles" becomes relevant. A cycle involves 
 To create a configuration for capturing 1 image per minute for 50 minutes and recording a 10-minute video at 5 fps
 
 ```python
-image_capture_time = 50
+image_capture_time = 50 # Capture images for 50 mins
 image_capture_time_unit = "m"
 
-image_rest_time = 1
+image_rest_time = 1 # Capture 1 image every 1 minute
 image_rest_time_unit = "m"
 
-recording_time = 10
+recording_time = 10 # Record a 10 minute video
 recording_time_unit = "m"
 
 framerate = 5
@@ -187,14 +190,15 @@ Note: the provided example above is NOT JSON format. This is just displaying wha
 Each recorded file follows the format:
 
 ```shell
-{pi_id}_{location}_{timestamp}_{unique_identifer}.{ext}
+{timestamp}_{pi_id}_{unique_identifier}.{ext}
 ```
 
 Example:
 
 ```shell
-1_sj-pr-usa_20-02-2025-06-03-10_0012-0000000012.h264
+20260110192520_0001-0000010243_zone1.jpg
 ```
+
 
 Where:
 
@@ -202,27 +206,12 @@ Where:
 
 * `location` → Location of the Raspberry Pi
 
-* `timestamp` → Capture timestamp in dd-mm-yyyy-hh-mm-ss
+* `timestamp` → Capture timestamp in  `%Y%m%d%H%M%S` format
 
 * `unique identifier` → Uses pi_id and a counter to create identifier with 0 padding (4 on pi_id and 10 on counter)
 
 * `ext` → jpg for images, mkv for videos
 
-### Running the Camera (as a script and not a service)
-
-Place your configuration file in config/config.json (there is one already by default).
-
-Run the script:
-
-```shell
-# If you havent set up uv venv: 
-uv venv --system-site-packages
-uv sync --all-extras
-
-# To run the script
-uv run main.py
-
-```
 
 #### Notes
 
@@ -244,31 +233,3 @@ cd /opt/artincam/camera
 # Stop the transfer at any point by typing the word 'stop' and press enter. After the word is written and submitted, the process will gracefully stop once the current file transfer is fnished.
 ```
 
-
-## Artincam service commmands
-
-
-| **Category**                  | **Description**                          | **Command**                                                                                              |
-|------------------------------|------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| **Artincam Service Commands**| Check status of the service              | `sudo systemctl status artincam`                                                                         |
-|                              | Start the camera                         | `sudo systemctl start artincam`                                                                          |
-|                              | Stop the camera                          | `sudo systemctl stop artincam`                                                                           |
-| **Camera Configuration**     | Display current camera config values     | `cd /opt/artincam/camera`<br>`uv run support/show_config.py`                                             |
-|                              | Edit camera config values                | `cd /opt/artincam/camera`<br>`uv run support/edit_config.py`                                             |
-|                              | Preview camera                           | `sudo systemctl stop artincam`<br>`cd /opt/artincam/camera`<br>`uv run preview.py`                       |
-| **Repository Update**        | Update repo to latest version            | `cd /opt/artincam`<br>`git pull`<br>`cd camera`<br>`uv sync --all-extras`                                |
-
-### Preview camera
-
-It is important to note that there can only be 1 process using the camera at a time. This means that if you want to run the `preview`, the artincam service must be stopped. Additionally, in order for the camera preview to be visible, user must have a monitor of some kind. Whether its through VNC or an actual monitor connected to the raspberry PI directly.
-
-```shell
-# ensure the artincam service is not running and the picamera is free to be used
-sudo systemctl stop artincam
-
-# go to camera folder in artincam repo
-cd /opt/artincam/camera
-
-# run the preview.py file
-uv run preview.py
-```
