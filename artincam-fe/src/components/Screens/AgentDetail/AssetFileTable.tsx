@@ -15,11 +15,10 @@ import {
   Chip,
   Divider,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import DownloadIcon from "@mui/icons-material/Download";
+import { DownloadCsvButton } from "@components/Common";
 
 interface AssetFilesGridProps {
   agentId: string;
@@ -58,6 +57,30 @@ const formatTimestamp = (ts: unknown): string => {
     second: "2-digit",
   });
 };
+
+const getAllAssetFileRows = async (agentId: string): Promise<AssetFile[]> => {
+  const allRows: AssetFile[] = [];
+  let offset = 0;
+  const limit = 1000; // Fetch 1000 records at a time
+
+  while (true) {
+    const response = await assetFileService.listByAgent({
+      agentId,
+      limit,
+      offset,
+    });
+
+    allRows.push(...response.data);
+
+    if (response.data.length < limit) {
+      break; // No more data to fetch
+    }
+
+    offset += limit;
+  }
+
+  return allRows;
+}
 
 const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   const [rows, setRows] = useState<AssetFile[]>([]);
@@ -213,18 +236,12 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
             Refresh
           </Button>
 
-          <Tooltip title="Coming soon">
-            <span>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon />}
-                disabled
-              >
-                Download CSV
-              </Button>
-            </span>
-          </Tooltip>
+          <DownloadCsvButton
+            filename={`agent_${agentId}_asset_files.csv`}
+            fetchRows={() => getAllAssetFileRows(agentId)}
+            size="small"
+            variant="outlined"
+          />
         </Stack>
       </Box>
 
