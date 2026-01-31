@@ -1,0 +1,17 @@
+<svg width="256" height="256" viewBox="0 0 256 256"
+     xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" rx="48" fill="#111"/>
+  
+  <!-- Camera module block -->
+  <rect x="88" y="68" width="80" height="80" rx="12"
+        fill="#C51A4A"/>
+  
+  <!-- Camera lens -->
+  <circle cx="128" cy="108" r="22" fill="#4CAF50"/>
+  <circle cx="128" cy="108" r="12" fill="#111"/>
+
+  <!-- Ribbon cable -->
+  <rect x="108" y="148" width="40" height="40" rx="6"
+        fill="#4CAF50"/>
+</svg>
+

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import pathlib
+
 from jsonschema import ValidationError, validate
 
 CAMERA_DIRECTORY = pathlib.Path(__file__).resolve().parent.parent

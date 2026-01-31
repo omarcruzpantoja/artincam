@@ -1,7 +1,32 @@
-from artincam.camera import Camera
+import asyncio
+import signal
+
+from artincam.agent import ArtincamAgent
+from artincam.constants import ARTINCAM_AGENT_ID
+
+
+async def main():
+    agent = ArtincamAgent(ARTINCAM_AGENT_ID)
+    agent.start()
+
+    # Hook Ctrl+C for graceful exit
+    stop_event = asyncio.Event()
+
+    def handle_sigint():
+        print("\n[Signal] Ctrl+C received.")
+        stop_event.set()
+
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGINT, handle_sigint)
+    loop.add_signal_handler(signal.SIGTERM, handle_sigint)
+
+    # Run until signal
+    await stop_event.wait()
+
+    # Cleanup
+    await agent.stop()
+    print("[Main] Exit complete.")
 
 
 if __name__ == "__main__":
-    camera = Camera()
-    camera.setup()
-    camera.run()
+    asyncio.run(main())

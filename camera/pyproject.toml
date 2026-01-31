@@ -1,15 +1,18 @@
 [project]
 name = "artincam"
 version = "0.1.0"
-description = "Add your description here"
+description = ""
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11, <3.12"
 dependencies = [
     "colorama>=0.4.6",
     "jsonschema>=4.23.0",
     "numpy==1.26.4",
     "opencv-python>=4.11.0.86",
     "psutil>=7.0.0",
+    "pydantic>=2.12.3",
+    "requests>=2.32.5",
+    "websockets>=15.0.1",
 ]
 
 [dependency-groups]
@@ -17,6 +20,3 @@ dev = ["isort>=6.0.1", "ruff>=0.11.2"]
 
 [tool.ruff]
 line-length = 120
-
-[tool.uv]
-python-preference = "only-system"

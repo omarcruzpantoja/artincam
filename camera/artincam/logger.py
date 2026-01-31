@@ -1,6 +1,6 @@
 import logging
-import colorama
 
+import colorama
 from colorama import Fore, Style
 
 # Initialize colorama for Windows support
