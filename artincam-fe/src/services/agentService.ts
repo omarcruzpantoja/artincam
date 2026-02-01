@@ -1,6 +1,6 @@
 import {
-  BaseApiService,
   type ApiResponse,
+  BaseApiService,
   type QueryParams,
 } from "./baseService";
 
@@ -76,10 +76,6 @@ export interface ListAgentsParams {
 }
 
 export class AgentService extends BaseApiService {
-  constructor(baseUrl?: string) {
-    super(baseUrl);
-  }
-
   listAgents(params?: ListAgentsParams): Promise<ApiResponse<Agent[]>> {
     let query: QueryParams | undefined;
 
@@ -113,11 +109,11 @@ export class AgentService extends BaseApiService {
 
   updateAgent(
     id: string,
-    payload: WriteAgentPayload
+    payload: WriteAgentPayload,
   ): Promise<ApiResponse<Agent>> {
     return this.patch<Agent, WriteAgentPayload>(
       `${AGENT_PATH}/${encodeURIComponent(id)}`,
-      payload
+      payload,
     );
   }
 

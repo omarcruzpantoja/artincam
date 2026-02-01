@@ -1,5 +1,5 @@
 import { avatarClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 import { initialConfig } from "@root/config";
 
 export const Avatar: Components<Omit<Theme, "components">>["MuiAvatar"] = {
@@ -37,12 +37,13 @@ export const AvatarGroup: Components<
     root: ({ ownerState: { max } }) => ({
       ...[...Array(max)].reduce(
         (result, _, index) => ({
+          // biome-ignore lint/performance/noAccumulatingSpread: <This is used for MUI styles, so it's fine.>
           ...result,
           [`& > .${avatarClasses.root}:nth-of-type(${index + 1})`]: {
             zIndex: Number(max) - index,
           },
         }),
-        {}
+        {},
       ),
     }),
   },

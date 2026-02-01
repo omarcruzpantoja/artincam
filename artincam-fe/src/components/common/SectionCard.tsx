@@ -4,6 +4,7 @@ type Props = CardProps & {
   title?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
+  // biome-ignore lint/suspicious/noExplicitAny: <Generic card content styles>
   contentSx?: Record<string, any>;
 };
 

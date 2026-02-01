@@ -1,6 +1,6 @@
-import { MenuItem, type SelectProps, type SxProps } from "@mui/material";
 import StyledFormControl from "@components/styled/StyledFormControl";
 import StyledTextField from "@components/styled/StyledTextField";
+import { MenuItem, type SelectProps, type SxProps } from "@mui/material";
 
 interface DashboardSelectMenuProps {
   options?: {

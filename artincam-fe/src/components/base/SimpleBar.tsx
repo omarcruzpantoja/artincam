@@ -1,5 +1,5 @@
-import { type PropsWithChildren } from "react";
 import { Box, type BoxProps } from "@mui/material";
+import type { PropsWithChildren } from "react";
 import type { SimpleBarOptions } from "simplebar-core";
 import SimpleBarReact from "simplebar-react";
 

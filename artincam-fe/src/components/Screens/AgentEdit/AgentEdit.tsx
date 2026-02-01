@@ -1,4 +1,4 @@
-import React, { useEffect, useState, type FormEvent } from "react";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   Alert,
   Box,
@@ -18,16 +18,16 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import { useNavigate, useParams } from "react-router-dom";
 import {
-  agentService,
   type AgentStatus,
+  agentService,
   type CameraConfig,
   type CameraMode,
   type TimeUnit,
   type WriteAgentPayload,
 } from "@services/agentService";
+import React, { type FormEvent, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface AgentEditPageProps {
   mode: "create" | "edit";
@@ -143,7 +143,9 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : "Failed to load agent details."
+            err instanceof Error
+              ? err.message
+              : "Failed to load agent details.",
           );
         }
       } finally {
@@ -171,7 +173,7 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
     };
 
   const updateCamera = (
-    updater: (camera: CameraConfig) => CameraConfig
+    updater: (camera: CameraConfig) => CameraConfig,
   ): void => {
     setForm((prev) => ({
       ...prev,
@@ -181,8 +183,8 @@ const AgentEdit = ({ mode }: AgentEditPageProps) => {
 
   const updateAgentConfig = (
     updater: (
-      config: WriteAgentPayload["config"]
-    ) => WriteAgentPayload["config"]
+      config: WriteAgentPayload["config"],
+    ) => WriteAgentPayload["config"],
   ): void => {
     setForm((prev) => ({ ...prev, config: updater(prev.config) }));
   };

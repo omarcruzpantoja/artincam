@@ -1,13 +1,13 @@
+import IconifyIcon from "@components/base/IconifyIcon";
+import { cssVarRgba } from "@lib/utils";
 import {
   type ChipProps,
   type ComponentsVariants,
-  type Theme,
   chipClasses,
+  type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import { cssVarRgba } from "@lib/utils";
-import { type PaletteColorKey } from "@theme/palette";
-import IconifyIcon from "@components/base/IconifyIcon";
+import type { Components } from "@mui/material/styles";
+import type { PaletteColorKey } from "@theme/palette";
 
 declare module "@mui/material/Chip" {
   interface ChipPropsVariantOverrides {
@@ -57,7 +57,7 @@ const chipSoftVariants: ComponentsVariants["MuiChip"] = chipColors.map(
         },
       };
     },
-  })
+  }),
 );
 
 chipSoftVariants.push({
@@ -124,7 +124,7 @@ const Chip: Components<Omit<Theme, "components">>["MuiChip"] = {
             "&:hover": {
               backgroundColor: cssVarRgba(
                 theme.vars.palette[color].mainChannel,
-                0.12
+                0.12,
               ),
             },
           },

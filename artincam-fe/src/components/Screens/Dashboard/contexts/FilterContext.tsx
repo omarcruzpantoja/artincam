@@ -1,17 +1,18 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 const LS_APPLIED_FILTER_KEY = "artincam:appliedFilter";
 
 type StoredAppliedFilter = {
   agentId: string;
   startDate: string | null; // "YYYY-MM-DD" interpreted as UTC date
-  endDate: string | null;   // "YYYY-MM-DD" interpreted as UTC date
+  endDate: string | null; // "YYYY-MM-DD" interpreted as UTC date
 };
 
 export type AppliedFilter = {
   agentId: string;
   start: Date | null; // UTC start-of-day
-  end: Date | null;   // UTC end-of-day
+  end: Date | null; // UTC end-of-day
 };
 
 export type FilterContextValue = {
@@ -69,15 +70,21 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
 
   const initialApplied: AppliedFilter = {
     agentId: restored?.agentId ?? "",
-    start: restored?.startDate ? startOfDayUTCFromYMD(restored.startDate) : null,
+    start: restored?.startDate
+      ? startOfDayUTCFromYMD(restored.startDate)
+      : null,
     end: restored?.endDate ? endOfDayUTCFromYMD(restored.endDate) : null,
   };
 
   const [applied, setApplied] = useState<AppliedFilter>(initialApplied);
 
   // draft begins as applied (already UTC)
-  const [draftStart, setDraftStartState] = useState<Date | null>(initialApplied.start);
-  const [draftEnd, setDraftEndState] = useState<Date | null>(initialApplied.end);
+  const [draftStart, setDraftStartState] = useState<Date | null>(
+    initialApplied.start,
+  );
+  const [draftEnd, setDraftEndState] = useState<Date | null>(
+    initialApplied.end,
+  );
 
   const value = useMemo<FilterContextValue>(
     () => ({
@@ -115,7 +122,7 @@ export const FilterProvider: React.FC<React.PropsWithChildren> = ({
         setDraftEndState(null);
       },
     }),
-    [applied, draftStart, draftEnd]
+    [applied, draftStart, draftEnd],
   );
 
   return (

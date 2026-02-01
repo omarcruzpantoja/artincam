@@ -1,22 +1,26 @@
-import { useState } from "react";
-import { Button, CircularProgress } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
+import { Button, CircularProgress } from "@mui/material";
+import { useState } from "react";
 
+// biome-ignore lint/suspicious/noExplicitAny: <A row can have any shape>
 type Row = Record<string, any>;
 
 export const downloadCsv = (rows: Row[], filename = "data.csv") => {
   if (!rows?.length) return;
 
-  const headers = Array.from(new Set(rows.flatMap(r => Object.keys(r))));
-  const esc = (v: any) => {
-    const s = v == null ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
+  const headers = Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
+  const esc = (v: string) => {
+    const s =
+      v == null ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
     const needsQuotes = /[",\n\r]/.test(s);
     const out = s.replace(/"/g, '""');
     return needsQuotes ? `"${out}"` : out;
   };
 
-  const csv =
-    [headers.join(","), ...rows.map(r => headers.map(h => esc(r[h])).join(","))].join("\r\n");
+  const csv = [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => esc(r[h])).join(",")),
+  ].join("\r\n");
 
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -27,8 +31,7 @@ export const downloadCsv = (rows: Row[], filename = "data.csv") => {
   a.click();
 
   URL.revokeObjectURL(url);
-}
-
+};
 
 type DownloadCsvButtonProps = {
   filename: string;

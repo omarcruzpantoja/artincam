@@ -1,6 +1,6 @@
-import { inputBaseClasses, selectClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
 import IconifyIcon from "@components/base/IconifyIcon";
+import { inputBaseClasses, selectClasses, type Theme } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 
 const Select: Components<Omit<Theme, "components">>["MuiSelect"] = {
   defaultProps: {

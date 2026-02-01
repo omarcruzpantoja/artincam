@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
+import { useEffect, useRef, useState } from "react";
 
 interface RtspPlayerProps {
   rtspUrl: string;

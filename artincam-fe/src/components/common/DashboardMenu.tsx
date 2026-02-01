@@ -1,15 +1,15 @@
-import { type JSX, type MouseEvent, useState } from "react";
+import EllipsisHorizontalIcon from "@components/icons/EllipsisHorizontalIcon";
 import {
   Button,
   type ButtonOwnProps,
+  listClasses,
   Menu,
   MenuItem,
   type MenuItemProps,
-  type SxProps,
-  listClasses,
   menuClasses,
+  type SxProps,
 } from "@mui/material";
-import EllipsisHorizontalIcon from "@components/icons/EllipsisHorizontalIcon";
+import { type JSX, type MouseEvent, useState } from "react";
 
 interface DashboardMenuProps {
   menuItems?: ({

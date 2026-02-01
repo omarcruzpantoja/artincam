@@ -1,9 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { RtspPlayer } from "@components/RtspPlayer";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import ImageIcon from "@mui/icons-material/Image";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import VideocamIcon from "@mui/icons-material/Videocam";
 import {
-  alpha,
   Alert,
+  alpha,
   Box,
   Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
   IconButton,
   Snackbar,
   Stack,
@@ -11,19 +20,9 @@ import {
   Tabs,
   Typography,
   useTheme,
-  Card,
-  CardHeader,
-  Divider,
-  CardContent,
 } from "@mui/material";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import ImageIcon from "@mui/icons-material/Image";
-import VideocamIcon from "@mui/icons-material/Videocam";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-
-import { RtspPlayer } from "@components/RtspPlayer";
 import { assetFileService } from "@services/assetFileService";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type PreviewTab = "image" | "rtsp";
 
@@ -65,7 +64,7 @@ const PreviewFrame = ({
         position: "relative",
         border: `1px solid ${alpha(
           theme.palette.divider,
-          isDark ? 0.22 : 0.55
+          isDark ? 0.22 : 0.55,
         )}`,
         bgcolor: alpha(theme.palette.background.default, isDark ? 0.22 : 0.35),
       }}
@@ -179,6 +178,7 @@ const AgentPreviewPanel = ({
   };
 
   // Hard reset when RTSP becomes disallowed
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <exitFullscreen changes on every re-render and should not be used as a hook dependency>
   useEffect(() => {
     if (!canRtsp) {
       setArmed(false);
@@ -406,7 +406,7 @@ const AgentPreviewPanel = ({
             {rtspDisabledReason || "RTSP preview is unavailable."}
           </Typography>
         </Stack>,
-        false
+        false,
       );
     }
 
@@ -426,7 +426,7 @@ const AgentPreviewPanel = ({
             RTSP URL is not configured for this agent.
           </Typography>
         </Stack>,
-        false
+        false,
       );
     }
 
@@ -459,7 +459,7 @@ const AgentPreviewPanel = ({
           >
             Play
           </Button>
-        </Stack>
+        </Stack>,
       );
     }
 
@@ -478,8 +478,9 @@ const AgentPreviewPanel = ({
               flexDirection: "column",
             }}
           >
+            {/** biome-ignore lint/style/noNonNullAssertion: <The url will be provided.> */}
             <RtspPlayer rtspUrl={rtspUrl!} isFullscreen={isFullscreen} />
-          </Box>
+          </Box>,
         )}
 
         {!fullscreenMode && (

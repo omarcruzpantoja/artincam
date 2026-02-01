@@ -1,9 +1,9 @@
+import StyledTextField from "@components/styled/StyledTextField";
 import {
+  inputBaseClasses,
   TextField,
   type TextFieldProps,
-  inputBaseClasses,
 } from "@mui/material";
-import StyledTextField from "@components/styled/StyledTextField";
 
 interface NumberTextFieldProps extends Omit<TextFieldProps, "variant"> {
   variant?: TextFieldProps["variant"] | "custom";

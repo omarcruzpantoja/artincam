@@ -4,7 +4,7 @@ import {
   radioClasses,
   type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 const FormControlLabel: Components<
   Omit<Theme, "components">

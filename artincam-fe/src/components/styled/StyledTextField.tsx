@@ -5,8 +5,8 @@ import {
   inputLabelClasses,
   selectClasses,
 } from "@mui/material";
-import TextField, { type TextFieldProps } from "@mui/material/TextField";
 import { styled } from "@mui/material/styles";
+import TextField, { type TextFieldProps } from "@mui/material/TextField";
 
 type StyledTextFieldProps = TextFieldProps & {
   disabledSpinButton?: boolean;
@@ -27,7 +27,7 @@ const StyledTextField = styled(
   ),
   {
     shouldForwardProp: (prop) => prop !== "disabledSpinButton",
-  }
+  },
 )(({ theme, disabledSpinButton }) => ({
   [`& .${formLabelClasses.root}`]: {
     fontWeight: theme.typography.fontWeightMedium,
@@ -63,7 +63,7 @@ const StyledTextField = styled(
       },
       "&.MuiFilledInput-root": {
         paddingTop: 8,
-        [`&.MuiInputBase-sizeLarge`]: {
+        "&.MuiInputBase-sizeLarge": {
           paddingLeft: 20,
           paddingTop: 6,
           paddingBottom: 6,

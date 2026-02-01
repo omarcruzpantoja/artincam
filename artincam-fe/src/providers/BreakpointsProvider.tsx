@@ -1,12 +1,15 @@
 import {
+  type Breakpoint,
+  type Theme,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import {
   createContext,
-  use,
-  useEffect,
-  useState,
   type PropsWithChildren,
+  useContext,
+  useMemo,
 } from "react";
-import { type Breakpoint, type Theme } from "@mui/material";
-import { useMediaQuery } from "@mui/material";
 
 interface BreakpointContextInterface {
   currentBreakpoint: Breakpoint;
@@ -17,54 +20,84 @@ interface BreakpointContextInterface {
 }
 
 export const BreakpointContext = createContext(
-  {} as BreakpointContextInterface
+  {} as BreakpointContextInterface,
 );
 
 const BreakpointsProvider = ({ children }: PropsWithChildren) => {
-  const [currentBreakpoint, setCurrentBreakpoint] = useState<Breakpoint>("xs");
-  const up = (key: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.up(key));
+  const theme = useTheme();
 
-  const down = (key: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.down(key));
+  // ✅ Hook calls at top-level (Rules of Hooks compliant)
+  const isXs = useMediaQuery<Theme>(theme.breakpoints.between("xs", "sm"));
+  const isSm = useMediaQuery<Theme>(theme.breakpoints.between("sm", "md"));
+  const isMd = useMediaQuery<Theme>(theme.breakpoints.between("md", "lg"));
+  const isLg = useMediaQuery<Theme>(theme.breakpoints.between("lg", "xl"));
+  const isXl = useMediaQuery<Theme>(theme.breakpoints.up("xl"));
 
-  const only = (key: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.only(key as Breakpoint));
+  // Derive the current breakpoint (no extra state/effect needed)
+  const currentBreakpoint: Breakpoint = useMemo(() => {
+    if (isXl) return "xl";
+    if (isLg) return "lg";
+    if (isMd) return "md";
+    if (isSm) return "sm";
+    return "xs";
+  }, [isSm, isMd, isLg, isXl]);
 
-  const between = (start: Breakpoint | number, end: Breakpoint | number) =>
-    useMediaQuery<Theme>((theme) => theme.breakpoints.between(start, end));
+  // ✅ Keep your API, but implement via the already-known booleans.
+  // Note: because hooks cannot be called dynamically, these only return correct
+  // values for the breakpoints we compute above (xs/sm/md/lg/xl).
+  const value = useMemo<BreakpointContextInterface>(() => {
+    const between = (start: Breakpoint | number, end: Breakpoint | number) => {
+      if (typeof start === "number" || typeof end === "number") return false;
+      if (start === "xs" && end === "sm") return isXs;
+      if (start === "sm" && end === "md") return isSm;
+      if (start === "md" && end === "lg") return isMd;
+      if (start === "lg" && end === "xl") return isLg;
+      return false;
+    };
 
-  const isXs = between("xs", "sm");
-  const isSm = between("sm", "md");
-  const isMd = between("md", "lg");
-  const isLg = between("lg", "xl");
-  const isXl = up("xl");
+    const up = (key: Breakpoint | number) => {
+      if (typeof key === "number") return false;
+      if (key === "xl") return isXl;
+      if (key === "lg") return isLg || isXl;
+      if (key === "md") return isMd || isLg || isXl;
+      if (key === "sm") return isSm || isMd || isLg || isXl;
+      return true; // xs and up is always true
+    };
 
-  useEffect(() => {
-    if (isXs) {
-      setCurrentBreakpoint("xs");
-    }
-    if (isSm) {
-      setCurrentBreakpoint("sm");
-    }
-    if (isMd) {
-      setCurrentBreakpoint("md");
-    }
-    if (isLg) {
-      setCurrentBreakpoint("lg");
-    }
-    if (isXl) {
-      setCurrentBreakpoint("xl");
-    }
-  }, [isXs, isSm, isMd, isLg, isXl]);
+    const down = (key: Breakpoint | number) => {
+      if (typeof key === "number") return false;
+      if (key === "xs") return isXs;
+      if (key === "sm") return isXs || isSm;
+      if (key === "md") return isXs || isSm || isMd;
+      if (key === "lg") return isXs || isSm || isMd || isLg;
+      return true; // xl and down is always true
+    };
+
+    const only = (key: Breakpoint | number) => {
+      if (typeof key === "number") return false;
+      if (key === "xs") return isXs;
+      if (key === "sm") return isSm;
+      if (key === "md") return isMd;
+      if (key === "lg") return isLg;
+      return isXl;
+    };
+
+    return {
+      currentBreakpoint,
+      up,
+      down,
+      only,
+      between,
+    };
+  }, [currentBreakpoint, isXs, isSm, isMd, isLg, isXl]);
 
   return (
-    <BreakpointContext value={{ currentBreakpoint, up, down, only, between }}>
+    <BreakpointContext.Provider value={value}>
       {children}
-    </BreakpointContext>
+    </BreakpointContext.Provider>
   );
 };
 
-export const useBreakpoints = () => use(BreakpointContext);
+export const useBreakpoints = () => useContext(BreakpointContext);
 
 export default BreakpointsProvider;

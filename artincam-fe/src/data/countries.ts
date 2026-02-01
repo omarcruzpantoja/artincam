@@ -1,4 +1,4 @@
-import { type Country } from "@root/types/countries";
+import type { Country } from "@root/types/countries";
 
 export const countries: Country[] = [
   { code: "AD", label: "Andorra", phone: "376", flag: "flag:ad-4x3" },

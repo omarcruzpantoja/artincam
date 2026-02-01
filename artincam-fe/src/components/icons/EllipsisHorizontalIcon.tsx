@@ -1,5 +1,4 @@
-import { type SvgIconProps } from "@mui/material";
-import { SvgIcon } from "@mui/material";
+import { SvgIcon, type SvgIconProps } from "@mui/material";
 
 const EllipsisHorizontalIcon = (props: SvgIconProps) => {
   return (

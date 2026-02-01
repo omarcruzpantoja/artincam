@@ -1,5 +1,5 @@
-import { type ReactElement, isValidElement } from "react";
 import { Stack, type StackOwnProps, Typography } from "@mui/material";
+import { isValidElement, type ReactElement } from "react";
 
 interface SectionHeaderProps extends StackOwnProps {
   title: string;

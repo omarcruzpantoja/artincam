@@ -1,4 +1,6 @@
-import { useState } from "react";
+import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
+import CheckIcon from "@mui/icons-material/Check";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
   Card,
@@ -10,10 +12,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CheckIcon from "@mui/icons-material/Check";
-
-import ActionsMenu, { type ActionItem } from "@components/Common/ActionsMenu";
+import { useState } from "react";
 
 export type StatusChipMeta = {
   label: string;

@@ -1,5 +1,5 @@
 import { svgIconClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 export const Tab: Components<Omit<Theme, "components">>["MuiTab"] = {
   defaultProps: {},

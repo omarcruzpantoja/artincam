@@ -1,3 +1,4 @@
+import OutlinedBadge from "@components/styled/OutlinedBadge";
 import {
   Avatar,
   type AvatarProps,
@@ -5,7 +6,6 @@ import {
   badgeClasses,
 } from "@mui/material";
 import clsx from "clsx";
-import OutlinedBadge from "@components/styled/OutlinedBadge";
 
 interface StatusAvatarProps extends AvatarProps {
   status: "online" | "offline";

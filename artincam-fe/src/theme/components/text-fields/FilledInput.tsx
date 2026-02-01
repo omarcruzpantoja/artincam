@@ -1,13 +1,13 @@
 import {
   autocompleteClasses,
-  filledInputClasses,
-  inputBaseClasses,
   type ComponentsVariants,
   type FilledInputProps,
+  filledInputClasses,
+  inputBaseClasses,
   type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import { type PaletteColorKey } from "@theme/palette";
+import type { Components } from "@mui/material/styles";
+import type { PaletteColorKey } from "@theme/palette";
 
 const filledInputColors: PaletteColorKey[] = [
   "primary",
@@ -121,7 +121,7 @@ export const FilledInput: Components<
       [`&.${inputBaseClasses.sizeSmall}`]: {
         paddingLeft: 12,
       },
-      [`&.MuiInputBase-sizeLarge`]: {
+      "&.MuiInputBase-sizeLarge": {
         paddingLeft: 20,
       },
     },

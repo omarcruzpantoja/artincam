@@ -4,11 +4,11 @@ import {
   svgIconClasses,
   type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 const Breadcrumbs: Components<Omit<Theme, "components">>["MuiBreadcrumbs"] = {
   defaultProps: {
-    //@ts-ignore
+    //@ts-expect-error
     variant: "body2",
     fontWeight: 500,
   },

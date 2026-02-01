@@ -1,5 +1,5 @@
-import { type PropsWithChildren } from "react";
 import SimpleBar, { type SimpleBarProps } from "@components/base/SimpleBar";
+import type { PropsWithChildren } from "react";
 
 const SidenavSimpleBar = ({
   children,

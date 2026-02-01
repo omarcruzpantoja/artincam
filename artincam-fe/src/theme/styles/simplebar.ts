@@ -1,4 +1,4 @@
-import { type Theme } from "@mui/material";
+import type { Theme } from "@mui/material";
 import "simplebar-react/dist/simplebar.min.css";
 
 const simplebar = (theme: Theme) => ({

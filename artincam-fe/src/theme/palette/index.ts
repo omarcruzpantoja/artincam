@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { type PaletteOptions } from "@mui/material/styles";
+
 import { cssVarRgba, generatePaletteChannel } from "@lib/utils";
+import type { PaletteOptions } from "@mui/material/styles";
 import {
   basic,
   blue,

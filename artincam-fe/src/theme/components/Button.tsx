@@ -1,14 +1,14 @@
+import { cssVarRgba } from "@lib/utils";
 import {
-  capitalize,
   type ButtonProps,
-  type Theme,
   type ComponentsVariants,
+  capitalize,
+  type Theme,
 } from "@mui/material";
 import { type ButtonClasses, buttonClasses } from "@mui/material/Button";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 import type {} from "@mui/material/themeCssVarsAugmentation";
-import { cssVarRgba } from "@lib/utils";
-import { type PaletteColorKey } from "@theme/palette";
+import type { PaletteColorKey } from "@theme/palette";
 import { LinkBehavior } from "./Link";
 
 declare module "@mui/material/Button" {
@@ -54,7 +54,7 @@ const btnCustomVariants: ComponentsVariants["MuiButton"] = btnColors.map(
         },
       };
     },
-  })
+  }),
 );
 
 const shapes = ["circle", "square"];
@@ -82,6 +82,7 @@ shapes.forEach((shape) => {
 });
 
 const outlineStyles = (theme: Theme) =>
+  // biome-ignore lint/suspicious/noExplicitAny: <Generic outline styles>
   btnColors.reduce((acc: any, color) => {
     const paletteColor = theme.vars.palette[color];
 
@@ -98,6 +99,7 @@ const outlineStyles = (theme: Theme) =>
   }, {});
 
 const textBtnStyles = (theme: Theme) =>
+  // biome-ignore lint/suspicious/noExplicitAny: <Generic text button styles>
   btnColors.reduce((acc: any, color) => {
     const paletteColor = theme.vars.palette[color];
 

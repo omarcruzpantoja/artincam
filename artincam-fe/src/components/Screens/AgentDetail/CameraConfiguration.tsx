@@ -1,4 +1,4 @@
-import React from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   Accordion,
   AccordionDetails,
@@ -9,8 +9,8 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { Agent } from "@services/agentService";
+import type React from "react";
 
 interface CameraConfigurationProps {
   agent: Agent;

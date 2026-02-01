@@ -1,5 +1,5 @@
-import { type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Theme } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 
 const InputAdornment: Components<
   Omit<Theme, "components">
@@ -9,10 +9,10 @@ const InputAdornment: Components<
       marginTop: "0 !important",
       justifyContent: "center",
       fontSize: 20,
-      [`&.MuiInputAdornment-sizeSmall`]: {
+      "&.MuiInputAdornment-sizeSmall": {
         fontSize: 16,
       },
-      [`&.MuiInputAdornment-sizeLarge`]: {
+      "&.MuiInputAdornment-sizeLarge": {
         fontSize: 24,
       },
     },

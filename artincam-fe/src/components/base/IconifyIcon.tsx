@@ -1,8 +1,8 @@
-import { useId } from "react";
 import { Icon, type IconProps } from "@iconify/react";
-import Box from "@mui/material/Box";
-import { type SxProps, type Theme } from "@mui/material/styles";
 import { registerIcons } from "@lib/iconify/iconify-register";
+import Box from "@mui/material/Box";
+import type { SxProps, Theme } from "@mui/material/styles";
+import { useId } from "react";
 
 interface IconifyProps extends Omit<IconProps, "color"> {
   sx?: SxProps<Theme>;
@@ -34,6 +34,7 @@ export const IconifyIcon = ({
         { verticalAlign: "baseline" },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
+      // biome-ignore lint/suspicious/noExplicitAny: <Generic props for Iconify Icon>
       {...(rest as any)}
       icon={icon}
       id={uniqueId}

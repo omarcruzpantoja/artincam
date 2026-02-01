@@ -1,9 +1,9 @@
-import { useMemo } from "react";
 import { Box, type BoxProps, useTheme } from "@mui/material";
-import { type EChartsReactProps } from "echarts-for-react";
+import { grey } from "@theme/palette/colors";
+import type { EChartsReactProps } from "echarts-for-react";
 import { default as ReactEChartsCore } from "echarts-for-react/lib/core";
 import merge from "lodash.merge";
-import { grey } from "@theme/palette/colors";
+import { useMemo } from "react";
 
 export interface ReactEchartProps extends BoxProps {
   echarts: EChartsReactProps["echarts"];
@@ -41,7 +41,7 @@ const ReactEchart = ({ option, ref, ...rest }: ReactEchartProps) => {
         borderWidth: 1,
       }),
     }),
-    [theme, option]
+    [theme, isTouchDevice],
   );
 
   return (

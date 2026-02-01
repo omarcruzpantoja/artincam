@@ -1,5 +1,5 @@
 import { formHelperTextClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 const FormHelperText: Components<
   Omit<Theme, "components">

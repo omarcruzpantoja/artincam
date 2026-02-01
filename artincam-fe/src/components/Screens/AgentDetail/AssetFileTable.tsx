@@ -1,11 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  DataGrid,
-  type GridColDef,
-  type GridPaginationModel,
-  type GridSortModel,
-} from "@mui/x-data-grid";
-import { assetFileService, type AssetFile } from "@services/assetFileService";
+import { DownloadCsvButton } from "@components/Common";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   Box,
   Button,
@@ -17,8 +11,14 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import { DownloadCsvButton } from "@components/Common";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridPaginationModel,
+  type GridSortModel,
+} from "@mui/x-data-grid";
+import { type AssetFile, assetFileService } from "@services/assetFileService";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface AssetFilesGridProps {
   agentId: string;
@@ -31,9 +31,9 @@ const formatBytes = (bytes: number | null | undefined): string => {
   const units = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.min(
     Math.floor(Math.log(bytes) / Math.log(k)),
-    units.length - 1
+    units.length - 1,
   );
-  const value = bytes / Math.pow(k, i);
+  const value = bytes / k ** i;
   const decimals = i === 0 ? 0 : value < 10 ? 2 : value < 100 ? 1 : 0;
   return `${value.toFixed(decimals)} ${units[i]}`;
 };
@@ -80,7 +80,7 @@ const getAllAssetFileRows = async (agentId: string): Promise<AssetFile[]> => {
   }
 
   return allRows;
-}
+};
 
 const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   const [rows, setRows] = useState<AssetFile[]>([]);
@@ -97,7 +97,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   ]);
 
   // used to force reload without touching pagination/sort
-  const [reloadKey, setReloadKey] = useState(0);
+  const [_, setReloadKey] = useState(0);
 
   const columns = useMemo<GridColDef<AssetFile>[]>(
     () => [
@@ -147,7 +147,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
         valueFormatter: (v) => formatTimestamp(v),
       },
     ],
-    []
+    [],
   );
 
   const load = useCallback(async () => {
@@ -186,7 +186,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
     return () => {
       cancelled = true;
     };
-  }, [load, reloadKey]);
+  }, [load]);
 
   return (
     <Card

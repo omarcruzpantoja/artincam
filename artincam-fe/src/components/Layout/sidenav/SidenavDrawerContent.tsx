@@ -1,18 +1,18 @@
-import { useMemo, type HTMLAttributeAnchorTarget } from "react";
+import IconifyIcon from "@components/base/IconifyIcon";
 import {
   Avatar,
   Box,
   IconButton,
   List,
+  type SxProps,
   Toolbar,
   Typography,
-  type SxProps,
 } from "@mui/material";
 import { useSettingsContext } from "@providers/SettingsProvider";
+import { type HTMLAttributeAnchorTarget, useMemo } from "react";
 import NavItem from "./NavItem";
-import SidenavSimpleBar from "./SidenavSimpleBar";
-import IconifyIcon from "@components/base/IconifyIcon";
 import SidenavFooter from "./SidenavFooter";
+import SidenavSimpleBar from "./SidenavSimpleBar";
 
 interface SidenavDrawerContentProps {
   variant?: "permanent" | "temporary";
@@ -75,7 +75,7 @@ const SidenavDrawerContent = ({
   const expanded = useMemo(
     () =>
       variant === "temporary" || (variant === "permanent" && !sidenavCollapsed),
-    [sidenavCollapsed]
+    [sidenavCollapsed, variant],
   );
 
   const toggleNavbarDrawer = () => {
@@ -125,20 +125,18 @@ const SidenavDrawerContent = ({
                 alt="Artincam"
               />
             </Avatar>
-            {expanded && (
-              <Box sx={{ minWidth: 0 }}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700, lineHeight: 1.1 }}
-                  noWrap
-                >
-                  Artincam
-                </Typography>
-                <Typography variant="caption" color="text.secondary" noWrap>
-                  Control Center
-                </Typography>
-              </Box>
-            )}
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 700, lineHeight: 1.1 }}
+                noWrap
+              >
+                Artincam
+              </Typography>
+              <Typography variant="caption" color="text.secondary" noWrap>
+                Control Center
+              </Typography>
+            </Box>
           </Box>
           <IconButton
             sx={{ mt: 1, display: { md: "none" } }}

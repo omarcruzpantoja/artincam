@@ -1,6 +1,6 @@
-import { useMemo } from "react";
 import { Box, Card, CardContent, Chip, Link, Typography } from "@mui/material";
 import type { Agent } from "@services/agentService";
+import { useMemo } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 export type AgentStatus = "ACTIVE" | "STOPPED" | "FAILURE";
@@ -23,7 +23,9 @@ export const AgentCard = ({ agent }: AgentCardProps) => {
   const meta = useMemo(() => statusMeta(status), [status]);
 
   const description =
-    (agent as any).description || camera.location || "No description provided.";
+    (agent as Agent).description ||
+    camera.location ||
+    "No description provided.";
 
   return (
     <Card variant="outlined" background={1} sx={{ borderRadius: 2 }}>

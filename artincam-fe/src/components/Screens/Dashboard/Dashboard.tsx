@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Box,
   Button,
+  Card,
   CircularProgress,
   FormControl,
   Grid,
@@ -11,17 +11,15 @@ import {
   Paper,
   Select,
   Stack,
-  Typography,
   TextField,
-  Card,
+  Typography,
 } from "@mui/material";
-
-import { agentService, type Agent } from "@services/agentService";
+import { type Agent, agentService } from "@services/agentService";
+import { useEffect, useMemo, useState } from "react";
+import AssetFileImagesPerDay from "./AssetFileImagesPerDay";
+import { FilterProvider, useFilter } from "./contexts/FilterContext";
 import HealthLogActivity from "./HealthLogActivity";
 import HealthStatusChart from "./HealthStatusChart";
-
-import { FilterProvider, useFilter } from "./contexts/FilterContext";
-import AssetFileImagesPerDay from "./AssetFileImagesPerDay";
 
 const LS_SELECTED_AGENT_KEY = "artincam:selectedAgentId";
 
@@ -31,7 +29,7 @@ function pad2(n: number) {
 
 function ymdFromUTCDate(d: Date): string {
   return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
-    d.getUTCDate()
+    d.getUTCDate(),
   )}`;
 }
 
@@ -86,12 +84,12 @@ function DashboardInner() {
   }, []);
 
   // ---- Restore last selected agent from localStorage (only once) ----
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
   useEffect(() => {
     const saved = localStorage.getItem(LS_SELECTED_AGENT_KEY);
     if (saved) {
       setAgentId(saved);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---- Persist selected agent to localStorage ----
@@ -103,7 +101,7 @@ function DashboardInner() {
 
   const selectedAgent = useMemo(
     () => agents.find((a) => a.id === selectedAgentId) ?? null,
-    [agents, selectedAgentId]
+    [agents, selectedAgentId],
   );
 
   return (

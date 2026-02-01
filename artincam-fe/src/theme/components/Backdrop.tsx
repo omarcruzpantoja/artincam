@@ -1,6 +1,6 @@
-import { type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
 import { cssVarRgba } from "@lib/utils";
+import type { Theme } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 
 const Backdrop: Components<Omit<Theme, "components">>["MuiBackdrop"] = {
   styleOverrides: {
@@ -17,7 +17,7 @@ const Backdrop: Components<Omit<Theme, "components">>["MuiBackdrop"] = {
         ...theme.applyStyles("dark", {
           backgroundColor: cssVarRgba(
             theme.vars.palette.grey["950Channel"],
-            0.5
+            0.5,
           ),
         }),
       };

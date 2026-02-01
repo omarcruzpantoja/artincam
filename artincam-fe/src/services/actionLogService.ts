@@ -1,6 +1,6 @@
 import {
-  BaseApiService,
   type ApiResponse,
+  BaseApiService,
   type RequestOptions,
 } from "./baseService";
 
@@ -25,12 +25,8 @@ export interface ListActionLogsParams {
 }
 
 class ActionLogService extends BaseApiService {
-  constructor() {
-    super();
-  }
-
   async list(
-    params: ListActionLogsParams = {}
+    params: ListActionLogsParams = {},
   ): Promise<ApiResponse<ActionLog[]>> {
     const { agentId, category, limit, offset, startDate, endDate } = params;
 
@@ -51,7 +47,7 @@ class ActionLogService extends BaseApiService {
 
   async listByAgent(
     agentId: string,
-    params: Omit<ListActionLogsParams, "agentId"> = {}
+    params: Omit<ListActionLogsParams, "agentId"> = {},
   ): Promise<ApiResponse<ActionLog[]>> {
     return this.list({
       agentId,

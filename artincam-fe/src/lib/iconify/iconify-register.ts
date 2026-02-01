@@ -27,8 +27,8 @@ const collections: IconifyJSON[] = Object.entries(
 
       return acc;
     },
-    {}
-  )
+    {},
+  ),
 ).map(([prefix, icons]) => ({
   prefix,
   icons,
@@ -39,5 +39,7 @@ const collections: IconifyJSON[] = Object.entries(
 export const allIconNames = Object.keys(icons);
 
 export const registerIcons = () => {
-  collections.forEach((collection) => addCollection(collection));
+  collections.forEach((collection) => {
+    addCollection(collection);
+  });
 };

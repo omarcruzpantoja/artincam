@@ -1,5 +1,5 @@
-import { paperClasses, type PaperProps, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import { type PaperProps, paperClasses, type Theme } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 import { blue, grey } from "@theme/palette/colors";
 
 declare module "@mui/material" {

@@ -1,10 +1,10 @@
-import { tooltipClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import { type Theme, tooltipClasses } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 
 const generateArrowStyles = (
   borderRadiusProperty: string,
   clipPath?: string,
-  positions?: object
+  positions?: object,
 ): object => {
   if (!clipPath && !positions) {
     return {
@@ -149,15 +149,16 @@ const Tooltip: Components<Omit<Theme, "components">>["MuiTooltip"] = {
       placements(theme).reduce(
         (styles, { placement, borderRadiusProperty, clipPath, positions }) => {
           return {
+            // biome-ignore lint/performance/noAccumulatingSpread: <Generic component, can have any prop styles>
             ...styles,
             [`&[data-popper-placement="${placement}"]`]: generateArrowStyles(
               borderRadiusProperty,
               clipPath,
-              positions
+              positions,
             ),
           };
         },
-        {}
+        {},
       ),
     tooltip: ({ theme }) => ({
       backgroundColor: theme.vars.palette.grey[800],

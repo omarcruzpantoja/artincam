@@ -1,5 +1,5 @@
 import { inputClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 const Input: Components<Omit<Theme, "components">>["MuiInput"] = {
   variants: [

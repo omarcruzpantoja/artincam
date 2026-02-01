@@ -36,3 +36,4 @@ coverage
 docs
 artincam-be.db
 assets
+test*.db
