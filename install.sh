@@ -19,7 +19,6 @@ Options:
   --go                 Install Go toolchain
   --backend            Build backend + run migrations
   --agent              Install python agent deps (uv/venv/sync)
-  --frontend           Install node + build frontend
   --nginx              Install nginx
   --mediamtx           Install MediaMTX + config + systemd service
   --services           Install systemd services (backend + pi-agent)
@@ -39,7 +38,6 @@ DO_SYSTEM=0
 DO_GO=0
 DO_BACKEND=0
 DO_AGENT=0
-DO_FRONTEND=0
 DO_NGINX=0
 DO_MEDIAMTX=0
 DO_SERVICES=0
@@ -54,7 +52,6 @@ if [[ $# -eq 0 ]]; then
   DO_GO=1
   DO_BACKEND=1
   DO_AGENT=1
-  DO_FRONTEND=1
   DO_NGINX=1
   DO_MEDIAMTX=1
   DO_SERVICES=1
@@ -70,7 +67,6 @@ while [[ $# -gt 0 ]]; do
       DO_GO=1
       DO_BACKEND=1
       DO_AGENT=1
-      DO_FRONTEND=1
       DO_NGINX=1
       DO_MEDIAMTX=1
       DO_SERVICES=1
@@ -82,7 +78,6 @@ while [[ $# -gt 0 ]]; do
     --go)                DO_GO=1 ;;
     --backend)           DO_BACKEND=1 ;;
     --agent)             DO_AGENT=1 ;;
-    --frontend)          DO_FRONTEND=1 ;;
     --nginx)             DO_NGINX=1 ;;
     --mediamtx)          DO_MEDIAMTX=1 ;;
     --services)          DO_SERVICES=1 ;;
@@ -107,7 +102,6 @@ run_step "$SCRIPTS_DIR/00-preflight.sh"
 (( DO_GO               )) && run_step "$SCRIPTS_DIR/20-go.sh"
 (( DO_BACKEND          )) && run_step "$SCRIPTS_DIR/30-backend.sh"
 (( DO_AGENT            )) && run_step "$SCRIPTS_DIR/40-python-agent.sh"
-(( DO_FRONTEND         )) && run_step "$SCRIPTS_DIR/50-node-frontend.sh"
 (( DO_NGINX            )) && run_step "$SCRIPTS_DIR/60-nginx.sh"
 (( DO_MEDIAMTX         )) && run_step "$SCRIPTS_DIR/70-mediamtx.sh"
 (( DO_SERVICES         )) && run_step "$SCRIPTS_DIR/80-services.sh"
