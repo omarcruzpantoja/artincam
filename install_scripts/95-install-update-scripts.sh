@@ -84,7 +84,6 @@ export PATH="$HOME/.local/share/fnm:$HOME/.local/bin:$PATH"
 ROOT_DIR="${ROOT_DIR:-$(pwd)}"
 INSTALL_SCRIPTS="${INSTALL_SCRIPTS:-$ROOT_DIR/install_scripts}"
 
-"$INSTALL_SCRIPTS/50-node-frontend.sh"
 "$INSTALL_SCRIPTS/90-deploy-frontend.sh"
 
 echo "✅ Frontend rebuilt + deployed"
