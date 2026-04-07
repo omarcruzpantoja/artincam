@@ -1,14 +1,4 @@
-import { useMemo } from "react";
-import * as echarts from "echarts/core";
-import { PieChart } from "echarts/charts";
-import {
-  TooltipComponent,
-  LegendComponent,
-  TitleComponent,
-} from "echarts/components";
-import { CanvasRenderer } from "echarts/renderers";
 import ReactEchart from "@components/base/ReactEchart";
-import { useQuery } from "@tanstack/react-query";
 import {
   Alert,
   Box,
@@ -19,9 +9,19 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { type ActionLog } from "@services/actionLogService";
-import { ACTIVE_COLOR, fetchAllActionLogs, OFFLINE_COLOR } from "./utils";
+import type { ActionLog } from "@services/actionLogService";
+import { useQuery } from "@tanstack/react-query";
+import { PieChart } from "echarts/charts";
+import {
+  LegendComponent,
+  TitleComponent,
+  TooltipComponent,
+} from "echarts/components";
+import * as echarts from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { useMemo } from "react";
 import { useFilter } from "./contexts/FilterContext";
+import { ACTIVE_COLOR, fetchAllActionLogs, OFFLINE_COLOR } from "./utils";
 
 echarts.use([
   PieChart,
@@ -50,13 +50,13 @@ function pad2(n: number) {
 
 function ymdUTC(d: Date): string {
   return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
-    d.getUTCDate()
+    d.getUTCDate(),
   )}`;
 }
 
 function startOfUTCDay(d: Date): Date {
   return new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0),
   );
 }
 
@@ -70,24 +70,6 @@ const HealthStatusBreakdownChart = ({
   agentId,
 }: HealthStatusBreakdownChartProps) => {
   const { applied } = useFilter();
-
-  if (!agentId) {
-    return (
-      <Paper
-        sx={{
-          p: 3,
-          height: 320,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Typography variant="body1" color="text.secondary">
-          Select an agent to view status breakdown.
-        </Typography>
-      </Paper>
-    );
-  }
 
   const {
     data: logs = [],
@@ -134,7 +116,7 @@ const HealthStatusBreakdownChart = ({
       if (bucketIndex < 0 || bucketIndex >= BUCKETS_PER_DAY) continue;
 
       if (!bucketMap.has(dayKey)) bucketMap.set(dayKey, new Set());
-      bucketMap.get(dayKey)!.add(bucketIndex);
+      bucketMap.get(dayKey)?.add(bucketIndex);
     }
 
     // ✅ Determine how many days we should count in the denominator
@@ -194,7 +176,7 @@ const HealthStatusBreakdownChart = ({
       animation: false,
       tooltip: {
         trigger: "item",
-        formatter: (p: any) => {
+        formatter: (p: { name?: string; value?: number }) => {
           const name = p?.name ?? "";
           const value = p?.value ?? 0;
           return `${name}: <b>${value}%</b>`;
@@ -217,7 +199,8 @@ const HealthStatusBreakdownChart = ({
           avoidLabelOverlap: true,
           label: {
             show: true,
-            formatter: (p: any) => `${p.name}: ${p.value}%`,
+            formatter: (p: { name: string; value: number }) =>
+              `${p.name}: ${p.value}%`,
           },
           labelLine: {
             show: true,
@@ -238,6 +221,24 @@ const HealthStatusBreakdownChart = ({
       ],
     };
   }, [breakdown.totalBuckets, breakdown.activePct, breakdown.offlinePct]);
+
+  if (!agentId) {
+    return (
+      <Paper
+        sx={{
+          p: 3,
+          height: 320,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography variant="body1" color="text.secondary">
+          Select an agent to view status breakdown.
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Card

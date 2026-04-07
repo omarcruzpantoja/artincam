@@ -1,5 +1,5 @@
 import { inputLabelClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 declare module "@mui/material/InputLabel" {
   interface InputLabelPropsSizeOverrides {
@@ -7,11 +7,10 @@ declare module "@mui/material/InputLabel" {
   }
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: <>
 const getApplyShrink = (ownerState: any) => {
   let applyShrink = ownerState.shrink;
-  //@ts-ignore
   if (ownerState.formControl.adornedStart) {
-    //@ts-ignore
     applyShrink = ownerState.focused || ownerState.formControl.filled;
   }
   return applyShrink;
@@ -56,7 +55,7 @@ const InputLabel: Components<Omit<Theme, "components">>["MuiInputLabel"] = {
               [`&.${inputLabelClasses.sizeSmall}`]: {
                 transform: "translate(12px, 4px) scale(.85)",
               },
-              [`&.MuiInputLabel-sizeLarge`]: {
+              "&.MuiInputLabel-sizeLarge": {
                 transform: "translate(20px, 6px) scale(.75)",
               },
             },
@@ -67,7 +66,7 @@ const InputLabel: Components<Omit<Theme, "components">>["MuiInputLabel"] = {
           props: ({ variant, ownerState }) =>
             variant === "filled" &&
             getApplyShrink(ownerState) &&
-            //@ts-ignore
+            //@ts-expect-error
             ownerState.formControl.adornedStart,
           style: {
             [`&.${inputLabelClasses.shrink}`]: {
@@ -75,7 +74,7 @@ const InputLabel: Components<Omit<Theme, "components">>["MuiInputLabel"] = {
               [`&.${inputLabelClasses.sizeSmall}`]: {
                 transform: "translate(36px, 4px) scale(.85)",
               },
-              [`&.MuiInputLabel-sizeLarge`]: {
+              "&.MuiInputLabel-sizeLarge": {
                 transform: "translate(52px, 6px) scale(.75)",
               },
             },
@@ -85,14 +84,14 @@ const InputLabel: Components<Omit<Theme, "components">>["MuiInputLabel"] = {
         {
           props: ({ variant, ownerState }) =>
             variant === "filled" &&
-            //@ts-ignore
+            //@ts-expect-error
             ownerState.formControl.adornedStart,
           style: {
             transform: "translate(44px, 14px) scale(1)",
             [`&.${inputLabelClasses.sizeSmall}`]: {
               transform: "translate(36px, 12px) scale(1)",
             },
-            [`&.MuiInputLabel-sizeLarge`]: {
+            "&.MuiInputLabel-sizeLarge": {
               transform: "translate(52px, 18px) scale(1)",
             },
           },

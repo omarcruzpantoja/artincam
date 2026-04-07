@@ -1,7 +1,6 @@
-import { type PropsWithChildren, useEffect, useState } from "react";
-import { useLocation } from "react-router";
-import { Box, ClickAwayListener, Fade, Paper, Popper } from "@mui/material";
 import SimpleBar from "@components/base/SimpleBar";
+import { Box, ClickAwayListener, Fade, Paper, Popper } from "@mui/material";
+import { type PropsWithChildren, useEffect, useState } from "react";
 
 interface NavItemPopperProps {
   anchorEl: HTMLElement;
@@ -19,13 +18,11 @@ const NavItemPopper = ({
   level,
   arrow,
 }: PropsWithChildren<NavItemPopperProps>) => {
-  const { pathname } = useLocation();
-
   const [arrowRef, setArrowRef] = useState<HTMLSpanElement | null>(null);
 
   useEffect(() => {
     handleClose();
-  }, [pathname]);
+  }, [handleClose]);
 
   return (
     <Popper

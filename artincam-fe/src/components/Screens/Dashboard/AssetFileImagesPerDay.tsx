@@ -1,12 +1,4 @@
-import { useMemo } from "react";
-import * as echarts from "echarts/core";
-import { LineChart } from "echarts/charts";
-import {
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
-} from "echarts/components";
-import { CanvasRenderer } from "echarts/renderers";
+import ReactEchart from "@components/base/ReactEchart";
 import {
   Alert,
   Box,
@@ -17,12 +9,19 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import type { AssetFile } from "@services/assetFileService";
 import { useQuery } from "@tanstack/react-query";
-import { type AssetFile } from "@services/assetFileService";
-
-import { fetchAllAssetFiles, type AssetFilePoint } from "./utils";
+import { LineChart } from "echarts/charts";
+import {
+  GridComponent,
+  LegendComponent,
+  TooltipComponent,
+} from "echarts/components";
+import * as echarts from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { useMemo } from "react";
 import { useFilter } from "./contexts/FilterContext";
-import ReactEchart from "@components/base/ReactEchart";
+import { type AssetFilePoint, fetchAllAssetFiles } from "./utils";
 
 echarts.use([
   LineChart,
@@ -42,13 +41,13 @@ function pad2(n: number) {
 
 function dayKeyUTC(d: Date): string {
   return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
-    d.getUTCDate()
+    d.getUTCDate(),
   )}`;
 }
 
 function startOfUTCDay(d: Date): Date {
   return new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0),
   );
 }
 
@@ -62,26 +61,6 @@ const AssetFileDailyCountChart = ({
   agentId,
 }: AssetFileDailyCountChartProps) => {
   const { applied } = useFilter();
-
-  // Early UI when no agent selected
-  if (!agentId) {
-    return (
-      <Paper
-        sx={{
-          p: 3,
-          height: 420,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Typography variant="body1" color="text.secondary">
-          Select an agent to view files per day.
-        </Typography>
-      </Paper>
-    );
-  }
-
   const {
     data: files = [],
     isLoading,
@@ -147,6 +126,25 @@ const AssetFileDailyCountChart = ({
   }, [files, applied.start, applied.end]);
 
   const loading = isLoading || isFetching;
+
+  // Early UI when no agent selected
+  if (!agentId) {
+    return (
+      <Paper
+        sx={{
+          p: 3,
+          height: 420,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography variant="body1" color="text.secondary">
+          Select an agent to view files per day.
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Card
@@ -232,7 +230,7 @@ const AssetFileDailyCountChart = ({
               },
               tooltip: {
                 trigger: "axis",
-                formatter: (params: any) => {
+                formatter: (params: unknown) => {
                   const p = Array.isArray(params) ? params[0] : params;
                   const date = p.axisValue;
                   const count = p.data;

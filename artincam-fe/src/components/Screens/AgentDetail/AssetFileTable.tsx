@@ -1,11 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  DataGrid,
-  type GridColDef,
-  type GridPaginationModel,
-  type GridSortModel,
-} from "@mui/x-data-grid";
-import { assetFileService, type AssetFile } from "@services/assetFileService";
+import { DownloadCsvButton } from "@components/Common";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   Box,
   Button,
@@ -15,11 +9,16 @@ import {
   Chip,
   Divider,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import DownloadIcon from "@mui/icons-material/Download";
+import {
+  DataGrid,
+  type GridColDef,
+  type GridPaginationModel,
+  type GridSortModel,
+} from "@mui/x-data-grid";
+import { type AssetFile, assetFileService } from "@services/assetFileService";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface AssetFilesGridProps {
   agentId: string;
@@ -32,9 +31,9 @@ const formatBytes = (bytes: number | null | undefined): string => {
   const units = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.min(
     Math.floor(Math.log(bytes) / Math.log(k)),
-    units.length - 1
+    units.length - 1,
   );
-  const value = bytes / Math.pow(k, i);
+  const value = bytes / k ** i;
   const decimals = i === 0 ? 0 : value < 10 ? 2 : value < 100 ? 1 : 0;
   return `${value.toFixed(decimals)} ${units[i]}`;
 };
@@ -59,6 +58,30 @@ const formatTimestamp = (ts: unknown): string => {
   });
 };
 
+const getAllAssetFileRows = async (agentId: string): Promise<AssetFile[]> => {
+  const allRows: AssetFile[] = [];
+  let offset = 0;
+  const limit = 1000; // Fetch 1000 records at a time
+
+  while (true) {
+    const response = await assetFileService.listByAgent({
+      agentId,
+      limit,
+      offset,
+    });
+
+    allRows.push(...response.data);
+
+    if (response.data.length < limit) {
+      break; // No more data to fetch
+    }
+
+    offset += limit;
+  }
+
+  return allRows;
+};
+
 const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   const [rows, setRows] = useState<AssetFile[]>([]);
   const [rowCount, setRowCount] = useState(0);
@@ -74,7 +97,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
   ]);
 
   // used to force reload without touching pagination/sort
-  const [reloadKey, setReloadKey] = useState(0);
+  const [_, setReloadKey] = useState(0);
 
   const columns = useMemo<GridColDef<AssetFile>[]>(
     () => [
@@ -124,7 +147,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
         valueFormatter: (v) => formatTimestamp(v),
       },
     ],
-    []
+    [],
   );
 
   const load = useCallback(async () => {
@@ -163,7 +186,7 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
     return () => {
       cancelled = true;
     };
-  }, [load, reloadKey]);
+  }, [load]);
 
   return (
     <Card
@@ -213,18 +236,12 @@ const AssetFileTable = ({ agentId }: AssetFilesGridProps) => {
             Refresh
           </Button>
 
-          <Tooltip title="Coming soon">
-            <span>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon />}
-                disabled
-              >
-                Download CSV
-              </Button>
-            </span>
-          </Tooltip>
+          <DownloadCsvButton
+            filename={`agent_${agentId}_asset_files.csv`}
+            fetchRows={() => getAllAssetFileRows(agentId)}
+            size="small"
+            variant="outlined"
+          />
         </Stack>
       </Box>
 

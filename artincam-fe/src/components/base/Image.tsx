@@ -1,5 +1,5 @@
-import { type ImgHTMLAttributes } from "react";
 import { Box, type BoxProps } from "@mui/material";
+import type { ImgHTMLAttributes } from "react";
 
 interface ImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
   sx?: BoxProps["sx"];

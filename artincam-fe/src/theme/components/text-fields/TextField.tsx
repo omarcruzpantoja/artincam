@@ -1,5 +1,5 @@
-import { type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Theme } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 
 declare module "@mui/material" {
   interface TextFieldPropsSizeOverrides {

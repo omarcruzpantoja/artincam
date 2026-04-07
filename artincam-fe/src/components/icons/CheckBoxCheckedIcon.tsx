@@ -1,4 +1,4 @@
-import { SvgIcon, useTheme, type SvgIconProps } from "@mui/material";
+import { SvgIcon, type SvgIconProps, useTheme } from "@mui/material";
 
 const CheckBoxCheckedIcon = (props: SvgIconProps) => {
   const theme = useTheme();

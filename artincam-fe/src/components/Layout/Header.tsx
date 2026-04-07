@@ -1,7 +1,7 @@
-import React from "react";
 import IconifyIcon from "@components/base/IconifyIcon";
+import { AppBar, Box, Button, paperClasses, Toolbar } from "@mui/material";
 import { useSettingsContext } from "@providers/SettingsProvider";
-import { AppBar, Box, Button, Toolbar, paperClasses } from "@mui/material";
+import type React from "react";
 
 const Header = (): React.JSX.Element => {
   const {

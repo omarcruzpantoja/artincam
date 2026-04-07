@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { InputAdornment, Stack } from "@mui/material";
-import { countries as countriesData } from "@data/countries";
-import { type Country } from "@root/types/countries";
 import CountrySelect from "@components/common/CountrySelect";
 import StyledTextField from "@components/styled/StyledTextField";
+import { countries as countriesData } from "@data/countries";
+import { InputAdornment, Stack } from "@mui/material";
+import type { Country } from "@root/types/countries";
+import type React from "react";
+import { useEffect, useState } from "react";
 import IconifyIcon from "./IconifyIcon";
 import NumberTextField from "./NumberTextField";
 
@@ -27,13 +28,13 @@ const PhoneTextfield = ({
   useEffect(() => {
     if (defaultValue) {
       const country = countries.find(
-        (country) => country.phone === defaultValue.code
+        (country) => country.phone === defaultValue.code,
       );
 
       setCountry(country || countries[0]);
       setPhoneNo(defaultValue.number);
     }
-  }, []);
+  }, [countries, defaultValue]);
 
   return (
     <Stack

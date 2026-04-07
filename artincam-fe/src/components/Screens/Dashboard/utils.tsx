@@ -1,5 +1,5 @@
-import { assetFileService, type AssetFile } from "@services/assetFileService";
-import { actionLogService, type ActionLog } from "@services/actionLogService";
+import { type ActionLog, actionLogService } from "@services/actionLogService";
+import { type AssetFile, assetFileService } from "@services/assetFileService";
 
 const ASSET_FILE_PAGE_SIZE = 2500;
 const ACTION_LOG_PAGE_SIZE = 2500;
@@ -19,9 +19,13 @@ export interface FetchByDateRangeParams {
 
 // Helper to fetch ALL asset files for an agent (paginated)
 export const fetchAllAssetFiles = async (
-  agentId: string,
-  { startDate, endDate }: FetchByDateRangeParams = {}
+  agentId: string | null,
+  { startDate, endDate }: FetchByDateRangeParams = {},
 ): Promise<AssetFile[]> => {
+  if (!agentId) {
+    return [];
+  }
+
   const all: AssetFile[] = [];
   let offset = 0;
   let totalCount: number | null = null;
@@ -60,10 +64,14 @@ export const fetchAllAssetFiles = async (
 // ---- ACTION LOGS UTILS ----
 
 export const fetchAllActionLogs = async (
-  agentId: string,
+  agentId: string | null,
   category: string,
-  { startDate, endDate }: FetchByDateRangeParams = {}
+  { startDate, endDate }: FetchByDateRangeParams = {},
 ): Promise<ActionLog[]> => {
+  if (!agentId) {
+    return [];
+  }
+
   const all: ActionLog[] = [];
   let offset = 0;
   let totalCount: number | null = null;

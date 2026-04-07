@@ -13,7 +13,7 @@ const OutlinedBadge = styled(
   (props: OutlinedBadgeProps) => <Badge {...props} />,
   {
     shouldForwardProp: (prop) => prop !== "outlineOptions",
-  }
+  },
 )(({ theme, outlineOptions }) => {
   const borderWidth = outlineOptions?.width || 2;
   const borderColor =

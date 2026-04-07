@@ -1,11 +1,11 @@
+import IconifyIcon from "@components/base/IconifyIcon";
+import { cssVarRgba } from "@lib/utils";
 import {
-  type Theme,
   inputBaseClasses,
+  type Theme,
   tablePaginationClasses,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import { cssVarRgba } from "@lib/utils";
-import IconifyIcon from "@components/base/IconifyIcon";
+import type { Components } from "@mui/material/styles";
 
 const DataGrid: Components<Omit<Theme, "components">>["MuiDataGrid"] = {
   defaultProps: {
@@ -49,13 +49,13 @@ const DataGrid: Components<Omit<Theme, "components">>["MuiDataGrid"] = {
     root: ({ theme }) => ({
       border: "none",
       overflow: "unset",
-      ["& .MuiDataGrid-filler"]: {
+      "& .MuiDataGrid-filler": {
         "--DataGrid-rowBorderColor": "transparent",
       },
       "--DataGrid-rowBorderColor": theme.vars.palette.dividerLight,
     }),
     panel: ({ theme }) => ({
-      ["& .MuiDataGrid-paper"]: {
+      "& .MuiDataGrid-paper": {
         borderRadius: theme.spacing(2),
         outline: "none",
         background: theme.vars.palette.background.menu,
@@ -114,16 +114,16 @@ const DataGrid: Components<Omit<Theme, "components">>["MuiDataGrid"] = {
       "&.Mui-selected": {
         backgroundColor: cssVarRgba(
           theme.vars.palette.primary.lightChannel,
-          0.08
+          0.08,
         ),
       },
       "& .MuiDataGrid-cell": {
-        [`&:nth-of-type(2)`]: {
+        "&:nth-of-type(2)": {
           "&:not(.MuiDataGrid-cellCheckbox)": {
             paddingLeft: 24,
           },
         },
-        [`&:nth-last-of-type(2)`]: {
+        "&:nth-last-of-type(2)": {
           paddingRight: 24,
         },
       },

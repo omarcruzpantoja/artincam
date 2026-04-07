@@ -4,8 +4,14 @@ export interface User {
   avatar: string;
   email: string;
   status: string;
-  role: 'Admin' | 'Supervisor' | 'User';
-  department: 'Engineering' | 'Design' | 'Marketing' | 'Human Resources' | 'Finance' | 'Support';
+  role: "Admin" | "Supervisor" | "User";
+  department:
+    | "Engineering"
+    | "Design"
+    | "Marketing"
+    | "Human Resources"
+    | "Finance"
+    | "Support";
   phone: string;
   location: string;
   createdAt: string;

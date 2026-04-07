@@ -1,21 +1,22 @@
-import { type CallbackDataParams } from "echarts/types/dist/shared";
+import type { CallbackDataParams } from "echarts/types/dist/shared";
 
 export const tooltipFormatterList = (
   params: CallbackDataParams | CallbackDataParams[],
-  showLabel: boolean = false
+  showLabel: boolean = false,
 ) => {
   const paramsArray = Array.isArray(params) ? params : [params];
 
   const result = paramsArray.map((param) => {
     const hasSeriesName = !(
       typeof param.seriesName === "string" &&
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: <This comes from the echart library>
       /^series\u0000\d+$/.test(param.seriesName)
     );
 
     const formattedValue =
       typeof param.value === "number"
         ? Math.abs(param.value) > 1000
-          ? (param.value / 1000).toFixed(1) + "K"
+          ? `${(param.value / 1000).toFixed(1)}K`
           : param.value
         : param.value;
 

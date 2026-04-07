@@ -1,13 +1,13 @@
+import { cssVarRgba } from "@lib/utils";
 import {
-  toggleButtonClasses,
   type ComponentsVariants,
   type Theme,
   type ToggleButtonGroupProps,
   type ToggleButtonProps,
+  toggleButtonClasses,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import { cssVarRgba } from "@lib/utils";
-import { type PaletteColorKey } from "@theme/palette";
+import type { Components } from "@mui/material/styles";
+import type { PaletteColorKey } from "@theme/palette";
 
 const toggleBtnColors: PaletteColorKey[] = [
   "primary",

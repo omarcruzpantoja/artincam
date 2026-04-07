@@ -1,10 +1,10 @@
+import type { Theme } from "@mui/material";
+import type { Components } from "@mui/material/styles";
 import {
   Link as RouterLink,
   type LinkProps as RouterLinkProps,
 } from "react-router";
 import { HashLink } from "react-router-hash-link";
-import { type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
 
 interface LinkBehaviorProps extends Omit<RouterLinkProps, "to"> {
   href: RouterLinkProps["to"];

@@ -1,12 +1,12 @@
-import { useMemo } from "react";
-import type { PropsWithChildren } from "react";
 import {
   CssBaseline,
-  ThemeProvider as MuiThemeProvider,
   createTheme,
+  ThemeProvider as MuiThemeProvider,
 } from "@mui/material";
 import { themeOverrides } from "@theme/theme";
 import createTypography from "@theme/typography";
+import type { PropsWithChildren } from "react";
+import { useMemo } from "react";
 import { useSettingsContext } from "./SettingsProvider";
 
 const ThemeProvider = ({ children }: PropsWithChildren) => {

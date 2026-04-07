@@ -1,9 +1,9 @@
-import React from "react";
+import PageHeader from "@components/common/PageHeader";
 
 import { Box, Stack } from "@mui/material";
-import { agentService, type Agent } from "@services/agentService";
+import { type Agent, agentService } from "@services/agentService";
+import React from "react";
 import { AgentCard } from "./AgentCard";
-import PageHeader from "@components/common/PageHeader";
 
 const AgentList = (): React.JSX.Element => {
   const [agents, setAgents] = React.useState([] as Agent[]);

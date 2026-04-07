@@ -1,6 +1,6 @@
-import { type JSX, type PropsWithChildren } from "react";
 import { Paper, Stack, type SxProps, Typography } from "@mui/material";
 import { useBreakpoints } from "@providers/BreakpointsProvider";
+import type { JSX, PropsWithChildren } from "react";
 import PageBreadcrumb from "./PageBreadcrumb";
 
 interface PageHeaderProps {

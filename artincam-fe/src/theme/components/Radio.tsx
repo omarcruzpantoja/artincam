@@ -1,14 +1,14 @@
+import { RadioBlankIcon, RadioCheckedIcon } from "@components/icons/RadioIcon";
+import { cssVarRgba } from "@lib/utils";
 import {
   formControlLabelClasses,
+  type RadioProps,
   radioClasses,
   svgIconClasses,
-  type RadioProps,
   type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import { cssVarRgba } from "@lib/utils";
-import { type PaletteColorKey } from "@theme/palette";
-import { RadioBlankIcon, RadioCheckedIcon } from "@components/icons/RadioIcon";
+import type { Components } from "@mui/material/styles";
+import type { PaletteColorKey } from "@theme/palette";
 
 declare module "@mui/material/Radio" {
   interface RadioPropsSizeOverrides {

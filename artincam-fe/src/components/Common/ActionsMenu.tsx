@@ -1,14 +1,14 @@
-import { useState, type MouseEvent, type ReactNode } from "react";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Box,
   Divider,
   IconButton,
+  type IconButtonProps,
   Menu,
   MenuItem,
   Typography,
-  type IconButtonProps,
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { type MouseEvent, type ReactNode, useState } from "react";
 
 export type ActionVariant = "default" | "danger";
 

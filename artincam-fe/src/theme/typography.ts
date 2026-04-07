@@ -1,11 +1,11 @@
-import { type TypographyVariantsOptions } from "@mui/material/styles";
-import { initialConfig, type FontFamily } from "@root/config";
+import type { TypographyVariantsOptions } from "@mui/material/styles";
+import { type FontFamily, initialConfig } from "@root/config";
 
 const createTypography = (
-  fontFamily: FontFamily = initialConfig.fontFamily
+  fontFamily: FontFamily = initialConfig.fontFamily,
 ): TypographyVariantsOptions => ({
   fontFamily: [fontFamily, "sans-serif", "Spline Sans Mono", "monospace"].join(
-    ","
+    ",",
   ),
   h1: {
     fontWeight: 700,

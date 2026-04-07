@@ -1,7 +1,7 @@
 export const getItemFromStore = (
   key: string,
   defaultValue?: string | boolean,
-  store = localStorage
+  store = localStorage,
 ) => {
   try {
     return store.getItem(key) === null
@@ -15,7 +15,7 @@ export const getItemFromStore = (
 export const setItemToStore = (
   key: string,
   payload: string,
-  store = localStorage
+  store = localStorage,
 ) => store.setItem(key, payload);
 
 export const removeItemFromStore = (key: string, store = localStorage) =>
@@ -24,20 +24,20 @@ export const removeItemFromStore = (key: string, store = localStorage) =>
 export const getDates = (
   startDate: Date,
   endDate: Date,
-  interval: number = 1000 * 60 * 60 * 24
+  interval: number = 1000 * 60 * 60 * 24,
 ): Date[] => {
   const duration = +endDate - +startDate;
   const steps = duration / interval;
   return Array.from(
     { length: steps + 1 },
-    (_, i) => new Date(startDate.valueOf() + interval * i)
+    (_, i) => new Date(startDate.valueOf() + interval * i),
   );
 };
 
 export const getPastDates = (
-  duration: "week" | "month" | "year" | number
+  duration: "week" | "month" | "year" | number,
 ): Date[] => {
-  let days;
+  let days: number;
 
   switch (duration) {
     case "week":
@@ -63,7 +63,7 @@ export const getPastDates = (
 export const currencyFormat = (
   amount: number,
   locale: Intl.LocalesArgument = "en-US",
-  options: Intl.NumberFormatOptions = {}
+  options: Intl.NumberFormatOptions = {},
 ) => {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -75,7 +75,7 @@ export const currencyFormat = (
 
 export const getCurrencySymbol = (
   currency: string,
-  locale: Intl.LocalesArgument = "en-US"
+  locale: Intl.LocalesArgument = "en-US",
 ) => {
   const parts = new Intl.NumberFormat(locale, {
     style: "currency",
@@ -91,7 +91,7 @@ export const numberFormat = (
   locale: Intl.LocalesArgument = "en-US",
   options: Intl.NumberFormatOptions = {
     notation: "standard",
-  }
+  },
 ) =>
   new Intl.NumberFormat(locale, {
     ...options,
@@ -112,13 +112,11 @@ export const kebabCase = (string: string) =>
 
 export const formatNumber = (num: number): string => {
   if (num >= 1_000_000_000) {
-    return (
-      (num / 1_000_000_000).toFixed(num % 1_000_000_000 < 10 ? 0 : 1) + "B"
-    );
+    return `${(num / 1_000_000_000).toFixed(num % 1_000_000_000 < 10 ? 0 : 1)}B`;
   } else if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(num % 1_000_000 < 10 ? 0 : 1) + "M";
+    return `${(num / 1_000_000).toFixed(num % 1_000_000 < 10 ? 0 : 1)}M`;
   } else if (num >= 1_000) {
-    return (num / 1_000).toFixed(num % 1_000 < 10 ? 0 : 1) + "K";
+    return `${(num / 1_000).toFixed(num % 1_000 < 10 ? 0 : 1)}K`;
   } else {
     return num.toString();
   }
@@ -141,7 +139,7 @@ type PaletteWithChannels<T extends ColorPalette> = T & {
 };
 
 export const generatePaletteChannel = <T extends ColorPalette>(
-  palette: T
+  palette: T,
 ): PaletteWithChannels<T> => {
   const channels: Record<string, string | undefined> = {};
 

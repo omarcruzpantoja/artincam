@@ -1,3 +1,5 @@
+import IconifyIcon from "@components/base/IconifyIcon";
+import { countries } from "@data/countries";
 import {
   Autocomplete,
   type AutocompleteProps,
@@ -5,14 +7,13 @@ import {
   Box,
   TextField,
 } from "@mui/material";
-import { countries } from "@data/countries";
-import { type Country } from "@root/types/countries";
-import IconifyIcon from "@components/base/IconifyIcon";
+import type { Country } from "@root/types/countries";
 
-interface CountrySelectProps extends Omit<
-  AutocompleteProps<Country, undefined, boolean, undefined>,
-  "options" | "renderInput"
-> {
+interface CountrySelectProps
+  extends Omit<
+    AutocompleteProps<Country, undefined, boolean, undefined>,
+    "options" | "renderInput"
+  > {
   fields?: {
     flag?: boolean;
     name?: boolean;
@@ -49,7 +50,7 @@ const CountrySelect = ({
           >
             {fields?.flag && <IconifyIcon icon={option.flag} sx={{ mr: 1 }} />}
             {fields?.name && option.label} {fields?.code && `(${option.code})`}{" "}
-            {fields?.phone && "+" + option.phone}
+            {fields?.phone && `+${option.phone}`}
           </Box>
         );
       }}

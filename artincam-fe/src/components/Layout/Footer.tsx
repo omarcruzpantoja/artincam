@@ -1,5 +1,5 @@
-import React from "react";
 import { Box, Typography } from "@mui/material";
+import type React from "react";
 
 const Footer = (): React.JSX.Element => {
   return (

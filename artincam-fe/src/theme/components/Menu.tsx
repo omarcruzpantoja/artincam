@@ -1,5 +1,5 @@
 import { listItemIconClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 export const MenuItem: Components<Omit<Theme, "components">>["MuiMenuItem"] = {
   defaultProps: { dense: true },

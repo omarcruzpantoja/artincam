@@ -1,7 +1,7 @@
 // assetFileService.ts
 import {
-  BaseApiService,
   type ApiResponse,
+  BaseApiService,
   type RequestOptions,
 } from "./baseService";
 
@@ -33,10 +33,6 @@ export interface ListAssetFilesParams {
 }
 
 export class AssetFileService extends BaseApiService {
-  constructor(baseUrl?: string) {
-    super(baseUrl);
-  }
-
   listByAgent(params: ListAssetFilesParams): Promise<ApiResponse<AssetFile[]>> {
     const { agentId, limit, offset, sortField, sortOrder, startDate, endDate } =
       params;
@@ -60,7 +56,7 @@ export class AssetFileService extends BaseApiService {
 
   async getContentBlob(assetFileId: number): Promise<Blob> {
     const res = await this.getBlob<Blob>(
-      `${ASSET_FILE_PATH}/${assetFileId}/content`
+      `${ASSET_FILE_PATH}/${assetFileId}/content`,
     );
 
     return res;

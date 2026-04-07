@@ -1,4 +1,4 @@
-import { type Theme } from "@mui/material";
+import type { Theme } from "@mui/material";
 
 const popper = (theme: Theme) => ({
   ".base-Popper-root": {

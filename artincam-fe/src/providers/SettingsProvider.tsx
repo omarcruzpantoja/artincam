@@ -1,20 +1,20 @@
-import {
-  createContext,
-  use,
-  useReducer,
-  type Dispatch,
-  type PropsWithChildren,
-} from "react";
-import { initialConfig, type Config } from "../config";
 import { getColor } from "@helpers/echart-utils";
 import { getItemFromStore } from "@lib/utils";
 import {
+  type ACTIONTYPE,
   COLLAPSE_NAVBAR,
   EXPAND_NAVBAR,
   SET_CONFIG,
   settingsReducer,
-  type ACTIONTYPE,
 } from "@reducers/SettingsReducer";
+import {
+  createContext,
+  type Dispatch,
+  type PropsWithChildren,
+  use,
+  useReducer,
+} from "react";
+import { type Config, initialConfig } from "../config";
 
 interface SettingsContextInterFace {
   config: Config;
@@ -32,7 +32,7 @@ const SettingsProvider = ({ children }: PropsWithChildren) => {
     ...initialConfig,
     sidenavCollapsed: getItemFromStore(
       "sidenavCollapsed",
-      initialConfig.sidenavCollapsed
+      initialConfig.sidenavCollapsed,
     ),
     fontFamily: getItemFromStore("fontFamily", initialConfig.fontFamily),
   };

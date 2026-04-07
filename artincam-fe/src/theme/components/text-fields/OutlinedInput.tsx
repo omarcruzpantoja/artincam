@@ -3,7 +3,7 @@ import {
   outlinedInputClasses,
   type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 const OutlinedInput: Components<Omit<Theme, "components">>["MuiOutlinedInput"] =
   {
@@ -54,7 +54,7 @@ const OutlinedInput: Components<Omit<Theme, "components">>["MuiOutlinedInput"] =
         [`&.${inputBaseClasses.sizeSmall}`]: {
           paddingLeft: 12,
         },
-        [`&.MuiInputBase-sizeLarge`]: {
+        "&.MuiInputBase-sizeLarge": {
           paddingLeft: 20,
         },
         [`& .${outlinedInputClasses.input}`]: {

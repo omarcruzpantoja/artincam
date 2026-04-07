@@ -1,5 +1,5 @@
-import { Breadcrumbs, Link, type SxProps, Typography } from "@mui/material";
 import { kebabCase } from "@lib/utils";
+import { Breadcrumbs, Link, type SxProps, Typography } from "@mui/material";
 
 export interface PageBreadcrumbItem {
   label: string;

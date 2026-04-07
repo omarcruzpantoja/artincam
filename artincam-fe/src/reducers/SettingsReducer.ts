@@ -1,6 +1,6 @@
-import { initialConfig, type Config, type FontFamily } from "@root/config";
 import { mainDrawerWidth } from "@lib/constants";
 import { setItemToStore } from "@lib/utils";
+import { type Config, type FontFamily, initialConfig } from "@root/config";
 
 //Action types
 export const SET_CONFIG = "SET_CONFIG";
@@ -22,6 +22,7 @@ export type ACTIONTYPE =
 export const settingsReducer = (state: Config, action: ACTIONTYPE) => {
   let updatedState: Partial<Config> = {};
 
+  console.log("Reducer action:", action); // Debugging line
   switch (action.type) {
     case SET_CONFIG: {
       updatedState = action.payload;

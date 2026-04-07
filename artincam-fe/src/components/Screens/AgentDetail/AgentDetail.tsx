@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import type { ActionItem } from "@components/Common/ActionsMenu";
+import PageHeader from "@components/common/PageHeader";
 import {
   Alert,
   Box,
@@ -9,16 +9,14 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-
+import { type Agent, agentService } from "@services/agentService";
 import { getServerHost } from "@services/baseService";
-import { agentService, type Agent } from "@services/agentService";
-
-import AssetFileTable from "./AssetFileTable";
-import AgentPreviewPanel from "./AgentPreviewPanel";
-import CameraConfiguration from "./CameraConfiguration";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import AgentHeaderPanel from "./AgentHeaderPanel"; // your extracted component
-import type { ActionItem } from "@components/Common/ActionsMenu";
-import PageHeader from "@components/common/PageHeader";
+import AgentPreviewPanel from "./AgentPreviewPanel";
+import AssetFileTable from "./AssetFileTable";
+import CameraConfiguration from "./CameraConfiguration";
 
 type AgentAction = "edit" | "delete";
 
@@ -57,7 +55,9 @@ const AgentDetail = () => {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : "Failed to load agent details."
+            err instanceof Error
+              ? err.message
+              : "Failed to load agent details.",
           );
         }
       } finally {
@@ -80,7 +80,7 @@ const AgentDetail = () => {
         dividerAbove: true,
       },
     ],
-    []
+    [],
   );
 
   const handleAgentAction = (action: AgentAction) => {
@@ -153,7 +153,7 @@ const AgentDetail = () => {
                 mode={agent.config.camera.mode}
                 status={agent.config.camera.status}
                 rtspUrl={replaceLocalhost(
-                  agent.config?.camera?.rtsp_stream?.address ?? ""
+                  agent.config?.camera?.rtsp_stream?.address ?? "",
                 )}
               />
             </Grid>

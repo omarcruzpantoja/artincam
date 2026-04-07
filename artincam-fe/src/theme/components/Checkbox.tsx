@@ -1,16 +1,16 @@
-import {
-  type CheckboxProps,
-  type Theme,
-  checkboxClasses,
-  formControlLabelClasses,
-  svgIconClasses,
-} from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import { cssVarRgba } from "@lib/utils";
-import { type PaletteColorKey } from "@theme/palette";
 import CheckBoxBlankIcon from "@components/icons/CheckBoxBlankIcon";
 import CheckBoxCheckedIcon from "@components/icons/CheckBoxCheckedIcon";
 import CheckBoxIndeterminateIcon from "@components/icons/CheckBoxIndeterminateIcon";
+import { cssVarRgba } from "@lib/utils";
+import {
+  type CheckboxProps,
+  checkboxClasses,
+  formControlLabelClasses,
+  svgIconClasses,
+  type Theme,
+} from "@mui/material";
+import type { Components } from "@mui/material/styles";
+import type { PaletteColorKey } from "@theme/palette";
 
 const colors: PaletteColorKey[] = [
   "primary",
@@ -76,7 +76,7 @@ const Checkbox: Components<Omit<Theme, "components">>["MuiCheckbox"] = {
           },
         },
       },
-      [`&.MuiCheckbox-sizeLarge`]: {
+      "&.MuiCheckbox-sizeLarge": {
         [`+.${formControlLabelClasses.label}`]: {
           marginTop: 9,
         },

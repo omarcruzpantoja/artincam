@@ -1,5 +1,5 @@
 import { paperClasses, type Theme } from "@mui/material";
-import { type Components } from "@mui/material/styles";
+import type { Components } from "@mui/material/styles";
 
 const Drawer: Components<Omit<Theme, "components">>["MuiDrawer"] = {
   defaultProps: {

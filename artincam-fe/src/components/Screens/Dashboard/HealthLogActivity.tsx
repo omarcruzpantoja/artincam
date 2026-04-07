@@ -1,5 +1,4 @@
-import { useMemo, type FC } from "react";
-import { useQuery } from "@tanstack/react-query";
+import ReactEchart from "@components/base/ReactEchart";
 import {
   Alert,
   Box,
@@ -8,20 +7,21 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { type ActionLog } from "@services/actionLogService";
-import { ACTIVE_COLOR, fetchAllActionLogs } from "./utils";
-import { useFilter } from "./contexts/FilterContext";
-
-// ✅ ECharts
-import * as echarts from "echarts/core";
+import type { ActionLog } from "@services/actionLogService";
+import { useQuery } from "@tanstack/react-query";
 import { ScatterChart } from "echarts/charts";
 import {
   GridComponent,
-  TooltipComponent,
   LegendComponent,
+  TooltipComponent,
 } from "echarts/components";
+
+// ✅ ECharts
+import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import ReactEchart from "@components/base/ReactEchart";
+import { type FC, useMemo } from "react";
+import { useFilter } from "./contexts/FilterContext";
+import { ACTIVE_COLOR, fetchAllActionLogs } from "./utils";
 
 echarts.use([
   ScatterChart,
@@ -55,13 +55,13 @@ function pad2(n: number) {
 // YYYY-MM-DD from UTC date/time
 function ymdUTC(d: Date): string {
   return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(
-    d.getUTCDate()
+    d.getUTCDate(),
   )}`;
 }
 
 function startOfUTCDay(d: Date): Date {
   return new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0)
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0),
   );
 }
 
@@ -83,26 +83,6 @@ const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
   agentId,
 }) => {
   const { applied } = useFilter();
-
-  // If no agent selected, show placeholder
-  if (!agentId) {
-    return (
-      <Paper
-        sx={{
-          p: 3,
-          height: 420,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Typography variant="body1" color="text.secondary">
-          Select an agent to view health logs.
-        </Typography>
-      </Paper>
-    );
-  }
-
   const {
     data: logs = [],
     isLoading,
@@ -179,6 +159,7 @@ const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
       if (bucketIndex < 0 || bucketIndex >= BUCKETS_PER_DAY) continue;
 
       if (!bucketMap.has(dayKey)) bucketMap.set(dayKey, new Map());
+      // biome-ignore lint/style/noNonNullAssertion: <Day should always exist in the bucket.>
       const inner = bucketMap.get(dayKey)!;
       inner.set(bucketIndex, (inner.get(bucketIndex) ?? 0) + 1);
     }
@@ -190,7 +171,9 @@ const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
     }
 
     const indexMap = new Map<string, number>();
-    days.forEach((d, i) => indexMap.set(d, i));
+    days.forEach((d, i) => {
+      indexMap.set(d, i);
+    });
 
     // Convert to flat array of dots
     const result: HealthDotPoint[] = [];
@@ -208,6 +191,7 @@ const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
           minutesOfDay: bucketStartMinutes,
           timeLabel: formatMinutesToTime(bucketStartMinutes),
           count,
+          // biome-ignore lint/style/noNonNullAssertion: <The day will always exist.>
           dayIndex: indexMap.get(dayLabel)!,
         });
       }
@@ -240,7 +224,7 @@ const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
       grid: { left: 56, right: 16, top: 10, bottom: 42 },
       tooltip: {
         trigger: "item",
-        formatter: (params: any) => {
+        formatter: (params: { value?: unknown }) => {
           const v = params?.value;
           if (!v || !Array.isArray(v)) return "";
           const count = v[2];
@@ -292,6 +276,25 @@ const HealthLogActivity: FC<ActionLogHealthDotsMatrixChartProps> = ({
       ],
     };
   }, [points, dayLabels]);
+
+  // If no agent selected, show placeholder
+  if (!agentId) {
+    return (
+      <Paper
+        sx={{
+          p: 3,
+          height: 420,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography variant="body1" color="text.secondary">
+          Select an agent to view health logs.
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Card

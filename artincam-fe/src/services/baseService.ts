@@ -1,7 +1,15 @@
+// type MetaResponse struct {
+// 	Count int64 `json:"count,omitempty"`
+// }
+
+interface MetaResponse {
+  count?: number;
+}
 export interface ApiResponse<T> {
-  meta: any | null;
+  meta: MetaResponse | null;
   data: T;
 }
+
 export interface ApiError extends Error {
   status?: number;
   details?: unknown;
@@ -72,7 +80,7 @@ export class BaseApiService {
     method: HttpMethod,
     path: string,
     body?: unknown,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<TResponse> {
     const { query, headers, ...restOptions } = options;
 
@@ -103,7 +111,7 @@ export class BaseApiService {
 
     if (!response.ok) {
       const error: ApiError = new Error(
-        `Request failed with status ${response.status}`
+        `Request failed with status ${response.status}`,
       );
       error.status = response.status;
       error.details = responseData;
@@ -115,14 +123,14 @@ export class BaseApiService {
 
   protected get<T>(
     path: string,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ApiResponse<T>> {
     return this.request<ApiResponse<T>>("GET", path, undefined, options);
   }
 
   protected getBlob<Blob>(
     path: string,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<Blob> {
     return this.request<Blob>("GET", path, undefined, options);
   }
@@ -130,7 +138,7 @@ export class BaseApiService {
   protected post<T = unknown, TBody = unknown>(
     path: string,
     body: TBody,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ApiResponse<T>> {
     return this.request<ApiResponse<T>>("POST", path, body, options);
   }
@@ -138,7 +146,7 @@ export class BaseApiService {
   protected put<T = unknown, TBody = unknown>(
     path: string,
     body: TBody,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ApiResponse<T>> {
     return this.request<ApiResponse<T>>("PUT", path, body, options);
   }
@@ -146,7 +154,7 @@ export class BaseApiService {
   protected patch<T = unknown, TBody = unknown>(
     path: string,
     body: TBody,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ApiResponse<T>> {
     return this.request<ApiResponse<T>>("PATCH", path, body, options);
   }

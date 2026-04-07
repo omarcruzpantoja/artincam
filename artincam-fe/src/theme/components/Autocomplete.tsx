@@ -1,13 +1,13 @@
+import IconifyIcon from "@components/base/IconifyIcon";
 import {
-  type Theme,
   chipClasses,
   filledInputClasses,
   inputBaseClasses,
   inputLabelClasses,
   outlinedInputClasses,
+  type Theme,
 } from "@mui/material";
-import { type Components } from "@mui/material/styles";
-import IconifyIcon from "@components/base/IconifyIcon";
+import type { Components } from "@mui/material/styles";
 
 declare module "@mui/material" {
   interface AutocompletePropsSizeOverrides {
@@ -45,7 +45,7 @@ const Autocomplete: Components<Omit<Theme, "components">>["MuiAutocomplete"] = {
             [`&.${inputLabelClasses.sizeSmall}`]: {
               transform: "translate(12px, 4px) scale(.85)",
             },
-            [`&.MuiInputLabel-sizeLarge`]: {
+            "&.MuiInputLabel-sizeLarge": {
               transform: "translate(20px, 6px) scale(.75)",
             },
           },
@@ -68,7 +68,7 @@ const Autocomplete: Components<Omit<Theme, "components">>["MuiAutocomplete"] = {
           paddingLeft: 12,
           paddingTop: 17,
         },
-        [`&.MuiInputBase-sizeLarge`]: {
+        "&.MuiInputBase-sizeLarge": {
           paddingLeft: 20,
           paddingTop: 24,
           paddingBottom: 8,
@@ -82,7 +82,7 @@ const Autocomplete: Components<Omit<Theme, "components">>["MuiAutocomplete"] = {
           paddingLeft: 12,
           // paddingTop: 17,
         },
-        [`&.MuiInputBase-sizeLarge`]: {
+        "&.MuiInputBase-sizeLarge": {
           paddingLeft: 20,
           // paddingTop: 24,
           paddingBottom: 8,
