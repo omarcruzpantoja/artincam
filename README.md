@@ -71,23 +71,20 @@ Whether you're setting this up on a fresh Raspberry Pi or updating an existing d
    If you have the repo already installed, run the following commands
    ```
    git checkout -- .
+   # If git pull fails, remember to disconnect temporarily the ETHERNET connection to the PI.
    git pull
    ```
 
 5. Run the following commands for initial setup:
    ```bash
-   chmod +x install.sh
-   ./install --all
+   ./install.sh --all
    ```
 
-6. After all installation is successful visit `localhost` in your browser.
+6. (optional) After all installation is successful visit `localhost` in your browser.
    1. You can access the app from another computer within the network. To do so we need the local IP Address of the raspberry pi.
-   2. Use the command `ifconfig` in the terminal. Find the section with `wlan0`, the IP address will be next to the `inet`. Often times the expected value will be in the form `192.168.0.X`, more than usual it is NOT _192.168.0.255_ OR _192.168.0.1_.
-      
-      ```
-      wlan0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 192.168.0.98  netmask 255.255.255.0  broadcast 192.168.0.255
-      ```
+   2. Use the same IP assigned to the PI in step #2.
+      1. The PI MUST be connected to the computer via ethernet for this step to work.
+   3. The web browser should open with the PI's app. After performing installation for the first time, reboot the pi. (`sudo shutdown -h`)
 
 ## Camera Configuration Parameters
 
